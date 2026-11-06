@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { sb, SEL, upload } from '../supabase'
+import { sb, SEL, upload } from './supabase'
 import PostCard from './PostCard'
 import Avatar from './Avatar'
 export default function Profile({ id, me, back, openPost, openProfile }) {

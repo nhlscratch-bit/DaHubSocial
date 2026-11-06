@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { sb, SEL, REACTIONS, mediaUrl, ago } from '../supabase'
+import { sb, SEL, REACTIONS, mediaUrl, ago } from './supabase'
 import Avatar from './Avatar'
 export default function PostCard({ post, me, openPost, openProfile }) {
   const [p, setP] = useState(post), [pick, setPick] = useState(false)

@@ -1,0 +1,4 @@
+Add these two as Environment Variables in Vercel (Settings > Environment Variables):
+
+VITE_SUPABASE_URL=https://netegdwqbzqugjbjtrnb.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_9z0pmkU3lB-K2M3uz-iEvg_vMvs6HiX

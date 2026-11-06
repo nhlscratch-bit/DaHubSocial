@@ -1,11 +1,12 @@
+import wm from './wordmark.png'
 import { useEffect, useState } from 'react'
 import { sb } from './supabase'
-import Boot from './components/Boot'
-import Auth from './components/Auth'
-import Feed from './components/Feed'
-import PostView from './components/PostView'
-import Profile from './components/Profile'
-import Avatar from './components/Avatar'
+import Boot from './Boot'
+import Auth from './Auth'
+import Feed from './Feed'
+import PostView from './PostView'
+import Profile from './Profile'
+import Avatar from './Avatar'
 const NAV = [['home', '🏠', 'Home'], ['discover', '🧭', 'Discover'], ['create', '', ''], ['shorts', '▶️', 'Shorts'], ['more', '⋯', 'More']]
 export default function App() {
   const [booted, setBooted] = useState(false), [session, setSession] = useState(undefined), [profile, setProfile] = useState(null)
@@ -24,7 +25,7 @@ export default function App() {
   const openPost = (id, focus) => push({ t: 'post', id, focus }), openProfile = id => push({ t: 'profile', id })
   const go = k => { setStack([]); if (k === 'create') { setTab('home'); setFk(x => x + 1) } else setTab(k) }
   return <div className="app">
-    <header className="hdr"><img className="wm" src="/wordmark.png" alt="DAHUB" /><Avatar p={profile} size={44} onClick={() => openProfile(me.id)} /></header>
+    <header className="hdr"><img className="wm" src={wm} alt="DAHUB" /><Avatar p={profile} size={44} onClick={() => openProfile(me.id)} /></header>
     <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} /></main>
     {tab !== 'home' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>
       {tab === 'more' ? <>{['Media', 'Arcade', 'Pets', 'Mind'].map(m => <button key={m} className="wb" onClick={() => alert(m + ' is a later milestone.')}>{m}</button>)}<button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button></>

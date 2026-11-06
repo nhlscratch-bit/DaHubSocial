@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { sb, SEL, upload } from '../supabase'
+import { sb, SEL, upload } from './supabase'
 import PostCard from './PostCard'
 import Avatar from './Avatar'
 const TABS = [['for', 'For You'], ['following', 'Following'], ['trend', '🔥 Trending'], ['near', '📍 Nearby']]

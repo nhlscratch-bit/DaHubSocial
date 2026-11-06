@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { sb, SEL, ago } from '../supabase'
+import { sb, SEL, ago } from './supabase'
 import PostCard from './PostCard'
 import Avatar from './Avatar'
 export default function PostView({ id, focus, me, back, openProfile }) {
