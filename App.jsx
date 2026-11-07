@@ -30,7 +30,7 @@ export default function App() {
     {tab !== 'home' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>
       {tab === 'more' ? <>{['Media', 'Arcade', 'Pets', 'Mind'].map(m => <button key={m} className="wb" onClick={() => alert(m + ' is a later milestone.')}>{m}</button>)}<button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button></>
         : <p>Not built yet. Placeholder for a later milestone.</p>}</div>}
-    {top?.t === 'post' && <PostView key={top.id} id={top.id} focus={top.focus} me={me} back={back} openProfile={openProfile} />}
+    {top?.t === 'post' && <PostView key={top.id} profile={profile} id={top.id} focus={top.focus} me={me} back={back} openProfile={openProfile} />}
     {top?.t === 'profile' && <Profile key={top.id} id={top.id} me={me} back={back} openPost={openPost} openProfile={openProfile} />}
     <nav>{NAV.map(([k, i, l]) => k === 'create' ? <button key={k} className="fabn" onClick={() => go(k)} aria-label="Create">+</button>
       : <button key={k} className="n" aria-current={tab === k && !top ? 'page' : undefined} onClick={() => go(k)}><i>{i}</i>{l}</button>)}</nav>
