@@ -11,3 +11,21 @@ export const upload = async (bucket, uid, file) => {
   return path
 }
 export const ago = t => { const s = (Date.now() - new Date(t)) / 1000; return s < 60 ? 'now' : s < 3600 ? Math.floor(s/60)+'m' : s < 86400 ? Math.floor(s/3600)+'h' : Math.floor(s/86400)+'d' }
+// ---- Direct messages (uses existing conversations / conversation_members / messages tables) ----
+export const dmKey = (a, b) => [a, b].sort().join(':')
+export async function startDM(me, other) {
+  const key = dmKey(me, other), find = () => sb.from('conversations').select('id').eq('dm_key', key).maybeSingle()
+  const { data: c } = await find(); if (c) return c.id
+  const { data, error } = await sb.from('conversations').insert({ created_by: me, dm_key: key, is_group: false }).select('id').single()
+  if (error) { const { data: c2 } = await find(); if (c2) return c2.id; throw error }
+  const { error: e2 } = await sb.from('conversation_members').insert([{ conversation_id: data.id, user_id: me }, { conversation_id: data.id, user_id: other }])
+  if (e2) throw e2
+  return data.id
+}
+const cache = new Map()
+export async function signed(path) {
+  if (cache.has(path)) return cache.get(path)
+  const { data } = await sb.storage.from('dm-media').createSignedUrl(path, 3600)
+  if (data) cache.set(path, data.signedUrl)
+  return data?.signedUrl
+}

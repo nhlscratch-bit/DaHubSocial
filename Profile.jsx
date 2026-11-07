@@ -4,7 +4,7 @@ import { sb, SEL, upload, mediaUrl } from './supabase'
 import Avatar from './Avatar'
 const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n
 const TABS = ['Posts', 'Photos', 'Videos', 'Likes', 'Tagged']
-export default function Profile({ id, me, back, openPost }) {
+export default function Profile({ id, me, back, openPost, openDM }) {
   const [pr, setPr] = useState(null), [posts, setPosts] = useState([]), [likes, setLikes] = useState([]), [rel, setRel] = useState(null), [n, setN] = useState({ f: 0, g: 0, p: 0 })
   const [tab, setTab] = useState('Posts'), [edit, setEdit] = useState(false), [form, setForm] = useState({}), [err, setErr] = useState(''), own = id === me.id
   const load = async () => {
@@ -42,7 +42,7 @@ export default function Profile({ id, me, back, openPost }) {
       <div className="meta">{pr.location && <span>📍 {pr.location}</span>}{pr.link && <a href={/^https?:/.test(pr.link) ? pr.link : 'https://' + pr.link} target="_blank" rel="noreferrer">🔗 {pr.link.replace(/^https?:\/\//, '')}</a>}<span>🗓️ Joined {joined}</span></div>
       <div className="stats"><div><b>{fmt(n.f)}</b>Followers</div><div><b>{fmt(n.g)}</b>Following</div><div><b>{fmt(n.p)}</b>Posts</div></div>
       <div className="acts">{own ? <button className="wb" onClick={() => setEdit(!edit)}>Edit Profile</button> : <button className="wb p" onClick={follow}>{rel === 'accepted' ? '✓ Following' : rel === 'pending' ? 'Requested' : '+ Follow'}</button>}
-        <button className="wb" onClick={() => own ? sb.auth.signOut() : alert('Messages are the next milestone.')}>{own ? 'Sign out' : '💬 Message'}</button><button className="wb" onClick={share}>↗ Share Profile</button></div>
+        <button className="wb" onClick={() => own ? sb.auth.signOut() : openDM(id)}>{own ? 'Sign out' : '💬 Message'}</button><button className="wb" onClick={share}>↗ Share Profile</button></div>
       {edit && <div className="editf"><input value={form.display_name} onChange={e => setForm({ ...form, display_name: e.target.value })} maxLength={60} placeholder="Display name" aria-label="Display name" /><textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} maxLength={300} placeholder="Bio" /><input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="Location" /><input value={form.link} onChange={e => setForm({ ...form, link: e.target.value })} placeholder="Link" /><label className="link">Change avatar<input type="file" accept="image/*" hidden onChange={pic('avatar_url')} /></label><button className="wb p" onClick={save}>Save</button></div>}
       {err && <p className="msg">{err}</p>}</div>
     <div className="ptabs">{TABS.map(t => <button key={t} aria-selected={tab === t} onClick={() => setTab(t)}>{t}</button>)}</div>
