@@ -1,0 +1,29 @@
+const D = {
+  home: <><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10v10h13V10" /><path d="M10 20v-5h4v5" /></>,
+  compass: <><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5z" /></>,
+  play: <path d="M8 5.5v13l11-6.5z" />,
+  grid: <g fill="currentColor" stroke="none">{[5, 12, 19].flatMap(x => [5, 12, 19].map(y => <circle key={x + '' + y} cx={x} cy={y} r="1.7" />))}</g>,
+  search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" /></>,
+  bell: <><path d="M6 17v-6a6 6 0 0 1 12 0v6l1.5 2h-15z" /><path d="M10 21.5h4" /></>,
+  chat: <><path d="M4 5h16v11H10l-4 4v-4H4z" /><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" strokeWidth="2.6" /></>,
+  image: <><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m4 18 5-5 4 4 3-3 4 4" /></>,
+  video: <><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m10 9 5 3-5 3z" /></>,
+  send: <path d="M21 3 3 10.5l7 2.5 2.5 7z" />,
+  comment: <path d="M4 5h16v11H10l-4 4v-4H4z" />,
+  repost: <><path d="M4 11V9a3 3 0 0 1 3-3h11" /><path d="m15 3 3 3-3 3" /><path d="M20 13v2a3 3 0 0 1-3 3H6" /><path d="m9 21-3-3 3-3" /></>,
+  heart: <path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z" />,
+  bookmark: <path d="M6 3h12v18l-6-4.5L6 21z" />,
+  share: <><path d="M12 15V3" /><path d="m7 8 5-5 5 5" /><path d="M5 12v7h14v-7" /></>,
+  back: <path d="m15 5-7 7 7 7" />,
+  camera: <><path d="M4 8h3l2-2.5h6L17 8h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></>,
+  userplus: <><circle cx="9" cy="8" r="3.5" /><path d="M3 20a6 6 0 0 1 12 0" /><path d="M19 8v6M16 11h6" /></>,
+  more: <g fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></g>,
+  pin: <><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></>,
+  link: <><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></>,
+  cal: <><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M4 10h16M9 3v4M15 3v4" /></>,
+  plus: <path d="M12 5v14M5 12h14" />,
+  filter: <><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></>,
+}
+export default function I({ n, s = 24, fill }) {
+  return <svg width={s} height={s} viewBox="0 0 24 24" fill={fill ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{D[n]}</svg>
+}
