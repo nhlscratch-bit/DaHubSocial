@@ -5,6 +5,7 @@ import { sb, SEL, mediaUrl } from './supabase'
 import Avatar from './Avatar'
 import I from './Icons'
 import EditProfile from './EditProfile'
+import Spotlight from './Spotlight'
 const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n
 const B = [[0, 26, 40], [26, 18, 62], [44, 30, 48], [74, 16, 78], [90, 28, 52], [118, 20, 36], [138, 34, 70], [172, 18, 44], [190, 26, 86], [216, 22, 58], [238, 30, 40], [268, 20, 72], [288, 28, 50], [316, 24, 64], [340, 30, 44], [370, 20, 56]]
 function Skyline() {
@@ -12,7 +13,7 @@ function Skyline() {
     {B.map(([x, w, h], i) => <g key={i}><rect x={x} y={100 - h} width={w} height={h} fill="url(#sg)" />{Array.from({ length: Math.floor(h / 12) }, (_, j) => <rect key={j} x={x + 4 + (j % 2) * 9} y={100 - h + 6 + j * 12} width="3" height="4" fill="#00d1d1" opacity={(i + j) % 3 ? 0.35 : 0.95} />)}</g>)}</svg>
 }
 const TABS = ['Posts', 'Photos', 'Videos', 'Likes', 'Tagged']
-export default function Profile({ id, me, back, openPost, openDM, onUpdated }) {
+export default function Profile({ id, me, back, openPost, openDM, openProfile, onUpdated }) {
   const [pr, setPr] = useState(null), [posts, setPosts] = useState([]), [likes, setLikes] = useState([]), [rel, setRel] = useState(null), [n, setN] = useState({ f: 0, g: 0, p: 0 })
   const [tab, setTab] = useState('Posts'), [edit, setEdit] = useState(false), [sc, setSc] = useState(false), own = id === me.id
   const load = async () => {
@@ -23,6 +24,7 @@ export default function Profile({ id, me, back, openPost, openDM, onUpdated }) {
     if (!own) { const { data: r } = await sb.from('follows').select('status').eq('follower_id', me.id).eq('followee_id', id).maybeSingle(); setRel(r?.status || null) }
   }
   useEffect(() => { load() }, [id])
+  useEffect(() => { document.body.classList.toggle('hidenav', edit); return () => document.body.classList.remove('hidenav') }, [edit])
   useEffect(() => { if (tab !== 'Likes') return; (async () => {
     const { data: r } = await sb.from('post_reactions').select('post_id').eq('user_id', id).order('created_at', { ascending: false }).limit(60)
     const ids = (r || []).map(x => x.post_id); if (!ids.length) return setLikes([])
@@ -40,9 +42,8 @@ export default function Profile({ id, me, back, openPost, openDM, onUpdated }) {
   return <div className="sheet clear">
     <div className={'mini' + (sc ? ' on' : '')}><button className="ib" onClick={back} aria-label="Back"><I n="back" s={22} /></button><Avatar p={pr} size={34} /><b>{pr.display_name}</b>{own && <button className="wb sm" onClick={() => setEdit(true)}>Edit</button>}</div>
     <div className="sbody pbody" onScroll={e => setSc(e.currentTarget.scrollTop > 190)}>
-    <div className="cover" style={{ backgroundImage: `url(${cover || wp})` }}>
-      {!cover && <div className="cbrand"><img src={wm} alt="DAHUB" /><span>ONE HUB. EVERY SIDE OF LIFE.</span></div>}
-      <Skyline />
+    <div className="cover spotc">
+      <Spotlight me={me} openProfile={openProfile} />
       <button className="ib cb" onClick={back} aria-label="Back"><I n="back" s={22} /></button>
       <button className="ib cb r" onClick={own ? () => setEdit(true) : share} aria-label={own ? 'Edit cover' : 'More'}>{own ? <I n="camera" s={22} /> : <I n="more" s={22} />}</button></div>
     <div className="pbg">

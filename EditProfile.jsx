@@ -32,7 +32,7 @@ export default function EditProfile({ pr, me, close, saved }) {
     saved(); close()
   }
   const hasAv = !!cur.avatar_url, hasCv = !!cur.cover_url
-  return <div className="sheet"><div className="bar"><button onClick={close} aria-label="Close">✕</button>Edit Profile</div>
+  return <div className="sheet solid"><div className="bar"><button onClick={close} aria-label="Close">✕</button><span style={{ flex: 1 }}>Edit Profile</span><button className="wb p sm" disabled={busy} onClick={save}>Save</button></div>
     <div className="sbody ed">
       <div className="edcov" style={{ backgroundImage: hasCv ? `url(${pub('covers', cur.cover_url)})` : undefined }}>{!hasCv && <small>No cover yet</small>}</div>
       <div className="edbtn"><label className="wb sm">{hasCv ? 'Change cover' : 'Add cover'}<input type="file" accept="image/*" hidden onChange={choose('wide')} /></label>
