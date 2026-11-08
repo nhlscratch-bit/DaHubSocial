@@ -186,3 +186,26 @@ input,select,textarea{font-size:16px}html{-webkit-text-size-adjust:100%}button{-
 .bld{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-size:12px;color:#55656f}.bld.inl{position:static;display:block;margin-top:8px}
 /* Spotlight bottom row clears the profile photo that overlaps the cover */
 .srow2{padding-left:136px}.srow2 .who span{max-width:100%}
+
+/* ===== Glass theme v2 — built from the UX asset sheets (Home, Opportunity Board, Clout Passport) ===== */
+:root{--rim:#0d5560;--rim2:#8df2f2;--teal-g:linear-gradient(180deg,#2ccdd6 0%,#0b7482 46%,#064852 100%);
+  --glass:linear-gradient(115deg,transparent 36%,#ffffff80 46%,transparent 56%),linear-gradient(135deg,#ffffffe8 0%,#d9f7f8dc 52%,#ffffffe6 100%);--top:env(safe-area-inset-top,0px)}
+/* Home-screen app: keep headers clear of the clock/status icons */
+@media (display-mode:standalone){:root{--top:max(env(safe-area-inset-top,0px),50px)}}
+.app{padding-top:var(--top)}.bar,.pvtop,.ihead,.chd{padding-top:calc(10px + var(--top))}.mini{padding-top:calc(8px + var(--top))}
+.cover .cb{top:calc(12px + var(--top))}.dots{top:calc(28px + var(--top))}.disc{padding-top:calc(8px + var(--top))}
+/* glass surfaces: dark teal rim + bright cyan inner edge + diagonal sheen */
+.comp,.post,.nrow,.irow,.drow,.onb,.liked,.bub,.reqb,.cbox,.bm,.pill,.qr,.picker,.pbg,.ptabs{background:var(--glass);border:1.5px solid var(--rim);box-shadow:inset 0 0 0 2px var(--rim2),inset 0 2px 0 #fffffff0,0 12px 26px #0a4a5538,0 0 16px #00d1d122}
+.pbg{border-bottom:0}.nrow.new{background:linear-gradient(115deg,transparent 36%,#ffffff80 46%,transparent 56%),linear-gradient(135deg,#c9f6f6,#aef0f1)}
+/* neutral glass buttons */
+.ib,.wb,.tab{background:linear-gradient(180deg,#fff 0%,#d8f3f4 100%);border:1.5px solid var(--rim);box-shadow:inset 0 0 0 2px #a8f4f4,0 6px 14px #0a4a5530;color:#064852}
+/* primary glossy dark-teal buttons */
+.wb.p,.go,.itabs [aria-selected=true],.ptabs [aria-selected=true],.tab[aria-selected=true]{background:var(--teal-g);color:#fff;border:1.5px solid #043640;box-shadow:inset 0 0 0 2px #52e6e6a0,inset 0 2px 0 #ffffff66,0 8px 18px #06485255,0 0 14px #00d1d155;text-shadow:0 1px 2px #0006}
+.fabn{background:var(--teal-g);border:2px solid #043640;box-shadow:0 0 0 5px #ffffffd9,0 0 0 7px var(--rim),0 14px 28px #06485266,inset 0 0 0 2px var(--rim2)}
+.badge{background:var(--teal-g);border:1.5px solid #fff}
+.tabs{gap:8px;padding:10px 12px;border-bottom:0;background:#ffffff4d}.tab{padding:8px 16px;border-radius:22px;font-size:15px}
+nav{background:linear-gradient(115deg,transparent 36%,#ffffff70 46%,transparent 56%),linear-gradient(135deg,#ffffffeb,#d3f5f6e0);border:1.5px solid var(--rim);box-shadow:inset 0 0 0 2px var(--rim2),0 14px 30px #0a4a5540}
+.n{color:#064852}.n[aria-current=page]{color:#0b7482}
+.crow>input:not([hidden]),.cin input,.cmp>input:not([hidden]),.isr input,.auth input,.ed input,.ed textarea,.hnd{background:linear-gradient(180deg,#d4ecee,#ecf9f9);border:1.5px solid #0d556080;box-shadow:inset 0 2px 5px #0a4a5530}
+.bar,.mini{background:linear-gradient(180deg,#fff,#dff6f7);border-bottom:1.5px solid var(--rim)}
+.tile{border:2px solid var(--rim);outline:2px solid var(--rim2);outline-offset:-5px}
