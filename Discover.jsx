@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { sb } from './supabase'
 import Avatar from './Avatar'
+import briefcase from './briefcase.png'
 // People search only. DAHUB never lists everyone: you find people by searching a name or @handle.
-export default function Discover({ me, openProfile }) {
+export default function Discover({ me, openProfile, openOpps }) {
   const [q, setQ] = useState(''), [list, setList] = useState([]), [rel, setRel] = useState({}), [err, setErr] = useState(''), [busy, setBusy] = useState(false)
   const s = q.replace(/[^\w ]/g, '').trim()
   const loadRel = async () => { const { data } = await sb.from('follows').select('followee_id,status').eq('follower_id', me.id); setRel(Object.fromEntries((data || []).map(x => [x.followee_id, x.status]))) }
@@ -20,6 +21,7 @@ export default function Discover({ me, openProfile }) {
   async function toggle(id) { rel[id] ? await sb.from('follows').delete().eq('follower_id', me.id).eq('followee_id', id) : await sb.from('follows').insert({ follower_id: me.id, followee_id: id }); loadRel() }
   return <div className="disc"><h1 className="dmt">Discover</h1>
     <div className="isr"><input value={q} onChange={e => setQ(e.target.value)} placeholder="🔍 Search by name or @handle" aria-label="Search people" autoCapitalize="none" autoCorrect="off" /></div>
+    <button className="gl oppcard" onClick={openOpps}><img src={briefcase} alt="" className="obc" /><div><b>Opportunity Board</b><small>Get in the room: gigs, bookings, collabs</small></div></button>
     {s.length < 2 && <div className="onb"><h3>Find your people</h3><p>Search a name or @handle to find someone. Your timeline starts when you follow people.</p></div>}
     {err && <p className="msg">{err}</p>}{busy && <div className="skel"><i /></div>}
     {s.length >= 2 && !busy && list.map(p => <div key={p.id} className="drow"><Avatar p={p} size={56} onClick={() => openProfile(p.id)} />

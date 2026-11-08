@@ -11,6 +11,9 @@ import Inbox from './Inbox'
 import Chat from './Chat'
 import Discover from './Discover'
 import Notifications from './Notifications'
+import Opportunities from './Opportunities'
+import OpportunityDetail from './OpportunityDetail'
+import NewOpportunity from './NewOpportunity'
 import I from './Icons'
 const NAV = [['home', 'home', 'Home'], ['discover', 'compass', 'Discover'], ['create', '', ''], ['shorts', 'play', 'Shorts'], ['more', 'grid', 'More']]
 export default function App() {
@@ -49,6 +52,7 @@ export default function App() {
   if (!session) return <Auth />
   const me = session.user, push = v => setStack(s => [...s, v]), back = () => setStack(s => s.slice(0, -1)), top = stack[stack.length - 1]
   const refreshProfile = () => sb.from('profiles').select('*').eq('id', uid).single().then(({ data }) => setProfile(data))
+  const openOpp = id => push({ t: 'opp', id }), openOpps = () => push({ t: 'opps' }), newOpp = () => push({ t: 'newopp' }), oppCreated = id => setStack(s => [...s.slice(0, -1), { t: 'opp', id }])
   const openPost = (id, focus) => push({ t: 'post', id, focus }), openProfile = id => push({ t: 'profile', id }), openChat = id => push({ t: 'chat', id })
   const openDM = async other => { try { const cid = await startDM(me.id, other); setStack(s => s[s.length - 1]?.t === 'chat' ? s : [...s.filter(x => x.t !== 'newdm'), { t: 'chat', id: cid }]) } catch (e) { alert('Could not open the conversation: ' + e.message) } }
   const go = k => { setStack([]); if (k === 'create') { setTab('home'); setFk(x => x + 1) } else setTab(k) }
@@ -59,14 +63,17 @@ export default function App() {
         <button className="ib" onClick={() => push({ t: 'inbox' })} aria-label="Messages"><I n="chat" s={22} />{badge > 0 && <span className="badge">{badge}</span>}</button>
         <Avatar p={profile} size={48} online={online.has(me.id)} onClick={() => openProfile(me.id)} /></div></header>
     <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} goDiscover={() => setTab('discover')} active={tab === 'home' && !top} /></main>
-    {tab === 'discover' && !top && <Discover me={me} openProfile={openProfile} />}
+    {tab === 'discover' && !top && <Discover me={me} openProfile={openProfile} openOpps={openOpps} />}
     {tab !== 'home' && tab !== 'discover' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>
-      {tab === 'more' ? <>{['Media'].map(m => <button key={m} className="wb" onClick={() => alert(m + ' is a later milestone.')}>{m}</button>)}<button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button><small className="bld inl">DAHUB {BUILD}</small></>
+      {tab === 'more' ? <><button className="wb p" onClick={openOpps}>Opportunity Board</button>{['Media'].map(m => <button key={m} className="wb" onClick={() => alert(m + ' is a later milestone.')}>{m}</button>)}<button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button><small className="bld inl">DAHUB {BUILD}</small></>
         : <p>Not built yet. Placeholder for a later milestone.</p>}</div>}
     {top?.t === 'post' && <PostView key={top.id} id={top.id} focus={top.focus} me={me} profile={profile} back={back} openProfile={openProfile} />}
     {top?.t === 'profile' && <Profile key={top.id} id={top.id} me={me} back={back} openPost={openPost} openDM={openDM} openProfile={openProfile} onUpdated={refreshProfile} />}
     {top?.t === 'inbox' && <Inbox me={me} online={online} back={back} openChat={openChat} openDM={openDM} />}
-    {top?.t === 'notifs' && <Notifications me={me} back={back} openPost={openPost} openProfile={openProfile} />}
+    {top?.t === 'notifs' && <Notifications me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} />}
+    {top?.t === 'opps' && <Opportunities me={me} back={back} openOpp={openOpp} newOpp={newOpp} />}
+    {top?.t === 'opp' && <OpportunityDetail key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} openDM={openDM} />}
+    {top?.t === 'newopp' && <NewOpportunity me={me} back={back} created={oppCreated} />}
     {top?.t === 'chat' && <Chat key={top.id} id={top.id} me={me} online={online} back={back} openProfile={openProfile} />}
     <nav className={top?.t === 'profile' ? 'over' : undefined}>{NAV.map(([k, i, l]) => k === 'create' ? <button key={k} className="fabn" onClick={() => go(k)} aria-label="Create"><I n="plus" s={34} /></button>
       : <button key={k} className="n" aria-current={tab === k && !top ? 'page' : undefined} onClick={() => go(k)}><I n={i} s={26} />{l}</button>)}</nav>
