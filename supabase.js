@@ -29,3 +29,5 @@ export async function signed(path) {
   if (data) cache.set(path, data.signedUrl)
   return data?.signedUrl
 }
+
+export const BUILD = 'build 13'
