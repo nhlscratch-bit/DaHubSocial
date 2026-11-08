@@ -239,3 +239,11 @@ nav{background:linear-gradient(115deg,transparent 36%,#ffffff70 46%,transparent 
 .ofm{padding:12px 14px calc(110px + env(safe-area-inset-bottom));display:grid;gap:12px;align-content:start}.ofm label{display:grid;gap:6px;font-weight:600;font-size:14px}
 .ofm input:not([type=checkbox]),.ofm select,.ofm textarea{border:1.5px solid #0d556080;border-radius:14px;padding:12px;background:linear-gradient(180deg,#d4ecee,#ecf9f9);font-size:16px;font-weight:400;font-family:inherit}
 .oppcard{display:flex;align-items:center;gap:12px;margin:8px 12px;padding:12px 14px;border-radius:26px;text-align:left;width:calc(100% - 24px)}.oppcard b{display:block;font-size:18px}.oppcard small{color:#55656f}
+
+/* ===== Soft top edge: in Safari the grey status strip is the browser's own, so the wallpaper fades out of it ===== */
+body::after{content:'';position:fixed;top:0;left:0;right:0;height:170px;z-index:-1;pointer-events:none;background:linear-gradient(180deg,#eef3f5 0%,#eef3f5d9 24%,#eef3f500 100%)}
+.sheet.clear,.boot{background:linear-gradient(180deg,#eef3f5 0%,#eef3f5d9 20%,#eef3f500 100%) top/100% 170px no-repeat,url(./wallpaper.png) center top/cover no-repeat #eef3f5}
+/* Installed to the home screen: wallpaper runs full-bleed to the very top, no fade needed */
+@media (display-mode:standalone){body::after{display:none}.sheet.clear,.boot{background:#eef3f5 url(./wallpaper.png) center top/cover no-repeat}}
+/* Glass title bar on detail screens so scrolled content doesn't clip against the wallpaper */
+.sheet.clear>.pvtop{background:linear-gradient(180deg,#ffffffe0,#e4f8f8d0);backdrop-filter:blur(10px);border-bottom:1.5px solid var(--rim)}
