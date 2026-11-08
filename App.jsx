@@ -10,11 +10,12 @@ import Avatar from './Avatar'
 import Inbox from './Inbox'
 import Chat from './Chat'
 import Discover from './Discover'
+import Notifications from './Notifications'
 import I from './Icons'
 const NAV = [['home', 'home', 'Home'], ['discover', 'compass', 'Discover'], ['create', '', ''], ['shorts', 'play', 'Shorts'], ['more', 'grid', 'More']]
 export default function App() {
   const [booted, setBooted] = useState(false), [session, setSession] = useState(undefined), [profile, setProfile] = useState(null)
-  const [stack, setStack] = useState([]), [tab, setTab] = useState('home'), [fk, setFk] = useState(0), [online, setOnline] = useState(new Set()), [badge, setBadge] = useState(0)
+  const [stack, setStack] = useState([]), [tab, setTab] = useState('home'), [fk, setFk] = useState(0), [online, setOnline] = useState(new Set()), [badge, setBadge] = useState(0), [nb, setNb] = useState(0)
   useEffect(() => {
     sb.auth.getSession().then(({ data }) => setSession(data.session))
     const { data } = sb.auth.onAuthStateChange((_e, s) => { setSession(s); if (!s) { setStack([]); setTab('home') } })
@@ -37,6 +38,12 @@ export default function App() {
     refresh(); const ch = sb.channel('unread-' + uid).on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, refresh).subscribe()
     window.addEventListener('dm-read', refresh); return () => { sb.removeChannel(ch); window.removeEventListener('dm-read', refresh) }
   }, [uid])
+  useEffect(() => {
+    if (!uid) return
+    const refresh = async () => { const { count } = await sb.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', uid).is('read_at', null); setNb(count || 0) }
+    refresh(); const ch = sb.channel('notif-' + uid).on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` }, refresh).subscribe()
+    window.addEventListener('notif-read', refresh); return () => { sb.removeChannel(ch); window.removeEventListener('notif-read', refresh) }
+  }, [uid])
   if (!booted) return <Boot onDone={() => setBooted(true)} />
   if (session === undefined) return null
   if (!session) return <Auth />
@@ -48,7 +55,7 @@ export default function App() {
   return <div className="app">
     <header className="hdr"><img className="wm" src={wm} alt="DAHUB" />
       <div className="hbar"><button className="ib" onClick={() => alert('Search is a later milestone.')} aria-label="Search"><I n="search" s={22} /></button>
-        <button className="ib" onClick={() => alert('Notifications are a later milestone.')} aria-label="Notifications"><I n="bell" s={22} /></button>
+        <button className="ib" onClick={() => push({ t: 'notifs' })} aria-label="Notifications"><I n="bell" s={22} />{nb > 0 && <span className="badge">{nb > 99 ? '99+' : nb}</span>}</button>
         <button className="ib" onClick={() => push({ t: 'inbox' })} aria-label="Messages"><I n="chat" s={22} />{badge > 0 && <span className="badge">{badge}</span>}</button>
         <Avatar p={profile} size={48} online={online.has(me.id)} onClick={() => openProfile(me.id)} /></div></header>
     <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} goDiscover={() => setTab('discover')} active={tab === 'home' && !top} /></main>
@@ -57,8 +64,9 @@ export default function App() {
       {tab === 'more' ? <>{['Media', 'Arcade', 'Pets', 'Mind'].map(m => <button key={m} className="wb" onClick={() => alert(m + ' is a later milestone.')}>{m}</button>)}<button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button></>
         : <p>Not built yet. Placeholder for a later milestone.</p>}</div>}
     {top?.t === 'post' && <PostView key={top.id} id={top.id} focus={top.focus} me={me} profile={profile} back={back} openProfile={openProfile} />}
-    {top?.t === 'profile' && <Profile key={top.id} id={top.id} me={me} back={back} openPost={openPost} openDM={openDM} onUpdated={refreshProfile} />}
+    {top?.t === 'profile' && <Profile key={top.id} id={top.id} me={me} back={back} openPost={openPost} openDM={openDM} openProfile={openProfile} onUpdated={refreshProfile} />}
     {top?.t === 'inbox' && <Inbox me={me} online={online} back={back} openChat={openChat} openDM={openDM} />}
+    {top?.t === 'notifs' && <Notifications me={me} back={back} openPost={openPost} openProfile={openProfile} />}
     {top?.t === 'chat' && <Chat key={top.id} id={top.id} me={me} online={online} back={back} openProfile={openProfile} />}
     <nav className={top?.t === 'profile' ? 'over' : undefined}>{NAV.map(([k, i, l]) => k === 'create' ? <button key={k} className="fabn" onClick={() => go(k)} aria-label="Create"><I n="plus" s={34} /></button>
       : <button key={k} className="n" aria-current={tab === k && !top ? 'page' : undefined} onClick={() => go(k)}><I n={i} s={26} />{l}</button>)}</nav>
