@@ -3,6 +3,7 @@ import { sb, friendly } from './supabase'
 export const FILTERS = [
   ['around', 'Around Me', 'Events, opportunities and members in an area you type'],
   ['people', 'People', 'Members gaining new followers'],
+  ['verified', 'Verified', 'Verified members and businesses, glowing on the radar'],
   ['convos', 'Conversations', 'Public posts with the most recent comments'],
   ['boards', 'Popular Boards', 'Communities by members and recent joins'],
   ['biz', 'Restaurants & Businesses', 'Verified businesses and local spotlights'],

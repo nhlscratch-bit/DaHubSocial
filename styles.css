@@ -632,3 +632,16 @@ body.inshorts::after{display:none}
 /* Verified badge image (crowned check) */
 img.ver{display:inline-block;width:1.15em;height:1.15em;vertical-align:-0.2em;margin-left:4px;padding:0;background:none;border-radius:0;object-fit:contain;filter:drop-shadow(0 1px 2px #0005)}
 img.vb{position:absolute;right:-6px;bottom:0;width:44px;height:44px;padding:0;background:none;border:0;border-radius:0;box-shadow:none;object-fit:contain;filter:drop-shadow(0 2px 5px #0006)}
+
+/* Verified badge pulse: soft turquoise/gold glow that breathes, everywhere the badge shows */
+@keyframes vglow{0%,100%{filter:drop-shadow(0 0 1px #19e0f0aa) drop-shadow(0 1px 2px #0005)}50%{filter:drop-shadow(0 0 5px #19e0f0) drop-shadow(0 0 9px #ffd76a99)}}
+@keyframes vbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+img.ver{animation:vglow 2.4s ease-in-out infinite}
+img.vb{animation:vglow 2.4s ease-in-out infinite,vbeat 2.4s ease-in-out infinite}
+/* Verified blips on the Radar: gold-turquoise ring that sends out pulse waves, plus the badge */
+.blip.vblip{border-color:#ffd76a;box-shadow:0 0 0 2px #19e0f0,0 0 18px #19e0f0}
+.blip.vblip::before,.blip.vblip::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid #19e0f0;animation:vwave 2.4s ease-out infinite;pointer-events:none}
+.blip.vblip::after{animation-delay:1.2s;border-color:#ffd76a}
+@keyframes vwave{0%{transform:scale(1);opacity:.9}100%{transform:scale(2);opacity:0}}
+.blipv{position:absolute;right:-9px;bottom:-9px;width:24px;height:24px;object-fit:contain;animation:vglow 2.4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){img.ver,img.vb,.blipv,.blip.vblip::before,.blip.vblip::after{animation:none!important}.blip.vblip::before,.blip.vblip::after{display:none}}

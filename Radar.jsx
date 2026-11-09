@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Thumb, Row } from './PulseChamber'
+import badge from './verified.png'
 import { FILTERS, FNAME, usePulse, scan, ago } from './pulse'
 const hash = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h }
 export default function Radar({ back, open }) {
@@ -22,7 +23,7 @@ export default function Radar({ back, open }) {
         {items.length > 0 && view === 'radar' && <>
           <div className={'rfield' + (s.phase === 'scanning' ? ' scanning' : '')} role="group" aria-label="Radar results">
             <i className="rr r1" /><i className="rr r2" /><i className="rr r3" /><i className="rsw" /><i className="rcore" />
-            {nodes.map(({ it, x, y }) => <button key={it.id} className={'blip' + (sel === it.id ? ' on' : '')} style={{ left: x + '%', top: y + '%' }} onClick={() => setSel(it.id)} aria-label={it.title}><Thumb it={it} size={40} /></button>)}
+            {nodes.map(({ it, x, y }) => <button key={it.id} className={'blip' + (it.verified ? ' vblip' : '') + (sel === it.id ? ' on' : '')} style={{ left: x + '%', top: y + '%' }} onClick={() => setSel(it.id)} aria-label={it.title + (it.verified ? ', verified' : '')}><Thumb it={it} size={40} />{it.verified && <img className="blipv" src={badge} alt="" />}</button>)}
           </div>
           <p className="pnote" style={{ textAlign: 'center' }}>Closer to the center = ranks higher in this scan. Position around the ring is only for spacing.{items.length > 16 ? ' Showing the top 16. See all in List.' : ''}</p>
           {cur ? <div className="rprev"><Row it={cur} onClick={() => open(cur.dest)} /><button className="wb p sm" onClick={() => open(cur.dest)}>Open</button></div> : <p className="pnote" style={{ textAlign: 'center' }}>Tap a point to preview it.</p>}
