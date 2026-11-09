@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { sb, SEL, REACTIONS, mediaUrl, ago } from './supabase'
 import Avatar from './Avatar'
 import I from './Icons'
+import AutoVideo from './AutoVideo'
 import ReportSheet from './ReportSheet'
 export default function PostCard({ post, me, openPost, openProfile }) {
   const [p, setP] = useState(post), [pick, setPick] = useState(false), [menu, setMenu] = useState(false), [rep, setRep] = useState(false), [gone, setGone] = useState(false)
@@ -29,7 +30,7 @@ export default function PostCard({ post, me, openPost, openProfile }) {
       <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small></div></div>
     {p.body && <div className="cap" onClick={() => openPost?.(p.id)}>{p.body.split(/(#\w+)/g).map((x, i) => x.startsWith('#') ? <span key={i} className="tag">{x}</span> : x)}</div>}
     {media.length > 0 && <div className="mgrid">{media.map(m => m.media_type === 'video'
-      ? <video key={m.storage_path} src={mediaUrl(m.storage_path)} controls playsInline />
+      ? <AutoVideo key={m.storage_path} src={mediaUrl(m.storage_path)} />
       : <img key={m.storage_path} src={mediaUrl(m.storage_path)} alt="" loading="lazy" onClick={() => openPost?.(p.id)} />)}</div>}
     {p.post_reactions.length > 0 && <div className="sum">{top} {p.post_reactions.length}</div>}
     <div className="act">

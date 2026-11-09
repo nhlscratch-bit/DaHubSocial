@@ -54,7 +54,7 @@ export default function Profile({ id, me, back, openPost, openDM, openProfile, o
         {own && <><button className="wb sm" onClick={() => setEdit(true)}>Edit Profile</button><button className="go" onClick={share} aria-label="Share profile"><I n="send" s={18} fill /></button></>}</div>
       {!own && <div className="acts"><button className="wb p" onClick={follow}><I n="userplus" s={20} /> {rel === 'accepted' ? 'Following' : rel === 'pending' ? 'Requested' : 'Follow'}</button>
         <button className="wb" onClick={() => openDM(id)}><I n="comment" s={20} /> Message</button><button className="wb" onClick={share}><I n="share" s={20} /> Share</button></div>}
-      {own && <div className="hl"><button className="st" onClick={() => alert('Stories are a later milestone.')}><span className="ring plain"><I n="plus" s={26} /></span><small>Add Story</small></button></div>}</div>
+      {own && <div className="hl"><button className="st" onClick={() => window.dispatchEvent(new Event('add-story'))}><span className="ring plain"><I n="plus" s={26} /></span><small>Add Story</small></button></div>}</div>
     <div className="ptabs">{TABS.map(t => <button key={t} aria-selected={tab === t} onClick={() => setTab(t)}>{t}</button>)}</div>
     <div className="grid">{list.map(tile)}</div>
     {!list.length && <div className="empty">{tab === 'Tagged' ? 'Tagging is coming soon.' : 'Nothing here yet.'}</div>}</div>

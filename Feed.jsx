@@ -1,13 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { sb, SEL, upload } from './supabase'
 import PostCard from './PostCard'
 import Avatar from './Avatar'
 import I from './Icons'
+import Stories from './Stories'
 const TABS = [['for', 'For You'], ['following', 'Following'], ['trend', '🔥 Trending'], ['near', '📍 Nearby']]
 export default function Feed({ me, profile, openPost, openProfile, focusKey, goDiscover, active }) {
   const [fc, setFc] = useState(null), [tab, setTab] = useState('for'), [posts, setPosts] = useState(null), [err, setErr] = useState('')
   const [text, setText] = useState(''), [files, setFiles] = useState([]), [aud, setAud] = useState('public'), [busy, setBusy] = useState(false)
-  const input = useRef(), file = useRef()
+  const input = useRef(), photoIn = useRef(), videoIn = useRef()
+  const urls = useMemo(() => files.map(f => URL.createObjectURL(f)), [files])
+  useEffect(() => () => urls.forEach(u => URL.revokeObjectURL(u)), [urls])
+  const addFiles = e => { const n = [...e.target.files]; e.target.value = ''; setFiles(f => [...f, ...n].slice(0, 4)) }
   useEffect(() => { input.current?.focus(); window.scrollTo(0, 0) }, [focusKey])
   const load = useCallback(async () => {
     setErr(''); setPosts(null)
@@ -38,16 +42,16 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
     } catch (e) { setErr(e.message) } finally { setBusy(false) }
   }
   return <div>
-    <div className="stories">{[0, 1].map(i => <button key={i} className="st" onClick={() => alert('Stories are a later milestone.')}>
-      {i ? <span className="ring"><Avatar p={profile} size={68} /></span> : <span className="ring plain"><I n="plus" s={32} /></span>}<small>{i ? 'Your Story' : 'Add Story'}</small></button>)}</div>
+    <Stories me={me} profile={profile} />
     <div className="comp"><div className="crow"><Avatar p={profile} size={46} />
       <input ref={input} value={text} onChange={e => setText(e.target.value)} placeholder="What's on your mind?" maxLength={2000} aria-label="Compose post" />
-      <button className="ib" onClick={() => file.current.click()} aria-label="Add photo"><I n="image" /></button>
-      <button className="ib" onClick={() => file.current.click()} aria-label="Add video"><I n="video" /></button>
+      <button className="ib" onClick={() => photoIn.current.click()} aria-label="Add photo"><I n="image" /></button>
+      <button className="ib" onClick={() => videoIn.current.click()} aria-label="Add video"><I n="video" /></button>
       <button className="go" disabled={busy || (!text.trim() && !files.length)} onClick={publish} aria-label="Post">{busy ? '…' : <I n="send" s={20} fill />}</button>
-      <input ref={file} type="file" hidden multiple accept="image/*,video/*" onChange={e => setFiles([...e.target.files].slice(0, 4))} /></div>
+      <input ref={photoIn} type="file" hidden multiple accept="image/*" onChange={addFiles} /><input ref={videoIn} type="file" hidden accept="video/*" onChange={addFiles} /></div>
       <div className="crow sub"><select value={aud} onChange={e => setAud(e.target.value)} aria-label="Audience"><option value="public">Public</option><option value="followers">Followers</option><option value="friends">Friends</option><option value="only_me">Only me</option></select>
-        {files.length > 0 && <small>{files.length} file(s) attached · <button className="link" onClick={() => setFiles([])}>clear</button></small>}</div></div>
+        </div>
+      {files.length > 0 && <div className="thumbs">{files.map((x, i) => <div className="th" key={i}>{x.type.startsWith('video') ? <video src={urls[i] + '#t=0.1'} muted playsInline /> : <img src={urls[i]} alt="" />}<button onClick={() => setFiles(fs => fs.filter((_, j) => j !== i))} aria-label="Remove">✕</button></div>)}</div>}</div>
     <div className="tabs">{TABS.map(([k, l]) => <button key={k} className="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>)}
       <button className="ib flt" onClick={() => alert('Feed filters are a later milestone.')} aria-label="Filters"><I n="filter" s={20} /></button></div>
     {err && <p className="msg" role="alert">{err} <button className="link" onClick={load}>Retry</button></p>}

@@ -273,3 +273,28 @@ nav .fabn svg{display:none}nav .fabn:active{transform:scale(.95)}
 .post .pmenu button{padding:13px 20px;font-weight:600;text-align:left;color:#05303a;background:none;border:0;border-bottom:1px solid var(--line)}
 .post .ph{padding-right:44px}
 .post .act>button{flex:1;justify-content:center;padding:0 2px}
+/* shared glass-card look: every card on every page (build 19) */
+.gl,.ocard,.odet,.oresp,.ohd,.nrow,.irow,.drow,.comp,.onb,.reqb,.bm,.liked{border:2px solid #0d4350;color:#05303a;
+ background:linear-gradient(115deg,transparent 30%,#ffffff66 42%,transparent 54%),linear-gradient(115deg,transparent 58%,#ffffff40 66%,transparent 74%),linear-gradient(160deg,#d9f9fb 0%,#9be6ee 55%,#6fd3de 100%);
+ box-shadow:inset 0 0 0 2px #8df2f2,inset 0 3px 0 #ffffffd0,inset 0 -14px 24px #1aa3b533,0 12px 26px #0a4a5540,0 0 18px #00d1d133;backdrop-filter:none}
+.gl small,.nrow small,.irow small,.drow small,.ocard small{color:#0a5565}
+/* ===== stories + autoplay video + attach previews (build 21) ===== */
+.st{cursor:pointer;-webkit-tap-highlight-color:transparent}.ring.seen{background:linear-gradient(145deg,#c5d0d6,#8d9ba4)}
+.av2{position:relative;border-radius:22px;overflow:hidden;background:#000;line-height:0}.av2 video{display:block;width:100%;max-height:520px;object-fit:cover;border-radius:0!important;border:0!important;cursor:pointer}
+.vmute{position:absolute;right:10px;bottom:14px;background:#000a;border-radius:20px;padding:5px 8px;font-size:14px;line-height:1;pointer-events:none}
+.vbar{position:absolute;left:0;right:0;bottom:0;height:3px;background:#ffffff40}.vbar b{display:block;height:100%;background:#8df2f2}
+.thumbs{display:flex;gap:8px;padding:2px 12px 12px;overflow-x:auto}.th{position:relative;flex:none;width:84px;height:84px;border-radius:16px;overflow:hidden;border:2px solid #0d4350}.th img,.th video{width:100%;height:100%;object-fit:cover}
+.th button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:#000b;color:#fff;border:0;font-size:12px}
+.sv{position:fixed;inset:0;z-index:300;background:#000;color:#fff;touch-action:none;-webkit-user-select:none;user-select:none}
+.svm{position:absolute;inset:0;display:grid;place-items:center}.svm img,.svm video{width:100%;height:100%;object-fit:contain;max-height:100%}
+.svtap{position:absolute;inset:0;z-index:2}
+.svtop{position:absolute;top:0;left:0;right:0;z-index:5;padding:calc(10px + env(safe-area-inset-top)) 12px 24px;background:linear-gradient(#000a,transparent)}
+.svbars{display:flex;gap:4px;margin-bottom:10px}.svbars i{flex:1;height:3px;border-radius:3px;background:#ffffff4d;overflow:hidden}.svbars b{display:block;height:100%;background:#fff}
+.svhd{display:flex;align-items:center;gap:10px}.svhd b{font-size:15px}.svhd small{color:#ffffffb8}
+.svb{min-width:38px;height:38px;border-radius:50%;background:#0008;color:#fff;border:0;font-size:16px;display:grid;place-items:center;padding:0 8px}.svb.em{font-size:20px;background:none}.svb:disabled{opacity:.4}
+.svcap{position:absolute;z-index:4;left:16px;right:16px;bottom:calc(90px + env(safe-area-inset-bottom));text-align:center;font-size:18px;font-weight:600;text-shadow:0 2px 8px #000;pointer-events:none}
+.svfoot{position:absolute;z-index:5;left:0;right:0;bottom:0;padding:14px 12px calc(14px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;background:linear-gradient(transparent,#000b)}
+.svfoot.col{flex-direction:column;align-items:stretch}.svfoot input{flex:1;min-width:0;border:1.5px solid #ffffff80;background:#0006;color:#fff;border-radius:24px;padding:12px 16px;font-size:16px}.svfoot input::placeholder{color:#ffffffa8}
+.svviews{background:#0008;color:#fff;border:0;border-radius:20px;padding:10px 16px;font-size:15px;font-weight:600}.svnote{position:absolute;left:0;right:0;top:-22px;text-align:center;color:#8df2f2}
+.svsheet{position:absolute;inset:0;z-index:10;background:#0007;display:flex;align-items:flex-end}.svsheet>div{width:100%;max-height:60%;overflow:auto;background:#fff;color:#05303a;border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.svsheet h4{margin:0 0 10px}.svrow{display:flex;align-items:center;gap:12px;padding:8px 0}.svrow div{display:flex;flex-direction:column}
