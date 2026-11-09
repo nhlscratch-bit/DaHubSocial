@@ -401,3 +401,12 @@ body.inshorts .hdr{display:none}
 .art-hero{margin:8px 14px;border-radius:24px;min-height:240px;background:#33506b center/cover;display:flex;align-items:flex-end;color:#fff;border:2px solid #ff9a55}.art-hero>div{width:100%;padding:60px 16px 14px;border-radius:0 0 22px 22px;background:linear-gradient(0deg,#000c,#0000)}.art-hero h2{margin:0;font-size:30px}
 .art-tags{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px}.art-bio{margin:10px 14px}.art-act,.art-links{display:flex;gap:8px;flex-wrap:wrap;padding:0 14px}
 .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 14px 120px}.vgrid .vcard{width:auto}.vt{font-weight:700}
+/* ===== form overflow fix (build 31) ===== */
+.form,.arow{grid-template-columns:minmax(0,1fr)}
+.form>*,.arow>*{min-width:0;max-width:100%}
+.form input,.form select,.form textarea,.arow input:not([type=checkbox]):not([type=file]),.arow select,.arow textarea{width:100%;min-width:0;box-sizing:border-box}
+.form input[type=file],.arow input[type=file]{max-width:100%;font-size:14px}
+.arow label.aact{display:grid;gap:6px;align-items:start}.arow label.aact:has(input[type=checkbox]){display:flex;align-items:flex-start;gap:10px}
+.arow .aact{min-width:0}.arow .aact>span{min-width:0;overflow-wrap:anywhere}
+.mhead{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.form,.arow{box-sizing:border-box}.arow{width:auto}
