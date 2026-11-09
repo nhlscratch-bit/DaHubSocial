@@ -13,7 +13,7 @@ function Skyline() {
   return <svg className="sky" viewBox="0 0 390 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2a3f4a" /><stop offset="1" stopColor="#0b161c" /></linearGradient></defs>
     {B.map(([x, w, h], i) => <g key={i}><rect x={x} y={100 - h} width={w} height={h} fill="url(#sg)" />{Array.from({ length: Math.floor(h / 12) }, (_, j) => <rect key={j} x={x + 4 + (j % 2) * 9} y={100 - h + 6 + j * 12} width="3" height="4" fill="#00d1d1" opacity={(i + j) % 3 ? 0.35 : 0.95} />)}</g>)}</svg>
 }
-const TABS = ['Posts', 'Photos', 'Videos', 'Likes', 'Tagged']
+const TABS = ['Posts', 'Photos', 'Videos', 'Likes']
 export default function Profile({ id, me, back, openSettings, openPost, openDM, openProfile, onUpdated }) {
   const [pr, setPr] = useState(null), [posts, setPosts] = useState([]), [likes, setLikes] = useState([]), [rel, setRel] = useState(null), [n, setN] = useState({ f: 0, g: 0, p: 0 })
   const [tab, setTab] = useState('Posts'), [menu, setMenu] = useState(false), [rep, setRep] = useState(false), [bm, setBm] = useState({ b: false, m: false }), [edit, setEdit] = useState(false), [sc, setSc] = useState(false), own = id === me.id
@@ -41,7 +41,7 @@ export default function Profile({ id, me, back, openSettings, openPost, openDM, 
   }
   const share = async () => { const u = location.origin + '/?profile=' + id; try { navigator.share ? await navigator.share({ title: pr.display_name, url: u }) : (await navigator.clipboard.writeText(u), alert('Link copied')) } catch {} }
   if (!pr) return <div className="sheet"><div className="bar"><button onClick={back}>←</button>Profile</div></div>
-  const list = tab === 'Likes' ? likes : tab === 'Tagged' ? [] : posts.filter(p => tab === 'Posts' || p.post_media.some(m => m.media_type === (tab === 'Photos' ? 'image' : 'video')))
+  const list = tab === 'Likes' ? likes : posts.filter(p => tab === 'Posts' || p.post_media.some(m => m.media_type === (tab === 'Photos' ? 'image' : 'video')))
   const cover = pr.cover_url && sb.storage.from('covers').getPublicUrl(pr.cover_url).data.publicUrl
   const joined = new Date(pr.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
   const tile = p => { const m = [...p.post_media].sort((a, b) => a.position - b.position)[0]
@@ -66,7 +66,7 @@ export default function Profile({ id, me, back, openSettings, openPost, openDM, 
       {own && <div className="hl"><button className="st" onClick={() => window.dispatchEvent(new Event('add-story'))}><span className="ring plain"><I n="plus" s={26} /></span><small>Add Story</small></button></div>}</div>
     <div className="ptabs">{TABS.map(t => <button key={t} aria-selected={tab === t} onClick={() => setTab(t)}>{t}</button>)}</div>
     <div className="grid">{list.map(tile)}</div>
-    {!list.length && <div className="empty">{tab === 'Tagged' ? 'Tagging is coming soon.' : 'Nothing here yet.'}</div>}</div>
+    {!list.length && <div className="empty">Nothing here yet.</div>}</div>
     {menu && <div className="scrim" onClick={() => setMenu(false)}><div className="msheet" onClick={e => e.stopPropagation()}>
       <button className="wb" onClick={() => { setMenu(false); share() }}>Share profile</button>
       <button className="wb" onClick={toggleMute}>{bm.m ? 'Unmute' : 'Mute'} @{pr.username}</button>

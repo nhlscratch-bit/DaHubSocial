@@ -30,7 +30,7 @@ export async function signed(path) {
   return data?.signedUrl
 }
 
-export const BUILD = 'build 25'
+export const BUILD = 'build 29'
 
 // People hidden from me: blocked, blocked-me (direction not revealed) and muted.
 export async function hiddenIds() { const { data } = await sb.rpc('hidden_ids'); return new Set((data || []).map(x => (typeof x === 'string' ? x : Object.values(x)[0]))) }
@@ -44,7 +44,7 @@ export const friendly = e => {
   if (/rate_limit: follow/.test(m)) return "You're following people too fast. Try again in a bit."
   if (/rate_limit: report/.test(m)) return "You've sent a lot of reports today. Try again tomorrow."
   if (/rate_limit/.test(m)) return "You're going too fast. Try again in a bit."
-  if (/blocked:/.test(m)) return "You can't message this account."
+  if (/blocked: /.test(m)) return m.replace(/^.*blocked: /, '')
   if (/follow this account/.test(m)) return "You can't follow this account."
   return m
 }

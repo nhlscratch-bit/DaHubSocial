@@ -1,4 +1,5 @@
 import AutoVideo from './AutoVideo'
+import Lightbox from './Lightbox'
 import wm from './wordmark.png'
 import { useEffect, useRef, useState } from 'react'
 import { sb, SEL, REACTIONS, mediaUrl, ago, friendly } from './supabase'
@@ -8,7 +9,7 @@ const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).to
 const CSEL = 'id,body,created_at,parent_id,author:profiles!comments_author_id_fkey(id,username,display_name,avatar_url,is_verified),comment_reactions(user_id,reaction_id)'
 export default function PostView({ id, focus, me, profile, back, openProfile }) {
   const [p, setP] = useState(null), [cs, setCs] = useState([]), [t, setT] = useState(''), [reply, setReply] = useState(null), [sort, setSort] = useState('top')
-  const [err, setErr] = useState(''), [fol, setFol] = useState(null), [likers, setLikers] = useState([]), [slide, setSlide] = useState(0), ref = useRef()
+  const [lb, setLb] = useState(null), [err, setErr] = useState(''), [fol, setFol] = useState(null), [likers, setLikers] = useState([]), [slide, setSlide] = useState(0), ref = useRef()
   const loadP = async () => {
     const { data, error } = await sb.from('posts').select(SEL).eq('id', id).single(); if (error) return setErr(error.message); setP(data)
     const ids = [...new Set(data.post_reactions.map(r => r.user_id))].slice(0, 4)
@@ -30,7 +31,7 @@ export default function PostView({ id, focus, me, profile, back, openProfile }) 
   }
   const toggle = async (table, has) => { const q = sb.from(table); has ? await q.delete().eq('post_id', id).eq('user_id', me.id) : await q.insert({ post_id: id, user_id: me.id }); loadP() }
   const follow = async () => { fol ? await sb.from('follows').delete().eq('follower_id', me.id).eq('followee_id', p.author.id) : await sb.from('follows').insert({ follower_id: me.id, followee_id: p.author.id }); loadP() }
-  const share = async () => { const u = location.origin; try { navigator.share ? await navigator.share({ title: 'DAHUB', url: u }) : (await navigator.clipboard.writeText(u), alert('Link copied')) } catch {} }
+  const share = async () => { const u = location.origin + '/?post=' + id; try { navigator.share ? await navigator.share({ title: 'DAHUB', url: u }) : (await navigator.clipboard.writeText(u), alert('Link copied')) } catch {} }
   async function send() {
     if (!t.trim()) return
     const { error } = await sb.from('comments').insert({ post_id: id, author_id: me.id, body: t.trim(), parent_id: reply ? (reply.parent_id || reply.id) : null })
@@ -48,7 +49,8 @@ export default function PostView({ id, focus, me, profile, back, openProfile }) 
         <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}</small></div>
         {p.author.id !== me.id && <button className="wb p sm" onClick={follow}>{fol === 'accepted' ? 'Following' : fol === 'pending' ? 'Requested' : 'Follow'}</button>}</div>
       {(text || tags.length > 0) && <div className="cap pp" style={{ cursor: 'auto' }}>{text}{tags.length > 0 && <div className="tags">{tags.join(' ')}</div>}</div>}
-      {media.length > 0 && <div className="carw"><div className="car" onScroll={e => setSlide(Math.round(e.target.scrollLeft / e.target.clientWidth))}>{media.map(m => m.media_type === 'video' ? <AutoVideo key={m.storage_path} src={mediaUrl(m.storage_path)} /> : <img key={m.storage_path} src={mediaUrl(m.storage_path)} alt="" />)}</div>{media.length > 1 && <span className="cnt">{slide + 1}/{media.length}</span>}</div>}
+      {media.length > 0 && <div className="carw"><div className="car" onScroll={e => setSlide(Math.round(e.target.scrollLeft / e.target.clientWidth))}>{media.map(m => m.media_type === 'video' ? <AutoVideo key={m.storage_path} src={mediaUrl(m.storage_path)} /> : <img key={m.storage_path} src={mediaUrl(m.storage_path)} alt="" onClick={() => setLb(media.filter(x => x.media_type !== 'video').findIndex(x => x.storage_path === m.storage_path))} />)}</div>{media.length > 1 && <span className="cnt">{slide + 1}/{media.length}</span>}</div>}
+      {lb !== null && <Lightbox urls={media.filter(x => x.media_type !== 'video').map(x => mediaUrl(x.storage_path))} start={lb} close={() => setLb(null)} />}
       <div className="rstrip">{REACTIONS.map((r, i) => <button key={i} className={mine?.reaction_id === i ? 'sel' : ''} onClick={() => react(i)} aria-label={r[0]}><span>{r[1]}</span>{LBL[i]}</button>)}</div>
       <div className="pills"><span className="pill">{mine ? REACTIONS[mine.reaction_id][1] : '🤍'} {fmt(p.post_reactions.length)}</span>
         <button className="pill" onClick={() => ref.current?.scrollIntoView({ behavior: 'smooth' })}>💬 {fmt(p.comments[0]?.count || 0)}</button>

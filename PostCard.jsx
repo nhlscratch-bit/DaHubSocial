@@ -3,9 +3,10 @@ import { sb, SEL, REACTIONS, mediaUrl, ago } from './supabase'
 import Avatar from './Avatar'
 import I from './Icons'
 import AutoVideo from './AutoVideo'
+import Lightbox from './Lightbox'
 import ReportSheet from './ReportSheet'
 export default function PostCard({ post, me, openPost, openProfile }) {
-  const [p, setP] = useState(post), [pick, setPick] = useState(false), [menu, setMenu] = useState(false), [rep, setRep] = useState(false), [gone, setGone] = useState(false)
+  const [p, setP] = useState(post), [pick, setPick] = useState(false), [menu, setMenu] = useState(false), [rep, setRep] = useState(false), [gone, setGone] = useState(false), [lb, setLb] = useState(null)
   const reload = async () => { const { data } = await sb.from('posts').select(SEL).eq('id', p.id).single(); if (data) setP(data) }
   const mine = p.post_reactions.find(r => r.user_id === me.id)
   const top = Object.entries(p.post_reactions.reduce((a, r) => (a[r.reaction_id] = (a[r.reaction_id] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => REACTIONS[e[0]][1]).join('')
@@ -29,10 +30,11 @@ export default function PostCard({ post, me, openPost, openProfile }) {
     {rep && <ReportSheet me={me} type="post" targetId={p.id} reportedUser={p.author.id} close={() => setRep(false)} />}
     <div className="ph"><Avatar p={p.author} size={46} onClick={() => openProfile(p.author.id)} />
       <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small></div></div>
-    {p.body && <div className="cap" onClick={() => openPost?.(p.id)}>{p.body.split(/(#\w+)/g).map((x, i) => x.startsWith('#') ? <span key={i} className="tag">{x}</span> : x)}</div>}
+    {p.body && <div className="cap" onClick={() => openPost?.(p.id)}>{p.body.split(/(#\w+)/g).map((x, i) => x.startsWith('#') ? <button key={i} className="tag" onClick={e => { e.stopPropagation(); window.dispatchEvent(new CustomEvent('open-tag', { detail: x.slice(1) })) }}>{x}</button> : x)}</div>}
     {media.length > 0 && <div className="mgrid">{media.map(m => m.media_type === 'video'
       ? <AutoVideo key={m.storage_path} src={mediaUrl(m.storage_path)} />
-      : <img key={m.storage_path} src={mediaUrl(m.storage_path)} alt="" loading="lazy" onClick={() => openPost?.(p.id)} />)}</div>}
+      : <img key={m.storage_path} src={mediaUrl(m.storage_path)} alt="" loading="lazy" onClick={() => setLb(media.filter(x => x.media_type !== 'video').findIndex(x => x.storage_path === m.storage_path))} />)}</div>}
+    {lb !== null && <Lightbox urls={media.filter(x => x.media_type !== 'video').map(x => mediaUrl(x.storage_path))} start={lb} close={() => setLb(null)} />}
     {p.post_reactions.length > 0 && <div className="sum">{top} {p.post_reactions.length}</div>}
     <div className="act">
       <button onClick={() => openPost?.(p.id, true)} aria-label="Comments"><I n="comment" s={22} /> {p.comments[0]?.count || 0}</button>

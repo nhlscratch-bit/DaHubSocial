@@ -1,5 +1,5 @@
 import wm from './wordmark.png'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { sb, startDM, BUILD } from './supabase'
 import Boot from './Boot'
 import Auth from './Auth'
@@ -20,6 +20,10 @@ import MediaPage from './MediaPage'
 import Submit from './Submit'
 import Safety from './Safety'
 import Settings from './Settings'
+import More from './More'
+import Topic from './Topic'
+import Shorts from './Shorts'
+import CallManager from './Call'
 import Saved from './Saved'
 import Guidelines from './Guidelines'
 const NAV = [['home', 'home', 'Home'], ['discover', 'compass', 'Discover'], ['create', '', ''], ['shorts', 'play', 'Shorts'], ['more', 'grid', 'More']]
@@ -54,7 +58,10 @@ export default function App() {
     refresh(); const ch = sb.channel('notif-' + uid).on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` }, refresh).subscribe()
     window.addEventListener('notif-read', refresh); return () => { sb.removeChannel(ch); window.removeEventListener('notif-read', refresh) }
   }, [uid])
-  const [isAdmin, setIsAdmin] = useState(false)
+  useEffect(() => { document.body.classList.toggle('inshorts', tab === 'shorts' && !stack.length); return () => document.body.classList.remove('inshorts') }, [tab, stack.length])
+  const [isAdmin, setIsAdmin] = useState(false), sy = useRef(0), prevLen = useRef(0)
+  useEffect(() => { if (stack.length === 0 && prevLen.current > 0) requestAnimationFrame(() => window.scrollTo(0, sy.current)); prevLen.current = stack.length }, [stack.length])
+  useEffect(() => { const f = e => setStack(s => [...s, { t: 'tag', tag: e.detail }]); window.addEventListener('open-tag', f); return () => window.removeEventListener('open-tag', f) }, [])
   useEffect(() => { if (uid) sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle().then(({ data }) => setIsAdmin(!!data)) }, [uid])
   useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
   useEffect(() => {
@@ -65,12 +72,12 @@ export default function App() {
   if (!booted) return <Boot onDone={() => setBooted(true)} />
   if (session === undefined) return null
   if (!session) return <Auth />
-  const me = session.user, push = v => setStack(s => [...s, v]), back = () => setStack(s => s.slice(0, -1)), top = stack[stack.length - 1]
+  const me = session.user, push = v => { if (!stack.length) sy.current = window.scrollY; setStack(s => [...s, v]) }, back = () => setStack(s => s.slice(0, -1)), top = stack[stack.length - 1]
   const refreshProfile = () => sb.from('profiles').select('*').eq('id', uid).single().then(({ data }) => setProfile(data))
   const openOpp = id => push({ t: 'opp', id }), openOpps = () => push({ t: 'opps' }), newOpp = () => push({ t: 'newopp' }), oppCreated = id => setStack(s => [...s.slice(0, -1), { t: 'opp', id }])
   const openPost = (id, focus) => push({ t: 'post', id, focus }), openProfile = id => push({ t: 'profile', id }), openChat = id => push({ t: 'chat', id })
   const openDM = async other => { try { const cid = await startDM(me.id, other); setStack(s => s[s.length - 1]?.t === 'chat' ? s : [...s.filter(x => x.t !== 'newdm'), { t: 'chat', id: cid }]) } catch (e) { alert('Could not open the conversation: ' + e.message) } }
-  const go = k => { setStack([]); if (k === 'create') { setTab('home'); setFk(x => x + 1) } else setTab(k) }
+  const go = k => { sy.current = 0; setStack([]); if (k === 'create') { setTab('home'); setFk(x => x + 1) } else setTab(k) }
   return <div className="app">
     <header className="hdr"><img className="wm" src={wm} alt="DAHUB" />
       <div className="hbar"><button className="ib" onClick={() => go('discover')} aria-label="Search"><I n="search" s={22} /></button>
@@ -78,8 +85,10 @@ export default function App() {
         <button className="ib" onClick={() => push({ t: 'inbox' })} aria-label="Messages"><I n="chat" s={22} />{badge > 0 && <span className="badge">{badge}</span>}</button>
         <span className="ringav"><Avatar p={profile} size={46} online={online.has(me.id)} onClick={() => openProfile(me.id)} /></span></div></header>
     <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} goDiscover={() => setTab('discover')} active={tab === 'home' && !top} /></main>
-    {tab === 'discover' && !top && <Discover me={me} openProfile={openProfile} openOpps={openOpps} />}
-    {tab !== 'home' && tab !== 'discover' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>
+    {tab === 'discover' && <div hidden={!!top}><Discover me={me} openProfile={openProfile} openOpps={openOpps} /></div>}
+    {tab === 'more' && !top && <More go={k => push({ t: k })} openProfile={openProfile} me={me} isAdmin={isAdmin} />}
+    {tab === 'shorts' && <div hidden={!!top}><Shorts me={me} active={tab === 'shorts' && !top} openPost={openPost} openProfile={openProfile} goCreate={() => go('create')} /></div>}
+    {tab !== 'home' && tab !== 'discover' && tab !== 'more' && tab !== 'shorts' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>
       {tab === 'more' ? <><button className="wb p" onClick={() => push({ t: 'settings' })}>Settings and Activity</button><button className="wb p" onClick={openOpps}>Opportunity Board</button><button className="wb p" onClick={() => push({ t: 'media' })}>Media</button><button className="wb" onClick={() => push({ t: 'submit' })}>Get featured</button><button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => push({ t: 'safety' })}>Blocked & muted</button>{isAdmin && <button className="wb p" onClick={() => push({ t: 'admin' })}>Admin</button>}<button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button><small className="bld inl">DAHUB {BUILD}</small></>
         : <p>Not built yet. Placeholder for a later milestone.</p>}</div>}
     {top?.t === 'post' && <PostView key={top.id} id={top.id} focus={top.focus} me={me} profile={profile} back={back} openProfile={openProfile} />}
@@ -89,6 +98,7 @@ export default function App() {
     {top?.t === 'opps' && <Opportunities me={me} back={back} openOpp={openOpp} newOpp={newOpp} />}
     {top?.t === 'opp' && <OpportunityDetail key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} openDM={openDM} />}
     {top?.t === 'newopp' && <NewOpportunity me={me} back={back} created={oppCreated} />}
+    {top?.t === 'tag' && <Topic key={top.tag} tag={top.tag} me={me} back={back} openPost={openPost} openProfile={openProfile} />}
     {top?.t === 'media' && <MediaPage me={me} back={back} openProfile={openProfile} openSubmit={() => push({ t: 'submit' })} />}
     {top?.t === 'submit' && <Submit me={me} back={back} />}
     {top?.t === 'settings' && <Settings me={me} profile={profile} isAdmin={isAdmin} back={back} go={k => push({ t: k })} onUpdated={refreshProfile} />}
@@ -97,6 +107,7 @@ export default function App() {
     {top?.t === 'safety' && <Safety me={me} back={back} />}
     {top?.t === 'admin' && isAdmin && <Admin me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} />}
     {top?.t === 'chat' && <Chat key={top.id} id={top.id} me={me} online={online} back={back} openProfile={openProfile} />}
+    <CallManager me={me} />
     <nav className={top?.t === 'profile' ? 'over' : undefined}>{NAV.map(([k, i, l]) => k === 'create' ? <button key={k} className="fabn" onClick={() => go(k)} aria-label="Create"><I n="plus" s={34} /></button>
       : <button key={k} className="n" aria-current={tab === k && !top ? 'page' : undefined} onClick={() => go(k)}><I n={i} s={26} />{l}</button>)}</nav>
   </div>

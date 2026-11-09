@@ -4,10 +4,11 @@ import PostCard from './PostCard'
 import Avatar from './Avatar'
 import I from './Icons'
 import Stories from './Stories'
-const TABS = [['for', 'For You'], ['following', 'Following'], ['trend', '🔥 Trending'], ['near', '📍 Nearby']]
+const TABS = [['for', 'For You'], ['following', 'Following'], ['trend', '🔥 Trending']]
+const FILT = [['all', 'Everything'], ['photo', 'Photos'], ['video', 'Videos'], ['text', 'Text only']]
 export default function Feed({ me, profile, openPost, openProfile, focusKey, goDiscover, active }) {
   const [fc, setFc] = useState(null), [tab, setTab] = useState('for'), [posts, setPosts] = useState(null), [err, setErr] = useState('')
-  const [text, setText] = useState(''), [files, setFiles] = useState([]), [aud, setAud] = useState('public'), [busy, setBusy] = useState(false)
+  const [text, setText] = useState(''), [files, setFiles] = useState([]), [aud, setAud] = useState('public'), [busy, setBusy] = useState(false), [flt, setFlt] = useState('all'), [fOpen, setFOpen] = useState(false)
   const input = useRef(), photoIn = useRef(), videoIn = useRef()
   const urls = useMemo(() => files.map(f => URL.createObjectURL(f)), [files])
   useEffect(() => () => urls.forEach(u => URL.revokeObjectURL(u)), [urls])
@@ -15,7 +16,6 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
   useEffect(() => { input.current?.focus(); window.scrollTo(0, 0) }, [focusKey])
   const load = useCallback(async () => {
     setErr(''); setPosts(null)
-    if (tab === 'near') return setPosts([])
     const { data: f } = await sb.from('follows').select('followee_id').eq('follower_id', me.id).eq('status', 'accepted')
     const ids = (f || []).map(x => x.followee_id); setFc(ids.length)
     if (tab !== 'following') ids.push(me.id)
@@ -54,11 +54,12 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
         </div>
       {files.length > 0 && <div className="thumbs">{files.map((x, i) => <div className="th" key={i}>{x.type.startsWith('video') ? <video src={urls[i] + '#t=0.1'} muted playsInline /> : <img src={urls[i]} alt="" />}<button onClick={() => setFiles(fs => fs.filter((_, j) => j !== i))} aria-label="Remove">✕</button></div>)}</div>}</div>
     <div className="tabs">{TABS.map(([k, l]) => <button key={k} className="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>)}
-      <button className="ib flt" onClick={() => alert('Feed filters are a later milestone.')} aria-label="Filters"><I n="filter" s={20} /></button></div>
+      <button className="ib flt" onClick={() => setFOpen(true)} aria-label="Filters"><I n="filter" s={20} />{flt !== 'all' && <span className="fdot" />}</button></div>
+    {fOpen && <div className="scrim" onClick={() => setFOpen(false)}><div className="msheet" onClick={e => e.stopPropagation()}><h3 style={{ margin: 0 }}>Show in your feed</h3>{FILT.map(([k, l]) => <button key={k} className={'wb' + (flt === k ? ' p' : '')} onClick={() => { setFlt(k); setFOpen(false) }}>{l}</button>)}</div></div>}
     {err && <p className="msg" role="alert">{err} <button className="link" onClick={load}>Retry</button></p>}
     {posts === null && !err && <div className="skel"><i /><i /></div>}
-    {posts?.length === 0 && (fc === 0 && tab !== 'near' ? <div className="onb"><h3>Your timeline is empty</h3><p>Follow people to build your feed. Posts from the people you follow show up here.</p><button className="wb p" onClick={goDiscover}>Find people to follow</button></div>
-      : <div className="empty">{tab === 'near' ? 'Nearby needs location permission. Coming soon.' : tab === 'following' ? 'Nothing new from the people you follow.' : 'No posts yet. Be the first.'}</div>)}
-    {posts?.map(p => <PostCard key={p.id} post={p} me={me} openPost={openPost} openProfile={openProfile} />)}
+    {posts?.length === 0 && (fc === 0 ? <div className="onb"><h3>Your timeline is empty</h3><p>Follow people to build your feed. Posts from the people you follow show up here.</p><button className="wb p" onClick={goDiscover}>Find people to follow</button></div>
+      : <div className="empty">{tab === 'following' ? 'Nothing new from the people you follow.' : 'No posts yet. Be the first.'}</div>)}
+    {posts?.filter(p => flt === 'all' || (flt === 'text' ? p.post_media.length === 0 : p.post_media.some(m => m.media_type === (flt === 'photo' ? 'image' : 'video')))).map(p => <PostCard key={p.id} post={p} me={me} openPost={openPost} openProfile={openProfile} />)}
   </div>
 }

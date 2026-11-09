@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { sb, signed, friendly } from './supabase'
 import Avatar from './Avatar'
+import ReportSheet from './ReportSheet'
 const QUICK = ['❤️', '💯', '🔥', '😍', '👍'], EMO = ['😂', '😭', '😘', '🥺', '😩', '👀', '💙', '🙏', '🤝', '😎', '🔥', '💯', '😍', '😉', '😮', '🖕']
 const tm = d => new Date(d).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 const day = d => { const x = new Date(d), n = new Date(), y = new Date(Date.now() - 864e5); return x.toDateString() === n.toDateString() ? 'Today' : x.toDateString() === y.toDateString() ? 'Yesterday' : x.toLocaleDateString([], { month: 'short', day: 'numeric' }) }
@@ -66,12 +67,15 @@ export default function Chat({ id, me, online, back, openProfile }) {
   async function unsend(mid) { await sb.from('messages').delete().eq('id', mid); setMsgs(m => m.filter(x => x.id !== mid)); setSel(null) }
   async function accept() { await sb.from('conversation_members').update({ status: 'accepted' }).eq('conversation_id', id).eq('user_id', me.id); loadMeta() }
   async function decline() { await sb.from('conversation_members').delete().eq('conversation_id', id).eq('user_id', me.id); window.dispatchEvent(new Event('dm-read')); back() }
-  const o = conv?.other, on = o && online.has(o.id), soon = n => alert(n + ' is coming in a later milestone.')
+  const o = conv?.other, on = o && online.has(o.id), [menu, setMenu] = useState(false), [rep, setRep] = useState(false)
+  const blockUser = async () => { setMenu(false); if (!confirm(`Block @${o?.username}? You'll both be unfollowed and they can't message you.`)) return; const { error } = await sb.from('blocks').insert({ blocker_id: me.id, blocked_id: o.id }); error ? alert('Could not block: ' + error.message) : back() }
   let last = ''
   return <div className="sheet clear"><div className="chd"><button className="ib" onClick={back} aria-label="Back">←</button>
     <Avatar p={o} size={58} online={on} onClick={() => o && openProfile(o.id)} />
     <div className="cn"><b>{o?.display_name || '…'}{o?.is_verified && <span className="ver">✔</span>}</b><small className={on ? 'live' : ''}>{on ? '● Active now' : 'Offline'}</small></div>
-    <button className="ib" onClick={() => soon('Calls')} aria-label="Call">📞</button><button className="ib" onClick={() => soon('Video calls')} aria-label="Video call">🎥</button><button className="ib" onClick={() => soon('Chat options')} aria-label="More">⋯</button></div>
+    <button className="ib" onClick={() => o && window.dispatchEvent(new CustomEvent('start-call', { detail: { peer: o, video: false } }))} aria-label="Voice call">📞</button><button className="ib" onClick={() => o && window.dispatchEvent(new CustomEvent('start-call', { detail: { peer: o, video: true } }))} aria-label="Video call">🎥</button><button className="ib" onClick={() => setMenu(true)} aria-label="Chat options">⋯</button></div>
+    {menu && <div className="scrim" onClick={() => setMenu(false)}><div className="msheet" onClick={e => e.stopPropagation()}><button className="wb" onClick={() => { setMenu(false); openProfile(o.id) }}>View profile</button><button className="wb" onClick={() => { setMenu(false); setRep(true) }}>Report @{o?.username}</button><button className="wb" onClick={blockUser}>Block @{o?.username}</button><button className="wb" onClick={() => setMenu(false)}>Cancel</button></div></div>}
+    {rep && <ReportSheet me={me} type="profile" targetId={o.id} reportedUser={o.id} close={() => setRep(false)} />}
     {conv?.status === 'request' && <div className="reqb"><span><b>{o?.display_name}</b> wants to message you.</span><button className="wb p sm" onClick={accept}>Accept</button><button className="wb sm" onClick={decline}>Delete</button></div>}
     <div className="msgs" onClick={() => setSel(null)}>
       {msgs.map(m => { const mine = m.sender_id === me.id, d = day(m.created_at), sep = d !== last; last = d
@@ -84,7 +88,7 @@ export default function Chat({ id, me, online, back, openProfile }) {
               {sel === m.id && <div className="qr">{QUICK.map(e => <button key={e} onClick={() => react(m.id, e)}>{e}</button>)}{mine && <button className="un" onClick={() => unsend(m.id)}>Unsend</button>}</div>}</div></div></div> })}
       {!msgs.length && <div className="empty">Say hi to {o?.display_name || 'them'} 👋</div>}<div ref={end} /></div>
     {err && <p className="msg" role="alert">{err}</p>}
-    {tray && <div className="tray">{[['🖼️', 'Photo', () => fp.current.click()], ['🎬', 'Video', () => fv.current.click()], ['🎵', 'Audio', toggleRec], ['GIF', 'GIF', () => soon('GIF search')], ['⋯', 'More', () => soon('More attachments')]].map(([i, l, f]) => <button key={l} onClick={f}><span>{i}</span>{l}</button>)}</div>}
+    {tray && <div className="tray">{[['🖼️', 'Photo', () => fp.current.click()], ['🎬', 'Video', () => fv.current.click()], ['🎵', 'Audio', toggleRec], ].map(([i, l, f]) => <button key={l} onClick={f}><span>{i}</span>{l}</button>)}</div>}
     {emo && <div className="emostrip">{EMO.map(e => <button key={e} onClick={() => setT(t + e)}>{e}</button>)}</div>}
     <div className="cmp">{rec ? <div className="recb"><span>● Recording…</span><button className="wb p sm" onClick={toggleRec}>Stop & send</button></div> :
       <><button className="ib plus" onClick={() => { setTray(!tray); setEmo(false) }} aria-label="Attach">+</button>
