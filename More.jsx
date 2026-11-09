@@ -16,6 +16,7 @@ export default function More({ go, openProfile, me, isAdmin }) {
     [trophy, 'Opportunity Board', () => go('opps')],
     [play, 'Media', () => go('media')],
     [null, 'After Dark 🌙', () => go('afterdark')],
+    [null, 'Arcade 🎮', () => go('arcade')],
     [null, 'Live Rooms', () => go('rooms')],
     [null, 'DAHUB Pulse', () => go('pulse')],
     [null, 'Events', () => go('events')],
