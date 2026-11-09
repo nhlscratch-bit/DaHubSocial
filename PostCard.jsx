@@ -6,8 +6,10 @@ import AutoVideo from './AutoVideo'
 import Poll from './Poll'
 import Lightbox from './Lightbox'
 import ReportSheet from './ReportSheet'
+import { useMediaUrls } from './admedia'
+import { FEATURES } from './features'
 export default function PostCard({ post, me, openPost, openProfile }) {
-  const [p, setP] = useState(post), [pick, setPick] = useState(false), [menu, setMenu] = useState(false), [rep, setRep] = useState(false), [gone, setGone] = useState(false), [lb, setLb] = useState(null)
+  const [p, setP] = useState(post), [pick, setPick] = useState(false), [menu, setMenu] = useState(false), [rep, setRep] = useState(false), [gone, setGone] = useState(false), [lb, setLb] = useState(null), [show, setShow] = useState(false)
   const reload = async () => { const { data } = await sb.from('posts').select(SEL).eq('id', p.id).single(); if (data) setP(data) }
   const mine = p.post_reactions.find(r => r.user_id === me.id)
   const top = Object.entries(p.post_reactions.reduce((a, r) => (a[r.reaction_id] = (a[r.reaction_id] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => REACTIONS[e[0]][1]).join('')
@@ -21,7 +23,8 @@ export default function PostCard({ post, me, openPost, openProfile }) {
   const toggle = async (table, has) => { const q = sb.from(table); has ? await q.delete().eq('post_id', p.id).eq('user_id', me.id) : await q.insert({ post_id: p.id, user_id: me.id }); reload() }
   const share = async () => { try { navigator.share ? await navigator.share({ title: 'DAHUB', url: location.origin + '/?post=' + p.id }) : (await navigator.clipboard.writeText(location.origin + '/?post=' + p.id), alert('Link copied')) } catch {} }
   const rp = p.reposts.some(r => r.user_id === me.id), bm = p.bookmarks.length > 0
-  const media = [...p.post_media].sort((a, b) => a.position - b.position)
+  const media = [...p.post_media].sort((a, b) => a.position - b.position), url = useMediaUrls(media)
+  const veil = p.sensitive && !show, hideAll = p.sensitive && !FEATURES.adNudity
   const del = async () => { setMenu(false); if (!confirm('Delete this post? This cannot be undone.')) return; const { error } = await sb.from('posts').delete().eq('id', p.id); error ? alert('Could not delete: ' + error.message) : setGone(true) }
   const block = async () => { setMenu(false); if (!confirm(`Block @${p.author.username}? You'll both be unfollowed and you won't see their posts.`)) return; const { error } = await sb.from('blocks').insert({ blocker_id: me.id, blocked_id: p.author.id }); error ? alert('Could not block: ' + error.message) : setGone(true) }
   if (gone) return null
@@ -30,13 +33,15 @@ export default function PostCard({ post, me, openPost, openProfile }) {
     {menu && <div className="pmenu">{p.author.id === me.id ? <button onClick={del}>Delete post</button> : <><button onClick={() => { setMenu(false); setRep(true) }}>Report post</button><button onClick={block}>Block @{p.author.username}</button></>}<button onClick={() => setMenu(false)}>Cancel</button></div>}
     {rep && <ReportSheet me={me} type="post" targetId={p.id} reportedUser={p.author.id} close={() => setRep(false)} />}
     <div className="ph"><Avatar p={p.author} size={46} onClick={() => openProfile(p.author.id)} />
-      <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small></div></div>
+      <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small>{p.after_dark && <span className="adchip">🌙 After Dark{p.sensitive && ' · 18+'}</span>}</div></div>
     {p.body && <div className="cap" onClick={() => openPost?.(p.id)}>{p.body.split(/(#\w+)/g).map((x, i) => x.startsWith('#') ? <button key={i} className="tag" onClick={e => { e.stopPropagation(); window.dispatchEvent(new CustomEvent('open-tag', { detail: x.slice(1) })) }}>{x}</button> : x)}</div>}
+    {p.held && <p className="heldn">Hidden while DAHUB reviews a report. Only you can see this.</p>}
     <Poll p={p} me={me} />
-    {media.length > 0 && <div className="mgrid">{media.map(m => m.media_type === 'video'
-      ? <AutoVideo key={m.storage_path} src={mediaUrl(m.storage_path)} />
-      : <img key={m.storage_path} src={mediaUrl(m.storage_path)} alt="" loading="lazy" onClick={() => setLb(media.filter(x => x.media_type !== 'video').findIndex(x => x.storage_path === m.storage_path))} />)}</div>}
-    {lb !== null && <Lightbox urls={media.filter(x => x.media_type !== 'video').map(x => mediaUrl(x.storage_path))} start={lb} close={() => setLb(null)} />}
+    {media.length > 0 && hideAll && <p className="heldn">Sensitive media is switched off right now.</p>}
+    {media.length > 0 && !hideAll && <div className={'mgrid' + (veil ? ' veil' : '')}>{veil && <button className="veilb" onClick={() => setShow(true)}><b>Sensitive content · 18+</b><small>Tap to view</small></button>}{media.map(m => m.media_type === 'video'
+      ? (veil ? <div key={m.storage_path} className="vph" /> : <AutoVideo key={m.storage_path} src={url(m)} />)
+      : <img key={m.storage_path} src={url(m)} alt="" loading="lazy" onClick={() => !veil && setLb(media.filter(x => x.media_type !== 'video').findIndex(x => x.storage_path === m.storage_path))} />)}</div>}
+    {lb !== null && <Lightbox urls={media.filter(x => x.media_type !== 'video').map(url)} start={lb} close={() => setLb(null)} />}
     {p.post_reactions.length > 0 && <div className="sum">{top} {p.post_reactions.length}</div>}
     <div className="act">
       <button onClick={() => openPost?.(p.id, true)} aria-label="Comments"><I n="comment" s={22} /> {p.comments[0]?.count || 0}</button>

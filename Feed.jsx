@@ -21,7 +21,7 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
     const ids = (f || []).map(x => x.followee_id); setFc(ids.length)
     if (tab !== 'following') ids.push(me.id)
     if (!ids.length) return setPosts([])
-    const q = sb.from('posts').select(SEL).in('author_id', ids).order('created_at', { ascending: false }).limit(40)
+    const q = sb.from('posts').select(SEL).eq('after_dark', false).in('author_id', ids).order('created_at', { ascending: false }).limit(40)
     const { data, error } = await q
     if (error) return setErr(error.message)
     const hid = await hiddenIds(); for (let i = data.length - 1; i >= 0; i--) if (hid.has(data[i].author.id)) data.splice(i, 1)

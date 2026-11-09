@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 export const sb = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)
 // Locked order — ids match public.reaction_types
 export const REACTIONS = [['Love','❤️'],['Like','👍'],['Middle Finger','🖕'],['Sad','😢'],['Lick','👅'],['Wink','😉'],['Wow','😮']]
-export const SEL = 'id,body,kind,audience,created_at,author:profiles!posts_author_id_fkey(id,username,display_name,avatar_url,is_verified),post_media(storage_path,media_type,position),poll_options(id,text,position),poll_votes(user_id,option_id),post_reactions(user_id,reaction_id),comments(count),reposts(user_id),bookmarks(user_id)'
+export const SEL = 'id,body,kind,audience,created_at,after_dark,sensitive,held,author:profiles!posts_author_id_fkey(id,username,display_name,avatar_url,is_verified),post_media(storage_path,media_type,position,bucket),poll_options(id,text,position),poll_votes(user_id,option_id),post_reactions(user_id,reaction_id),comments(count),reposts(user_id),bookmarks(user_id)'
 export const mediaUrl = p => sb.storage.from('post-media').getPublicUrl(p).data.publicUrl
 export const upload = async (bucket, uid, file) => {
   const path = `${uid}/${crypto.randomUUID()}.${(file.name.split('.').pop() || 'bin').toLowerCase()}`
@@ -30,7 +30,7 @@ export async function signed(path) {
   return data?.signedUrl
 }
 
-export const BUILD = 'build 49'
+export const BUILD = 'build 50'
 
 // People hidden from me: blocked, blocked-me (direction not revealed) and muted.
 export async function hiddenIds() { const { data } = await sb.rpc('hidden_ids'); return new Set((data || []).map(x => (typeof x === 'string' ? x : Object.values(x)[0]))) }

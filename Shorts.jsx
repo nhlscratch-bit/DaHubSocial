@@ -11,7 +11,7 @@ export default function Shorts({ me, active, openPost, openProfile, goCreate }) 
   const load = useCallback(async () => {
     setErr(''); setItems(null); setCur(0); box.current && (box.current.scrollTop = 0)
     const { data: f } = await sb.from('follows').select('followee_id,status').eq('follower_id', me.id); setRel(Object.fromEntries((f || []).map(x => [x.followee_id, x.status])))
-    let q = sb.from('posts').select(SEL).eq('kind', 'video').order('created_at', { ascending: false }).limit(40)
+    let q = sb.from('posts').select(SEL).eq('after_dark', false).eq('kind', 'video').order('created_at', { ascending: false }).limit(40)
     if (tab === 'following') { const ids = (f || []).filter(x => x.status === 'accepted').map(x => x.followee_id); if (!ids.length) return setItems([]); q = q.in('author_id', ids) }
     const { data, error } = await q; if (error) return setErr(error.message)
     const hid = await hiddenIds(); setItems((data || []).filter(p => vid(p) && !hid.has(p.author.id)))

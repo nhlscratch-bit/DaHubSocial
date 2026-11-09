@@ -6,12 +6,13 @@ import Avatar from './Avatar'
 import MediaAdmin from './MediaAdmin'
 import DailyAdmin from './Daily'
 import AccountsAdmin from './AccountsAdmin'
+const URG = ['minor', 'non_consensual']
 const TABLE = { post: 'posts', comment: 'comments', opportunity: 'opportunities', event: 'events', community: 'communities', shoutout: 'shoutouts', room: 'rooms' }
 export default function Admin({ me, back, openPost, openProfile, openOpp }) {
   const [tab, setTab] = useState('subs'), [subs, setSubs] = useState(null), [reps, setReps] = useState(null), [live, setLive] = useState(null), [names, setNames] = useState({}), [note, setNote] = useState({}), [days, setDays] = useState({}), [msg, setMsg] = useState('')
   const load = useCallback(async () => {
     const a = await sb.from('submissions').select(SUBSEL).eq('status', 'pending').order('created_at'); setSubs(a.data || [])
-    const { data: r } = await sb.from('reports').select('*').in('status', ['open', 'reviewing']).order('created_at'); setReps(r || [])
+    const { data: r } = await sb.from('reports').select('*').in('status', ['open', 'reviewing']).order('created_at'); setReps((r || []).sort((a, b) => (URG.includes(b.reason) ? 1 : 0) - (URG.includes(a.reason) ? 1 : 0)))
     const ids = [...new Set((r || []).flatMap(x => [x.reporter_id, x.reported_user_id]).filter(Boolean))]
     if (ids.length) { const { data: p } = await sb.from('profiles').select('id,username,display_name').in('id', ids); setNames(Object.fromEntries((p || []).map(x => [x.id, x]))) }
     const { data: l } = await sb.from('spotlights').select('id,headline,category,ends_at,profile:profiles!spotlights_profile_id_fkey(display_name,username)').order('created_at', { ascending: false }).limit(30); setLive(l || [])
@@ -25,6 +26,7 @@ export default function Admin({ me, back, openPost, openProfile, openOpp }) {
   async function resolve(r, status, remove) {
     setMsg('')
     if (remove) { const t = TABLE[r.target_type]; if (!t) return setMsg('That type cannot be removed from here.'); const { error } = await sb.from(t).delete().eq('id', r.target_id); if (error) return setMsg('Could not remove: ' + error.message) }
+    if (!remove && status === 'dismissed' && r.target_type === 'post' && URG.includes(r.reason)) { const { error: he } = await sb.from('posts').update({ held: false }).eq('id', r.target_id); if (he) return setMsg('Could not release the post: ' + he.message) }
     const { error } = await sb.from('reports').update({ status, reviewed_by: me.id, reviewed_at: new Date().toISOString(), resolution_note: note[r.id]?.trim() || null }).eq('id', r.id)
     if (error) return setMsg(error.message); audit(remove ? 'remove_content' : status === 'dismissed' ? 'dismiss_report' : 'action_report', r.target_type, r.target_id, note[r.id]); load()
   }
@@ -52,6 +54,7 @@ export default function Admin({ me, back, openPost, openProfile, openOpp }) {
         <button className="wb p sm" onClick={() => review(s, true)}>Approve</button><button className="wb sm" onClick={() => review(s, false)}>Reject</button></div></div>))}
     {tab === 'reps' && (reps === null ? <div className="skel"><i /></div> : reps.length === 0 ? <div className="empty">No open reports.</div> : reps.map(r => <div key={r.id} className="gl arow">
       <span className="chip t">{r.target_type}</span><h4>{REASONS[r.reason] || r.reason}</h4>{r.details && <p>{r.details}</p>}
+      {URG.includes(r.reason) && <p className="urg">URGENT · The post is hidden until you review it. Dismiss releases it. Remove deletes it.{r.reason === 'minor' && ' If a minor is involved, remove it and report it to NCMEC (CyberTipline.org).'}</p>}
       <small>Reported by {nm(r.reporter_id)} · {ago(r.created_at)}{r.reported_user_id && <> · About {nm(r.reported_user_id)}</>}</small>
       {r.target_type === 'community' && <small>Community id {r.target_id.slice(0, 8)}. Use Remove content to delete it.</small>}
       {r.target_type === 'event' && <small>Event id {r.target_id.slice(0, 8)}. Use Remove content to delete it.</small>}

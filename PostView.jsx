@@ -5,6 +5,8 @@ import wm from './wordmark.png'
 import { useEffect, useRef, useState } from 'react'
 import { sb, SEL, REACTIONS, mediaUrl, ago, friendly } from './supabase'
 import Avatar from './Avatar'
+import { useMediaUrls } from './admedia'
+import { FEATURES } from './features'
 const LBL = ['Love', 'Like', 'F*ck', 'Sad', 'Lick', 'Wink', 'Wow']
 const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n
 const CSEL = 'id,body,created_at,parent_id,author:profiles!comments_author_id_fkey(id,username,display_name,avatar_url,is_verified),comment_reactions(user_id,reaction_id)'
@@ -20,6 +22,7 @@ export default function PostView({ id, focus, me, profile, back, openProfile }) 
   const loadC = async () => { const { data } = await sb.from('comments').select(CSEL).eq('post_id', id).order('created_at'); setCs(data || []) }
   useEffect(() => { loadP(); loadC() }, [id])
   useEffect(() => { if (focus && p) ref.current?.scrollIntoView() }, [focus, p])
+  const url = useMediaUrls(p ? p.post_media : []), [show, setShow] = useState(false)
   if (!p) return <div className="sheet"><div className="bar"><button onClick={back} aria-label="Back">←</button>Post</div>{err && <p className="msg">{err}</p>}</div>
   const mine = p.post_reactions.find(r => r.user_id === me.id), media = [...p.post_media].sort((a, b) => a.position - b.position)
   const tags = (p.body.match(/#\w+/g) || []), text = p.body.replace(/#\w+/g, '').trim()
@@ -51,8 +54,11 @@ export default function PostView({ id, focus, me, profile, back, openProfile }) 
         {p.author.id !== me.id && <button className="wb p sm" onClick={follow}>{fol === 'accepted' ? 'Following' : fol === 'pending' ? 'Requested' : 'Follow'}</button>}</div>
       {(text || tags.length > 0) && <div className="cap pp" style={{ cursor: 'auto' }}>{text}{tags.length > 0 && <div className="tags">{tags.join(' ')}</div>}</div>}
       <Poll p={p} me={me} />
-      {media.length > 0 && <div className="carw"><div className="car" onScroll={e => setSlide(Math.round(e.target.scrollLeft / e.target.clientWidth))}>{media.map(m => m.media_type === 'video' ? <AutoVideo key={m.storage_path} src={mediaUrl(m.storage_path)} /> : <img key={m.storage_path} src={mediaUrl(m.storage_path)} alt="" onClick={() => setLb(media.filter(x => x.media_type !== 'video').findIndex(x => x.storage_path === m.storage_path))} />)}</div>{media.length > 1 && <span className="cnt">{slide + 1}/{media.length}</span>}</div>}
-      {lb !== null && <Lightbox urls={media.filter(x => x.media_type !== 'video').map(x => mediaUrl(x.storage_path))} start={lb} close={() => setLb(null)} />}
+      {p.held && <p className="heldn">Hidden while DAHUB reviews a report.</p>}
+      {media.length > 0 && p.sensitive && !FEATURES.adNudity && <p className="heldn">Sensitive media is switched off right now.</p>}
+      {media.length > 0 && p.sensitive && FEATURES.adNudity && !show && <button className="veilb solo" onClick={() => setShow(true)}><b>Sensitive content · 18+</b><small>Tap to view</small></button>}
+      {media.length > 0 && (!p.sensitive || (FEATURES.adNudity && show)) && <div className="carw"><div className="car" onScroll={e => setSlide(Math.round(e.target.scrollLeft / e.target.clientWidth))}>{media.map(m => m.media_type === 'video' ? <AutoVideo key={m.storage_path} src={url(m)} /> : <img key={m.storage_path} src={url(m)} alt="" onClick={() => setLb(media.filter(x => x.media_type !== 'video').findIndex(x => x.storage_path === m.storage_path))} />)}</div>{media.length > 1 && <span className="cnt">{slide + 1}/{media.length}</span>}</div>}
+      {lb !== null && <Lightbox urls={media.filter(x => x.media_type !== 'video').map(url)} start={lb} close={() => setLb(null)} />}
       <div className="rstrip">{REACTIONS.map((r, i) => <button key={i} className={mine?.reaction_id === i ? 'sel' : ''} onClick={() => react(i)} aria-label={r[0]}><span>{r[1]}</span>{LBL[i]}</button>)}</div>
       <div className="pills"><span className="pill">{mine ? REACTIONS[mine.reaction_id][1] : '🤍'} {fmt(p.post_reactions.length)}</span>
         <button className="pill" onClick={() => ref.current?.scrollIntoView({ behavior: 'smooth' })}>💬 {fmt(p.comments[0]?.count || 0)}</button>

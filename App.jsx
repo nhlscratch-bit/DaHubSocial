@@ -13,6 +13,7 @@ import Discover from './Discover'
 import PulseChamber from './PulseChamber'
 import Radar from './Radar'
 import Rooms, { NewRoom } from './Rooms'
+import AfterDark from './AfterDark'
 import { RoomGate, MiniPlayer } from './RoomView'
 import Notifications from './Notifications'
 import Opportunities from './Opportunities'
@@ -123,6 +124,7 @@ export default function App() {
     {top?.t === 'event' && <EventView key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} deleted={back} />}
     {top?.t === 'pulse' && <PulseChamber back={back} openRadar={() => push({ t: 'radar' })} open={openDest} />}
     {top?.t === 'radar' && <Radar back={back} open={openDest} />}
+    {top?.t === 'afterdark' && <AfterDark me={me} profile={profile} back={back} openPost={openPost} openProfile={openProfile} openRoom={id => push({ t: 'room', id })} openEvent={id => push({ t: 'event', id })} />}
     {top?.t === 'rooms' && <Rooms me={me} profile={profile} back={back} create={() => push({ t: 'newroom' })} open={id => push({ t: 'room', id })} />}
     {top?.t === 'newroom' && <NewRoom me={me} profile={profile} back={back} created={id => id ? setStack(s => [...s.slice(0, -1), { t: 'room', id }]) : back()} />}
     {top?.t === 'room' && <RoomGate key={top.id} id={top.id} me={me} profile={profile} back={back} openProfile={openProfile} />}
