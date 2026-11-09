@@ -11,6 +11,7 @@ import shieldx from './mi-shieldx.png'
 import door from './mi-door.png'
 import crown from './mi-crown.png'
 import arcade from './mi-arcade.png'
+import afterdark from './mi-afterdark.png'
 import rooms from './mi-rooms.png'
 import pulse from './mi-pulse.png'
 import events from './mi-events.png'
@@ -20,7 +21,7 @@ export default function More({ go, openProfile, me, isAdmin }) {
     [gear, 'Settings & Activity', () => go('settings')],
     [trophy, 'Opportunity Board', () => go('opps')],
     [play, 'Media', () => go('media')],
-    [null, 'After Dark 🌙', () => go('afterdark')],
+    [afterdark, 'After Dark', () => go('afterdark')],
     [arcade, 'Arcade', () => go('arcade')],
     [rooms, 'Live Rooms', () => go('rooms')],
     [pulse, 'DAHUB Pulse', () => go('pulse')],
