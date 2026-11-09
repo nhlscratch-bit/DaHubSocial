@@ -418,7 +418,7 @@ body.inshorts .hdr{display:none}
 .schips .chip.t{background:#fff;color:#075560;border-color:#fff}
 .schips .chip.live{background:#0a3d4599}.schips .chip.live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4cf08a;margin-right:6px;box-shadow:0 0 6px #4cf08a;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.35}}
-body::after{content:"";position:fixed;top:0;left:0;width:220vw;height:100%;pointer-events:none;z-index:90;background:linear-gradient(105deg,transparent 40%,#ffffff10 45%,#ffffff3d 49%,#d4fbffcc 50%,#ffffff3d 51%,#ffffff10 55%,transparent 60%);transform:translate3d(-110vw,0,0);animation:wave 9s cubic-bezier(.45,.05,.55,.95) infinite;will-change:transform;opacity:.55}
-@keyframes wave{0%{transform:translate3d(-120vw,0,0)}70%,100%{transform:translate3d(100vw,0,0)}}
+body::after{content:"";position:fixed;top:0;left:0;width:200vw;height:100%;pointer-events:none;z-index:90;background:linear-gradient(105deg,transparent 38%,#ffffff1f 44%,#ffffff66 48.5%,#e9fdffe6 50%,#ffffff66 51.5%,#ffffff1f 56%,transparent 62%);transform:translate3d(-120vw,0,0);animation:wave 6s linear infinite;will-change:transform;-webkit-transform:translate3d(-120vw,0,0)}
+@keyframes wave{0%{transform:translate3d(-110vw,0,0)}85%,100%{transform:translate3d(110vw,0,0)}}
+@-webkit-keyframes wave{0%{-webkit-transform:translate3d(-110vw,0,0)}85%,100%{-webkit-transform:translate3d(110vw,0,0)}}
 body.inshorts::after{display:none}
-@media (prefers-reduced-motion:reduce){body::after{animation:none;display:none}.schips .chip.live i{animation:none}}
