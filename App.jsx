@@ -15,6 +15,13 @@ import Opportunities from './Opportunities'
 import OpportunityDetail from './OpportunityDetail'
 import NewOpportunity from './NewOpportunity'
 import I from './Icons'
+import Admin from './Admin'
+import MediaPage from './MediaPage'
+import Submit from './Submit'
+import Safety from './Safety'
+import Settings from './Settings'
+import Saved from './Saved'
+import Guidelines from './Guidelines'
 const NAV = [['home', 'home', 'Home'], ['discover', 'compass', 'Discover'], ['create', '', ''], ['shorts', 'play', 'Shorts'], ['more', 'grid', 'More']]
 export default function App() {
   const [booted, setBooted] = useState(false), [session, setSession] = useState(undefined), [profile, setProfile] = useState(null)
@@ -47,6 +54,9 @@ export default function App() {
     refresh(); const ch = sb.channel('notif-' + uid).on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` }, refresh).subscribe()
     window.addEventListener('notif-read', refresh); return () => { sb.removeChannel(ch); window.removeEventListener('notif-read', refresh) }
   }, [uid])
+  const [isAdmin, setIsAdmin] = useState(false)
+  useEffect(() => { if (uid) sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle().then(({ data }) => setIsAdmin(!!data)) }, [uid])
+  useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
   useEffect(() => {
     if (!uid) return
     const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile')
@@ -70,15 +80,22 @@ export default function App() {
     <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} goDiscover={() => setTab('discover')} active={tab === 'home' && !top} /></main>
     {tab === 'discover' && !top && <Discover me={me} openProfile={openProfile} openOpps={openOpps} />}
     {tab !== 'home' && tab !== 'discover' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>
-      {tab === 'more' ? <><button className="wb p" onClick={openOpps}>Opportunity Board</button>{['Media'].map(m => <button key={m} className="wb" onClick={() => alert(m + ' is a later milestone.')}>{m}</button>)}<button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button><small className="bld inl">DAHUB {BUILD}</small></>
+      {tab === 'more' ? <><button className="wb p" onClick={() => push({ t: 'settings' })}>Settings and Activity</button><button className="wb p" onClick={openOpps}>Opportunity Board</button><button className="wb p" onClick={() => push({ t: 'media' })}>Media</button><button className="wb" onClick={() => push({ t: 'submit' })}>Get featured</button><button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => push({ t: 'safety' })}>Blocked & muted</button>{isAdmin && <button className="wb p" onClick={() => push({ t: 'admin' })}>Admin</button>}<button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button><small className="bld inl">DAHUB {BUILD}</small></>
         : <p>Not built yet. Placeholder for a later milestone.</p>}</div>}
     {top?.t === 'post' && <PostView key={top.id} id={top.id} focus={top.focus} me={me} profile={profile} back={back} openProfile={openProfile} />}
-    {top?.t === 'profile' && <Profile key={top.id} id={top.id} me={me} back={back} openPost={openPost} openDM={openDM} openProfile={openProfile} onUpdated={refreshProfile} />}
+    {top?.t === 'profile' && <Profile key={top.id} id={top.id} me={me} back={back} openSettings={() => push({ t: 'settings' })} openPost={openPost} openDM={openDM} openProfile={openProfile} onUpdated={refreshProfile} />}
     {top?.t === 'inbox' && <Inbox me={me} online={online} back={back} openChat={openChat} openDM={openDM} />}
     {top?.t === 'notifs' && <Notifications me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} />}
     {top?.t === 'opps' && <Opportunities me={me} back={back} openOpp={openOpp} newOpp={newOpp} />}
     {top?.t === 'opp' && <OpportunityDetail key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} openDM={openDM} />}
     {top?.t === 'newopp' && <NewOpportunity me={me} back={back} created={oppCreated} />}
+    {top?.t === 'media' && <MediaPage me={me} back={back} openProfile={openProfile} openSubmit={() => push({ t: 'submit' })} />}
+    {top?.t === 'submit' && <Submit me={me} back={back} />}
+    {top?.t === 'settings' && <Settings me={me} profile={profile} isAdmin={isAdmin} back={back} go={k => push({ t: k })} onUpdated={refreshProfile} />}
+    {top?.t === 'saved' && <Saved me={me} back={back} openPost={openPost} openProfile={openProfile} />}
+    {top?.t === 'guidelines' && <Guidelines back={back} />}
+    {top?.t === 'safety' && <Safety me={me} back={back} />}
+    {top?.t === 'admin' && isAdmin && <Admin me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} />}
     {top?.t === 'chat' && <Chat key={top.id} id={top.id} me={me} online={online} back={back} openProfile={openProfile} />}
     <nav className={top?.t === 'profile' ? 'over' : undefined}>{NAV.map(([k, i, l]) => k === 'create' ? <button key={k} className="fabn" onClick={() => go(k)} aria-label="Create"><I n="plus" s={34} /></button>
       : <button key={k} className="n" aria-current={tab === k && !top ? 'page' : undefined} onClick={() => go(k)}><I n={i} s={26} />{l}</button>)}</nav>
