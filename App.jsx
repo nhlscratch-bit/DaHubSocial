@@ -10,6 +10,8 @@ import Avatar from './Avatar'
 import Inbox from './Inbox'
 import Chat from './Chat'
 import Discover from './Discover'
+import PulseChamber from './PulseChamber'
+import Radar from './Radar'
 import Notifications from './Notifications'
 import Opportunities from './Opportunities'
 import OpportunityDetail from './OpportunityDetail'
@@ -24,6 +26,7 @@ import More from './More'
 import Topic from './Topic'
 import Shorts from './Shorts'
 import Locked from './Locked'
+import { FEATURES } from './features'
 import Passport from './Passport'
 import Communities, { NewCommunity } from './Communities'
 import CommunityView from './CommunityView'
@@ -86,6 +89,7 @@ export default function App() {
   if (profile && (profile.account_status === 'banned' || (profile.account_status === 'suspended' && (!profile.suspended_until || new Date(profile.suspended_until) > new Date())))) return <Locked profile={profile} />
   const me = session.user, push = v => { if (!stack.length) sy.current = window.scrollY; setStack(s => [...s, v]) }, back = () => setStack(s => s.slice(0, -1)), top = stack[stack.length - 1]
   const refreshProfile = () => sb.from('profiles').select('*').eq('id', uid).single().then(({ data }) => setProfile(data))
+  const openDest = d => d && push({ t: d.t, id: d.id })
   const openOpp = id => push({ t: 'opp', id }), openOpps = () => push({ t: 'opps' }), newOpp = () => push({ t: 'newopp' }), oppCreated = id => setStack(s => [...s.slice(0, -1), { t: 'opp', id }])
   const openPost = (id, focus) => push({ t: 'post', id, focus }), openProfile = id => push({ t: 'profile', id }), openChat = id => push({ t: 'chat', id })
   const openDM = async other => { try { const cid = await startDM(me.id, other); setStack(s => s[s.length - 1]?.t === 'chat' ? s : [...s.filter(x => x.t !== 'newdm'), { t: 'chat', id: cid }]) } catch (e) { alert('Could not open the conversation: ' + e.message) } }
@@ -115,10 +119,13 @@ export default function App() {
     {top?.t === 'events' && <Events me={me} back={back} open={id => push({ t: 'event', id })} create={() => push({ t: 'newevent' })} />}
     {top?.t === 'newevent' && <NewEvent me={me} back={back} created={id => setStack(s => [...s.slice(0, -1), { t: 'event', id }])} />}
     {top?.t === 'event' && <EventView key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} deleted={back} />}
+    {top?.t === 'pulse' && <PulseChamber back={back} openRadar={() => push({ t: 'radar' })} open={openDest} />}
+    {top?.t === 'radar' && <Radar back={back} open={openDest} />}
     {top?.t === 'communities' && <Communities me={me} back={back} open={id => push({ t: 'community', id })} create={() => push({ t: 'newcommunity' })} />}
     {top?.t === 'newcommunity' && <NewCommunity me={me} back={back} created={id => setStack(s => [...s.slice(0, -1), { t: 'community', id }])} />}
     {top?.t === 'community' && <CommunityView key={top.id} id={top.id} me={me} back={back} openPost={openPost} openProfile={openProfile} gone={back} />}
-    {top?.t === 'passport' && <Passport key={top.id} id={top.id} me={me} back={back} openPassport={pid => push({ t: 'passport', id: pid })} openDM={openDM} openProfile={openProfile} />}
+    {top?.t === 'passport' && !FEATURES.passport && <div className="sheet"><div className="bar"><button onClick={back}>←</button>Clout Passport</div><div className="sbody"><div className="empty"><h3>Back soon</h3>Clout Passport is being updated. Check back later.</div></div></div>}
+    {top?.t === 'passport' && FEATURES.passport && <Passport key={top.id} id={top.id} me={me} back={back} openPassport={pid => push({ t: 'passport', id: pid })} openDM={openDM} openProfile={openProfile} />}
     {top?.t === 'artist' && <ArtistPage key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} play={v => setPlayV(v)} />}
     {playV && <Player v={playV} close={() => setPlayV(null)} openArtist={id => { setPlayV(null); push({ t: 'artist', id }) }} />}
     {top?.t === 'submit' && <Submit me={me} back={back} />}

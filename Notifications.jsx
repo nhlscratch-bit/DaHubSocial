@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { sb, REACTIONS, ago } from './supabase'
 import Avatar from './Avatar'
 const SEL = 'id,type,post_id,reaction_id,opportunity_id,created_at,read_at,opp:opportunities(id,title),actor:profiles!notifications_actor_id_fkey(id,username,display_name,avatar_url,is_verified),post:posts(id,body)'
-const TXT = { follow: 'started following you', follow_request: 'requested to follow you', follow_accept: 'accepted your follow request', comment: 'commented on your post', reply: 'replied to your comment', repost: 'reposted your post', opp_response: 'is interested in your opportunity', opp_accepted: 'accepted your response', opp_declined: 'closed out your response' }
+const TXT = { shoutout: 'gave you a shoutout 📣', follow: 'started following you', follow_request: 'requested to follow you', follow_accept: 'accepted your follow request', comment: 'commented on your post', reply: 'replied to your comment', repost: 'reposted your post', opp_response: 'is interested in your opportunity', opp_accepted: 'accepted your response', opp_declined: 'closed out your response' }
 export default function Notifications({ me, back, openPost, openProfile, openOpp }) {
   const [rows, setRows] = useState(null), [err, setErr] = useState(''), [fresh, setFresh] = useState(null), marked = useRef(false)
   const load = async () => {

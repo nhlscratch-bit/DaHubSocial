@@ -1,3 +1,4 @@
+import { FEATURES } from './features'
 import { sb, BUILD } from './supabase'
 import I from './Icons'
 import gear from './mi-gear.png'
@@ -14,9 +15,10 @@ export default function More({ go, openProfile, me, isAdmin }) {
     [gear, 'Settings & Activity', () => go('settings')],
     [trophy, 'Opportunity Board', () => go('opps')],
     [play, 'Media', () => go('media')],
+    [null, 'DAHUB Pulse', () => go('pulse')],
     [null, 'Events', () => go('events')],
     [null, 'Communities', () => go('communities')],
-    [null, 'My Passport', () => go('passport')],
+    ...(FEATURES.passport ? [[null, 'My Passport', () => go('passport')]] : []),
     [star, 'Get Featured', () => go('submit')],
     [person, 'My Profile', () => openProfile(me.id)],
     [shieldlock, 'Blocked & Muted', () => go('safety')],

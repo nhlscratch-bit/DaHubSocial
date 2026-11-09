@@ -6,7 +6,7 @@ import Avatar from './Avatar'
 import MediaAdmin from './MediaAdmin'
 import DailyAdmin from './Daily'
 import AccountsAdmin from './AccountsAdmin'
-const TABLE = { post: 'posts', comment: 'comments', opportunity: 'opportunities', event: 'events', community: 'communities' }
+const TABLE = { post: 'posts', comment: 'comments', opportunity: 'opportunities', event: 'events', community: 'communities', shoutout: 'shoutouts' }
 export default function Admin({ me, back, openPost, openProfile, openOpp }) {
   const [tab, setTab] = useState('subs'), [subs, setSubs] = useState(null), [reps, setReps] = useState(null), [live, setLive] = useState(null), [names, setNames] = useState({}), [note, setNote] = useState({}), [days, setDays] = useState({}), [msg, setMsg] = useState('')
   const load = useCallback(async () => {
