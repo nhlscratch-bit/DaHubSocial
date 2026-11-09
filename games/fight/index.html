@@ -52,12 +52,15 @@ canvas{display:block;width:100%;height:100%}
 </div>
 
 <script>
+// Asset resolver: inside DAHUB the Arcade passes signed URLs in window.__ASSETS; standalone it falls back to relative paths.
+const A = p => (window.__ASSETS && window.__ASSETS[p]) || p
 const ROSTER = {
  kenndogg:{ id:'kenndogg', name:'KENNDOGG', title:'STRAIGHT SAVAGE · STREET', pre:'kd', spr:{"idle": {"w": 339, "h": 640, "ax": 159, "ay": 639}, "walk": {"w": 399, "h": 657, "ax": 185, "ay": 656}, "walk_b": {"w": 393, "h": 655, "ax": 183, "ay": 654}, "light": {"w": 434, "h": 612, "ax": 215, "ay": 611}, "heavy": {"w": 396, "h": 600, "ax": 214, "ay": 599}, "grab": {"w": 418, "h": 428, "ax": 226, "ay": 427}, "hit": {"w": 492, "h": 523, "ax": 270, "ay": 522}, "down": {"w": 623, "h": 288, "ax": 324, "ay": 287}, "win": {"w": 369, "h": 598, "ax": 182, "ay": 597}, "gun": {"w": 526, "h": 557, "ax": 140, "ay": 556}}, stage:'alley', stageName:'Baltimore Alley', taunt:'“What you say bout my mama?”', blazin:'THE TAPE', kind:'shot', cut:'video/tape_shot1.mp4', win:'video/tape_win.mp4', labels:['JAB','BAG','GRAB'], heavyName:'bag smash', spd:1, pow:1, col:'#19e0f0' },
  mabel:{ id:'mabel', name:'MABEL', title:'THE FIXER · WRESTLING', pre:'mb', spr:{"idle": {"w": 531, "h": 590, "ax": 269, "ay": 589}, "walk": {"w": 467, "h": 591, "ax": 204, "ay": 590}, "walk_b": {"w": 445, "h": 594, "ax": 211, "ay": 593}, "light": {"w": 532, "h": 593, "ax": 245, "ay": 592}, "heavy": {"w": 527, "h": 593, "ax": 267, "ay": 592}, "grab": {"w": 554, "h": 591, "ax": 274, "ay": 590}, "hit": {"w": 551, "h": 583, "ax": 204, "ay": 582}, "down": {"w": 655, "h": 348, "ax": 312, "ay": 347}, "win": {"w": 490, "h": 591, "ax": 239, "ay": 590}}, stage:'lot', stageName:'Parking Lot', taunt:'“Baby, sit DOWN.”', blazin:'PISTOL WHIP', kind:'whip', cut:'video/whip_cut.mp4', win:'video/whip_win.mp4', labels:['PUSH','WHIP','SLAM'], heavyName:'pistol whip', spd:0.84, pow:1.18, col:'#ff7a3c' },
  freshprince:{ id:'freshprince', name:'FRESH PRINCE', title:'BEL-AIR KID · STREET', pre:'fp', spr:{"idle": {"w": 335, "h": 652, "ax": 154, "ay": 651}, "walk": {"w": 422, "h": 637, "ax": 210, "ay": 636}, "walk_b": {"w": 444, "h": 638, "ax": 218, "ay": 637}, "light": {"w": 541, "h": 638, "ax": 240, "ay": 637}, "heavy": {"w": 591, "h": 636, "ax": 190, "ay": 635}, "grab": {"w": 388, "h": 646, "ax": 60, "ay": 645}, "hit": {"w": 481, "h": 636, "ax": 245, "ay": 635}, "down": {"w": 648, "h": 275, "ax": 328, "ay": 274}, "win": {"w": 388, "h": 639, "ax": 134, "ay": 638}}, stage:'belair', stageName:'Bel-Air', taunt:'“Yo, you just got served, homie.”', blazin:'PHILLY SPECIAL', kind:'whip', cut:'video/philly_cut.mp4', win:'video/philly_win.mp4', labels:['JAB','KICK','KNEE'], heavyName:'high kick', spd:1.12, pow:0.9, col:'#c6f000' }
 }
-const IDS = Object.keys(ROSTER), STAGES = { alley:'sprites/stage_alley.webp', lot:'sprites/stage_lot.webp', belair:'sprites/stage_belair.webp' }
+const IDS = Object.keys(ROSTER), STAGES = { alley:A('sprites/stage_alley.webp'), lot:A('sprites/stage_lot.webp'), belair:A('sprites/stage_belair.webp') }
+for (const R of Object.values(ROSTER)) { R.cut = A(R.cut); R.win = A(R.win) }
 const W = 960, H = 540, FLOOR0 = 404, FLOOR1 = 512, XMIN = 70, XMAX = 890
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d')
 const coarse = matchMedia('(pointer:coarse)').matches
@@ -71,11 +74,11 @@ addEventListener('resize', orient); orient()
 const IMG = { stage:{} }, ALT = {}, WHITE = {}
 const files = []
 for (const [k, src] of Object.entries(STAGES)) files.push(['stage', k, src])
-for (const id of IDS) { const R = ROSTER[id]; IMG[id] = {}; ALT[id] = {}; WHITE[id] = {}; for (const p of [...Object.keys(R.spr), 'portrait', 'front']) files.push([id, p, `sprites/${R.pre}_${p}.webp`]) }
+for (const id of IDS) { const R = ROSTER[id]; IMG[id] = {}; ALT[id] = {}; WHITE[id] = {}; for (const p of [...Object.keys(R.spr), 'portrait', 'front']) files.push([id, p, A(`sprites/${R.pre}_${p}.webp`)]) }
 let loaded = 0, total = files.length, loadErr = ''
 function tint(img){ const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const x = c.getContext('2d'); x.drawImage(img,0,0); x.globalCompositeOperation='source-atop'; x.fillStyle='rgba(255,40,70,0.16)'; x.fillRect(0,0,c.width,c.height); return c }
 function whiten(img){ const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const x = c.getContext('2d'); x.drawImage(img,0,0); x.globalCompositeOperation='source-in'; x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); return c }
-for (const [grp, k, src] of files) { const im = new Image(); im.onload = () => { loaded++; if (grp !== 'stage') { ALT[grp][k] = tint(im); if (ROSTER[grp].spr[k]) WHITE[grp][k] = whiten(im) } }; im.onerror = () => { loadErr = 'Could not load ' + src + '. Refresh to try again.' }; im.src = src; IMG[grp][k] = im }
+for (const [grp, k, src] of files) { const im = new Image(); im.onload = () => { loaded++; if (grp !== 'stage') { ALT[grp][k] = tint(im); if (ROSTER[grp].spr[k]) WHITE[grp][k] = whiten(im) } }; im.onerror = () => { loadErr = 'Could not load ' + src.split('?')[0].split('/').pop() + '. Refresh to try again.' }; im.src = src; IMG[grp][k] = im }
 const art = (f, k) => (f.alt ? ALT : IMG)[f.ch][k]
 
 /* ---------- audio (synthesized) ---------- */

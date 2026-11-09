@@ -20,11 +20,11 @@ DAHUB ("ONE HUB. EVERY SIDE OF LIFE.") is a Baltimore-focused social / networkin
 - Deployed on Vercel from this GitHub repo: framework Vite, build `npm run build`, output `dist`.
 - Env vars (set in Vercel, never commit values): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Optional TURN for calls/rooms: `VITE_TURN_URL`, `VITE_TURN_USER`, `VITE_TURN_PASS`.
 - `vite.config.js` emits `sw.js` (push) and the PWA manifest/icons.
-- Bump `BUILD` in `supabase.js` on each release (currently `build 50`); it shows in Settings so the owner can confirm a deploy landed.
+- Bump `BUILD` in `supabase.js` on each release (currently `build 51`); it shows in Settings so the owner can confirm a deploy landed.
 - `features.js` holds feature switches: `passport: false` (Clout Passport off for maintenance), `adNudity: true` (After Dark nudity kill switch).
 
 ## Navigation
-`App.jsx` keeps a stack: `push({ t, id })` / `back()`. Route types include post, profile, inbox, chat, notifs, opps, opp, newopp, media, artist, submit, safety, admin, settings, saved, guidelines, tag, events, newevent, event, communities, newcommunity, community, passport, pulse, radar, rooms, newroom, room, afterdark. Deep links: `?post= ?profile= ?artist= ?event= ?chat= ?community= ?passport= ?room=`. Bottom nav: Home, Discover, +, Shorts, More (More.jsx tiles list the sections).
+`App.jsx` keeps a stack: `push({ t, id })` / `back()`. Route types include post, profile, inbox, chat, notifs, opps, opp, newopp, media, artist, submit, safety, admin, settings, saved, guidelines, tag, events, newevent, event, communities, newcommunity, community, passport, pulse, radar, rooms, newroom, room, afterdark, arcade, game. Deep links: `?post= ?profile= ?artist= ?event= ?chat= ?community= ?passport= ?room=`. Bottom nav: Home, Discover, +, Shorts, More (More.jsx tiles list the sections).
 
 ## Features built (all live)
 Feed with photos/videos/polls, stories, comments/reactions/reposts/bookmarks, hashtags, Shorts, Discover, profiles (tabs incl. Shoutouts), DMs + voice/video calls (WebRTC via `call_signals`), notifications + web push (edge function `push`, VAPID in `push_config`, pg_net triggers), Opportunity Board, Media page + artist pages (YouTube via edge function `youtube`, key in Supabase secrets), Spotlight, Get Featured submissions, Events + RSVPs, Communities, Polls, Question of the Day, Shoutouts, account types + verification, suspend/ban, admin (submissions, reports, accounts, audit log, daily question, artists, live spotlights), DAHUB Pulse (Pulse Chamber + Radar, RPC `pulse_scan`), Live Rooms (Clubhouse-style audio, `roomsEngine.js`, peer-to-peer mesh, max 25), After Dark (18+ area, see below). Clout Passport exists but is switched off.
@@ -42,14 +42,16 @@ DOB gate (`ad_confirm`), opt-in/out (`ad_set`), posts flagged `after_dark` never
 ## Pre-launch checklist (owner's list, still open)
 - Own TURN server (Metered) for calls/rooms across networks; public Open Relay is unreliable.
 - Confirm builds 44–50 on a real phone (shimmer, call fix, Pulse, Rooms, After Dark).
-- Delete the sample "Fresh crab cakes" spotlight. Turn on leaked-password protection in Supabase Auth. Restrict/rotate the YouTube API key.
-- Several game/fighter characters closely resemble real actors and film characters. Before public launch, regenerate faces/details as original to avoid likeness/IP claims.
+- Turn on leaked-password protection in Supabase Auth (dashboard only). Restrict/rotate the YouTube API key (Google Cloud console). Sample spotlight already deleted.
 
 ## Deferred features (owner said later)
-Full After Dark parity (its own Shorts/Rooms/Stories/DMs/etc.), Arcade section in the app, bookings, Passport replacement, notification preferences, Collab Board.
+Full After Dark parity (its own Shorts/Rooms/Stories/DMs/etc.), bookings, Passport replacement, notification preferences, Collab Board.
 
-## Games (prototypes, not yet inside the app)
-Standalone HTML prototypes live in `games/` (they are not part of the Vite build):
+## Arcade (in the app, locked for testing)
+More → Arcade (`Arcade.jsx`). Only admins and people who entered the tester password can play (`arcade_status`, `arcade_unlock`, `arcade_set_pass`, `arcade_testers`, `arcade_revoke`; access rows in `arcade_access`, bcrypt hash in `arcade_config`, 5 wrong tries per 15 min). Game files sit in the private `arcade` bucket (storage RLS via `private.arcade_ok()`), copied from `games/` on GitHub by edge function `arcade-sync` (owner taps "Update games from GitHub" in Arcade; syncs the `main` branch). `GamePlayer` downloads `index.html`, signs every asset, injects `window.__ASSETS`, and runs it in a sandboxed blob iframe, so game code must load assets through `A('path')`. Layout is a placeholder; the owner is designing the real look. Note: the repo is public, so the raw game files are visible on GitHub.
+
+## Games
+Source lives in `games/` (not part of the Vite build; served to the app through the Arcade):
 - `games/fight/` "DAHUB Fighters", Def Jam-style 2.5D brawler. Canvas engine in `index.html`; `ROSTER` object holds fighters (KennDogg, Mabel, Fresh Prince) with sprites in `sprites/` (webp, per-pose anchor data inline) and Blazin' cutscene/win videos in `video/`. Moves: light/heavy/grab/block/Blazin' meter, CPU AI with 3 difficulties, best of 3, touch + keyboard controls.
 - `games/spades/` "DAHUB Spades", lounge table vs 3 bots. DOM-based, images embedded as data URIs (artifact hosting would not serve its separate image files; `img/` keeps the originals). Full rules, nil, bags, optional Jokers & deuces, to 300/500. Fresh Prince fills all 4 seats for testing.
 - Next for Spades: online multiplayer inside DAHUB (server-authoritative dealing/validation via Supabase RPCs so hands stay private), live voice (reuse `roomsEngine.js` patterns), seated art for each character (4 poses: idle/slap/celebrate/mad in their own chair, green screen), the owner's custom logo.

@@ -611,3 +611,20 @@ body.inshorts::after{display:none}
 .ttext.adt{display:flex;align-items:center;justify-content:center;background:#0a1622;color:#7ff8ff;font-weight:700}
 .urg{margin:6px 0;padding:8px 10px;border-radius:10px;background:#c0392b;color:#fff;font-weight:700;font-size:13px}
 .adpg .post b,.adpg .prow b{color:#fff}.adbar .ib{background:transparent;color:#fff;box-shadow:none;border:0;font-size:22px}
+/* Arcade (testing placeholder look until the owner's redesign) */
+.arc{padding:14px 14px 120px;display:flex;flex-direction:column;gap:12px}.arc-tag{margin:0;font-size:12.5px;color:#0e7f90;font-weight:700;text-align:center}
+.arc-card{display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:20px;border:1.5px solid #fff;background:linear-gradient(180deg,#ffffffe6,#e6f8f9d9);box-shadow:0 8px 20px #43515b22,inset 0 1px 0 #fff}
+.arc-card>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:3px}.arc-card b{font-size:17px}.arc-card small{color:#5b6b75;font-size:13px}
+.arc-emo{width:54px;height:54px;flex:none;display:grid;place-items:center;font-size:30px;border-radius:16px;background:radial-gradient(circle at 30% 25%,#fff,#bdeff3);box-shadow:0 0 0 2px #19e0f055}
+.arc-lock{padding:40px 22px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}.arc-lock h2{margin:4px 0 0}.arc-lock p{margin:0;color:#5b6b75}
+.arc-lock input,.arc-owner input{width:100%;padding:13px 14px;border-radius:14px;border:1.5px solid #c9d6db;background:#fff}
+.arc-ico{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;color:#0e7f90;background:radial-gradient(circle at 30% 25%,#fff,#c6f1f4);box-shadow:0 0 18px #19e0f066}
+.arc-owner{margin-top:10px;padding:16px;border-radius:20px;background:#fff;border:1px solid #dfe7ea;display:flex;flex-direction:column;gap:10px}.arc-owner h3,.arc-owner h4{margin:0}
+.arc-owner label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px}.arc-owner em{font-weight:400;color:#b3261e}.arc-row{display:flex;gap:8px}.arc-row .gobtn{width:auto;padding:10px 18px;font-size:16px}
+.arc-sync{padding:12px;border-radius:999px;border:1.5px solid #0e7f90;background:#fff;color:#0e7f90;font-weight:800}.arc-sync:disabled{opacity:.6}.arc-owner .msg{padding:0;color:#0e7f90}
+.arc-dim{margin:0;color:#6b7983;font-size:13.5px}.arc-tester{display:flex;align-items:center;gap:10px}.arc-tester span{flex:1;display:flex;flex-direction:column}.arc-tester small{color:#6b7983}
+.arc-tester button{padding:7px 12px;border-radius:999px;border:1px solid #e3b4b0;color:#b3261e;background:#fff;font-weight:700}
+.arc-play{position:fixed;inset:0;z-index:40;background:#05070b;display:flex;flex-direction:column}
+.arc-pbar{display:flex;align-items:center;gap:10px;padding:calc(6px + env(safe-area-inset-top)) 10px 6px;color:#e6f6f8;background:#0b141c;border-bottom:1px solid #19e0f033}
+.arc-pbar b{flex:1;text-align:center;font-size:14px}.arc-pbar button{color:#19e0f0;font-weight:800;padding:6px 8px;background:none;border:0}
+.arc-play iframe{flex:1;width:100%;border:0;display:block;background:#000}.arc-perr{color:#c8d6dd}.arc-perr .gobtn{max-width:240px;margin:14px auto 0}
