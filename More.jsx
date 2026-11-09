@@ -10,17 +10,22 @@ import shieldlock from './mi-shieldlock.png'
 import shieldx from './mi-shieldx.png'
 import door from './mi-door.png'
 import crown from './mi-crown.png'
+import arcade from './mi-arcade.png'
+import rooms from './mi-rooms.png'
+import pulse from './mi-pulse.png'
+import events from './mi-events.png'
+import communities from './mi-communities.png'
 export default function More({ go, openProfile, me, isAdmin }) {
   const T = [
     [gear, 'Settings & Activity', () => go('settings')],
     [trophy, 'Opportunity Board', () => go('opps')],
     [play, 'Media', () => go('media')],
     [null, 'After Dark 🌙', () => go('afterdark')],
-    [null, 'Arcade 🎮', () => go('arcade')],
-    [null, 'Live Rooms', () => go('rooms')],
-    [null, 'DAHUB Pulse', () => go('pulse')],
-    [null, 'Events', () => go('events')],
-    [null, 'Communities', () => go('communities')],
+    [arcade, 'Arcade', () => go('arcade')],
+    [rooms, 'Live Rooms', () => go('rooms')],
+    [pulse, 'DAHUB Pulse', () => go('pulse')],
+    [events, 'Events', () => go('events')],
+    [communities, 'Communities', () => go('communities')],
     ...(FEATURES.passport ? [[null, 'My Passport', () => go('passport')]] : []),
     [star, 'Get Featured', () => go('submit')],
     [person, 'My Profile', () => openProfile(me.id)],
