@@ -47,6 +47,11 @@ export default function App() {
     refresh(); const ch = sb.channel('notif-' + uid).on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` }, refresh).subscribe()
     window.addEventListener('notif-read', refresh); return () => { sb.removeChannel(ch); window.removeEventListener('notif-read', refresh) }
   }, [uid])
+  useEffect(() => {
+    if (!uid) return
+    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile')
+    if (post || prof) { setStack([post ? { t: 'post', id: post } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
+  }, [uid])
   if (!booted) return <Boot onDone={() => setBooted(true)} />
   if (session === undefined) return null
   if (!session) return <Auth />
@@ -58,10 +63,10 @@ export default function App() {
   const go = k => { setStack([]); if (k === 'create') { setTab('home'); setFk(x => x + 1) } else setTab(k) }
   return <div className="app">
     <header className="hdr"><img className="wm" src={wm} alt="DAHUB" />
-      <div className="hbar"><button className="ib" onClick={() => alert('Search is a later milestone.')} aria-label="Search"><I n="search" s={22} /></button>
+      <div className="hbar"><button className="ib" onClick={() => go('discover')} aria-label="Search"><I n="search" s={22} /></button>
         <button className="ib" onClick={() => push({ t: 'notifs' })} aria-label="Notifications"><I n="bell" s={22} />{nb > 0 && <span className="badge">{nb > 99 ? '99+' : nb}</span>}</button>
         <button className="ib" onClick={() => push({ t: 'inbox' })} aria-label="Messages"><I n="chat" s={22} />{badge > 0 && <span className="badge">{badge}</span>}</button>
-        <Avatar p={profile} size={48} online={online.has(me.id)} onClick={() => openProfile(me.id)} /></div></header>
+        <span className="ringav"><Avatar p={profile} size={46} online={online.has(me.id)} onClick={() => openProfile(me.id)} /></span></div></header>
     <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} goDiscover={() => setTab('discover')} active={tab === 'home' && !top} /></main>
     {tab === 'discover' && !top && <Discover me={me} openProfile={openProfile} openOpps={openOpps} />}
     {tab !== 'home' && tab !== 'discover' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>

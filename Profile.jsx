@@ -30,7 +30,7 @@ export default function Profile({ id, me, back, openPost, openDM, openProfile, o
     const ids = (r || []).map(x => x.post_id); if (!ids.length) return setLikes([])
     const { data: ps } = await sb.from('posts').select(SEL).in('id', ids); setLikes(ps || []) })() }, [tab, id])
   async function follow() { rel ? await sb.from('follows').delete().eq('follower_id', me.id).eq('followee_id', id) : await sb.from('follows').insert({ follower_id: me.id, followee_id: id }); load() }
-  const share = async () => { const u = location.origin; try { navigator.share ? await navigator.share({ title: pr.display_name, url: u }) : (await navigator.clipboard.writeText(u), alert('Link copied')) } catch {} }
+  const share = async () => { const u = location.origin + '/?profile=' + id; try { navigator.share ? await navigator.share({ title: pr.display_name, url: u }) : (await navigator.clipboard.writeText(u), alert('Link copied')) } catch {} }
   if (!pr) return <div className="sheet"><div className="bar"><button onClick={back}>←</button>Profile</div></div>
   const list = tab === 'Likes' ? likes : tab === 'Tagged' ? [] : posts.filter(p => tab === 'Posts' || p.post_media.some(m => m.media_type === (tab === 'Photos' ? 'image' : 'video')))
   const cover = pr.cover_url && sb.storage.from('covers').getPublicUrl(pr.cover_url).data.publicUrl

@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { sb, SEL, REACTIONS, mediaUrl, ago } from './supabase'
 import Avatar from './Avatar'
 import I from './Icons'
+import ReportSheet from './ReportSheet'
 export default function PostCard({ post, me, openPost, openProfile }) {
-  const [p, setP] = useState(post), [pick, setPick] = useState(false)
+  const [p, setP] = useState(post), [pick, setPick] = useState(false), [menu, setMenu] = useState(false), [rep, setRep] = useState(false), [gone, setGone] = useState(false)
   const reload = async () => { const { data } = await sb.from('posts').select(SEL).eq('id', p.id).single(); if (data) setP(data) }
   const mine = p.post_reactions.find(r => r.user_id === me.id)
   const top = Object.entries(p.post_reactions.reduce((a, r) => (a[r.reaction_id] = (a[r.reaction_id] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => REACTIONS[e[0]][1]).join('')
@@ -15,11 +16,16 @@ export default function PostCard({ post, me, openPost, openProfile }) {
     reload()
   }
   const toggle = async (table, has) => { const q = sb.from(table); has ? await q.delete().eq('post_id', p.id).eq('user_id', me.id) : await q.insert({ post_id: p.id, user_id: me.id }); reload() }
-  const share = async () => { try { navigator.share ? await navigator.share({ title: 'DAHUB', url: location.origin }) : (await navigator.clipboard.writeText(location.origin), alert('Link copied')) } catch {} }
+  const share = async () => { try { navigator.share ? await navigator.share({ title: 'DAHUB', url: location.origin + '/?post=' + p.id }) : (await navigator.clipboard.writeText(location.origin + '/?post=' + p.id), alert('Link copied')) } catch {} }
   const rp = p.reposts.some(r => r.user_id === me.id), bm = p.bookmarks.length > 0
   const media = [...p.post_media].sort((a, b) => a.position - b.position)
+  const del = async () => { setMenu(false); if (!confirm('Delete this post? This cannot be undone.')) return; const { error } = await sb.from('posts').delete().eq('id', p.id); error ? alert('Could not delete: ' + error.message) : setGone(true) }
+  if (gone) return null
   return <article className="post">
-    <div className="ph"><Avatar p={p.author} size={46} onClick={() => openProfile(p.author.id)} />
+    <button className="pmore" onClick={() => setMenu(!menu)} aria-label="Post options" />
+    {menu && <div className="pmenu">{p.author.id === me.id ? <button onClick={del}>Delete post</button> : <button onClick={() => { setMenu(false); setRep(true) }}>Report post</button>}<button onClick={() => setMenu(false)}>Cancel</button></div>}
+    {rep && <ReportSheet me={me} type="post" targetId={p.id} reportedUser={p.author.id} close={() => setRep(false)} />}
+    <div className="ph"><Avatar p={p.author} size={38} onClick={() => openProfile(p.author.id)} />
       <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small></div></div>
     {p.body && <div className="cap" onClick={() => openPost?.(p.id)}>{p.body.split(/(#\w+)/g).map((x, i) => x.startsWith('#') ? <span key={i} className="tag">{x}</span> : x)}</div>}
     {media.length > 0 && <div className="mgrid">{media.map(m => m.media_type === 'video'
