@@ -531,3 +531,14 @@ body.inshorts::after{display:none}
 @keyframes bl{0%,100%{box-shadow:0 0 8px #19e0f088}50%{box-shadow:0 0 16px #19e0f0}}
 .rprev{margin:4px 12px;display:flex;flex-direction:column;gap:4px;align-items:stretch}
 @media (prefers-reduced-motion:reduce){.pglow,.plogo,.blip,.rsw{animation:none!important}.pbtn.scanning .prip,.pbtn.scanning .psweep,.pbtn.scanning .ppress{animation-duration:3s!important}}
+
+/* Pulse button v2: single supplied artwork */
+.pbtn{aspect-ratio:1/1;width:min(80vw,320px)}
+.ppress{left:2%;top:2%;width:96%;height:96%;border-radius:50%}
+.ppress .pimg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 10px 14px #000a) drop-shadow(0 0 14px #19e0f066);animation:plg2 3.2s ease-in-out infinite}
+.ppress .psweep{position:absolute;inset:9%;border-radius:50%;background:conic-gradient(from 0deg,#8ffaffcc 0,#8ffaff00 22%,transparent 100%);mix-blend-mode:screen;opacity:0;pointer-events:none}
+.pbtn.scanning .psweep{opacity:.85;animation:pspin 1.1s linear infinite}
+.pbtn.scanning .pimg{animation:none;filter:drop-shadow(0 10px 14px #000a) drop-shadow(0 0 22px #4af0ff)}
+.prip{left:3%;top:3%;width:94%;height:94%}
+@keyframes plg2{0%,100%{filter:drop-shadow(0 10px 14px #000a) drop-shadow(0 0 8px #19e0f055)}50%{filter:drop-shadow(0 10px 14px #000a) drop-shadow(0 0 22px #19e0f0cc)}}
+@media (prefers-reduced-motion:reduce){.ppress .pimg{animation:none!important}}

@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react'
 import Avatar from './Avatar'
 import { artistPhoto, subUrl } from './media'
-import ring from './pulse-ring.png'
-import base from './pulse-base.png'
-import disc from './pulse-disc.png'
-import logo from './pulse-logo.png'
+import btnImg from './pulse-button.png'
 import { FILTERS, FNAME, usePulse, setFilter, setArea, scan, ago } from './pulse'
 
 export function Thumb({ it, size = 44 }) {
@@ -19,11 +16,9 @@ export function Row({ it, onClick }) {
 function PulseButton({ phase, onPress, disabled }) {
   return <div className={'pbtn' + (phase === 'scanning' ? ' scanning' : '')}>
     <i className="pglow" /><i className="prip a" /><i className="prip b" />
-    <img className="pbase" src={base} alt="" draggable="false" />
     <button className="ppress" onClick={onPress} disabled={disabled} aria-label={phase === 'scanning' ? 'Scanning' : 'Scan with DH Pulse'}>
-      <img className="pringimg" src={ring} alt="" draggable="false" />
-      <span className="pdisc"><img src={disc} alt="" draggable="false" /><i className="psweep" /></span>
-      <img className="plogo" src={logo} alt="DH Pulse" draggable="false" />
+      <img className="pimg" src={btnImg} alt="DH Pulse" draggable="false" />
+      <i className="psweep" />
     </button>
   </div>
 }
