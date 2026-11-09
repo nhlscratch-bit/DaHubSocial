@@ -12,6 +12,8 @@ import Chat from './Chat'
 import Discover from './Discover'
 import PulseChamber from './PulseChamber'
 import Radar from './Radar'
+import Rooms, { NewRoom } from './Rooms'
+import { RoomGate, MiniPlayer } from './RoomView'
 import Notifications from './Notifications'
 import Opportunities from './Opportunities'
 import OpportunityDetail from './OpportunityDetail'
@@ -80,8 +82,8 @@ export default function App() {
   useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
   useEffect(() => {
     if (!uid) return
-    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community'), psp = q.get('passport')
-    if (post || prof || art || evn || cht || cmn || psp) { setStack([psp ? { t: 'passport', id: psp } : cmn ? { t: 'community', id: cmn } : cht ? { t: 'chat', id: cht } : post ? { t: 'post', id: post } : evn ? { t: 'event', id: evn } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
+    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community'), psp = q.get('passport'), rom = q.get('room')
+    if (post || prof || art || evn || cht || cmn || psp || rom) { setStack([rom ? { t: 'room', id: rom } : psp ? { t: 'passport', id: psp } : cmn ? { t: 'community', id: cmn } : cht ? { t: 'chat', id: cht } : post ? { t: 'post', id: post } : evn ? { t: 'event', id: evn } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
   }, [uid])
   if (!booted) return <Boot onDone={() => setBooted(true)} />
   if (session === undefined) return null
@@ -110,7 +112,7 @@ export default function App() {
     {top?.t === 'post' && <PostView key={top.id} id={top.id} focus={top.focus} me={me} profile={profile} back={back} openProfile={openProfile} />}
     {top?.t === 'profile' && <Profile openPassport={pid => push({ t: 'passport', id: pid })} key={top.id} id={top.id} me={me} back={back} openSettings={() => push({ t: 'settings' })} openPost={openPost} openDM={openDM} openProfile={openProfile} onUpdated={refreshProfile} />}
     {top?.t === 'inbox' && <Inbox me={me} online={online} back={back} openChat={openChat} openDM={openDM} />}
-    {top?.t === 'notifs' && <Notifications me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} />}
+    {top?.t === 'notifs' && <Notifications me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} openRoom={id => push({ t: 'room', id })} />}
     {top?.t === 'opps' && <Opportunities me={me} back={back} openOpp={openOpp} newOpp={newOpp} />}
     {top?.t === 'opp' && <OpportunityDetail key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} openDM={openDM} />}
     {top?.t === 'newopp' && <NewOpportunity me={me} back={back} created={oppCreated} />}
@@ -121,6 +123,9 @@ export default function App() {
     {top?.t === 'event' && <EventView key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} deleted={back} />}
     {top?.t === 'pulse' && <PulseChamber back={back} openRadar={() => push({ t: 'radar' })} open={openDest} />}
     {top?.t === 'radar' && <Radar back={back} open={openDest} />}
+    {top?.t === 'rooms' && <Rooms me={me} profile={profile} back={back} create={() => push({ t: 'newroom' })} open={id => push({ t: 'room', id })} />}
+    {top?.t === 'newroom' && <NewRoom me={me} profile={profile} back={back} created={id => id ? setStack(s => [...s.slice(0, -1), { t: 'room', id }]) : back()} />}
+    {top?.t === 'room' && <RoomGate key={top.id} id={top.id} me={me} profile={profile} back={back} openProfile={openProfile} />}
     {top?.t === 'communities' && <Communities me={me} back={back} open={id => push({ t: 'community', id })} create={() => push({ t: 'newcommunity' })} />}
     {top?.t === 'newcommunity' && <NewCommunity me={me} back={back} created={id => setStack(s => [...s.slice(0, -1), { t: 'community', id }])} />}
     {top?.t === 'community' && <CommunityView key={top.id} id={top.id} me={me} back={back} openPost={openPost} openProfile={openProfile} gone={back} />}
@@ -135,6 +140,7 @@ export default function App() {
     {top?.t === 'safety' && <Safety me={me} back={back} />}
     {top?.t === 'admin' && isAdmin && <Admin me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} />}
     {top?.t === 'chat' && <Chat key={top.id} id={top.id} me={me} online={online} back={back} openProfile={openProfile} />}
+    {top?.t !== 'room' && <MiniPlayer open={id => push({ t: 'room', id })} />}
     <CallManager me={me} />
     <nav className={top?.t === 'profile' || top?.t === 'passport' ? 'over' : undefined}>{NAV.map(([k, i, l]) => k === 'create' ? <button key={k} className="fabn" onClick={() => go(k)} aria-label="Create"><I n="plus" s={34} /></button>
       : <button key={k} className="n" aria-current={tab === k && !top ? 'page' : undefined} onClick={() => go(k)}><I n={i} s={26} />{l}</button>)}</nav>

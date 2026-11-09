@@ -15,6 +15,7 @@ export default function More({ go, openProfile, me, isAdmin }) {
     [gear, 'Settings & Activity', () => go('settings')],
     [trophy, 'Opportunity Board', () => go('opps')],
     [play, 'Media', () => go('media')],
+    [null, 'Live Rooms', () => go('rooms')],
     [null, 'DAHUB Pulse', () => go('pulse')],
     [null, 'Events', () => go('events')],
     [null, 'Communities', () => go('communities')],

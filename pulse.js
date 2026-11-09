@@ -8,7 +8,7 @@ export const FILTERS = [
   ['biz', 'Restaurants & Businesses', 'Verified businesses and local spotlights'],
   ['events', 'Events', 'Upcoming events, soonest first'],
   ['music', 'Music & Artists', 'Artists from the DAHUB Media catalog'],
-  ['live', 'Live Activity', 'Not available yet']
+  ['live', 'Live Activity', 'Live rooms happening now']
 ]
 export const FNAME = Object.fromEntries(FILTERS.map(f => [f[0], f[1]]))
 const ls = (k, d) => { try { return localStorage.getItem(k) ?? d } catch { return d } }

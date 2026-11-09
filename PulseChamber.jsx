@@ -7,7 +7,7 @@ import { FILTERS, FNAME, usePulse, setFilter, setArea, scan, ago } from './pulse
 export function Thumb({ it, size = 44 }) {
   const url = it.photo ? artistPhoto(it.photo) : it.cover ? subUrl(it.cover) : null
   if (url) return <span className="pth" style={{ width: size, height: size, backgroundImage: `url(${url})` }} />
-  if (it.kind === 'person' || it.kind === 'post') return <Avatar p={{ avatar_url: it.img, display_name: it.kind === 'post' ? it.sub : it.title }} size={size} />
+  if (it.kind === 'person' || it.kind === 'post' || it.kind === 'room') return <Avatar p={{ avatar_url: it.img, display_name: it.kind === 'post' ? it.sub : it.title }} size={size} />
   return <span className="pth" style={{ width: size, height: size }}>{(it.title || '?')[0].toUpperCase()}</span>
 }
 export function Row({ it, onClick }) {
@@ -25,7 +25,7 @@ function PulseButton({ phase, onPress, disabled }) {
 export default function PulseChamber({ back, openRadar, open }) {
   const s = usePulse(), [pick, setPick] = useState(false), [draft, setDraft] = useState(s.area)
   const f = FILTERS.find(x => x[0] === s.filter), r = s.result, items = r?.items || []
-  const live = s.filter === 'live'
+  const live = false
   useEffect(() => { setDraft(s.area) }, [s.area])
   const needArea = s.filter === 'around' && !s.area.trim()
   const go = () => { if (needArea) return; scan() }
@@ -42,8 +42,7 @@ export default function PulseChamber({ back, openRadar, open }) {
     {s.filter === 'events' && <p className="pnote">Optional: set an area under Around Me to narrow events by neighborhood.</p>}
     {s.error && <p className="msg" role="alert">{s.error} <button className="link" onClick={() => scan()}>Retry</button></p>}
     {r?.note && !live && <p className="pnote">{r.note}</p>}
-    {live && <div className="empty"><h3>Live Activity</h3>DAHUB has no live feature yet, so there is nothing to scan. This will light up when one exists.</div>}
-    {r && !live && <section className="pprev">
+        {r && !live && <section className="pprev">
       <div className="phd"><b>{items.length ? `${items.length} result${items.length > 1 ? 's' : ''}` : 'No results'}</b><small>{s.stale ? 'Stale · ' : ''}Scanned {ago(r.scanned_at)}</small></div>
       {s.stale && <p className="pnote">The last scan failed. These are results from your previous scan.</p>}
       {items.length === 0 && !r.note && <div className="empty">Nothing matched {FNAME[s.filter]}{s.area && s.filter !== 'people' ? ` in “${s.area}”` : ''} right now.<br /><button className="wb sm" style={{ marginTop: 10 }} onClick={() => setPick(true)}>Change filter</button> <button className="wb p sm" onClick={() => scan()}>Scan again</button></div>}
