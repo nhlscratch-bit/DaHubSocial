@@ -42,8 +42,7 @@ DOB gate (`ad_confirm`), opt-in/out (`ad_set`), posts flagged `after_dark` never
 ## Pre-launch checklist (owner's list, still open)
 - Own TURN server (Metered) for calls/rooms across networks; public Open Relay is unreliable.
 - Confirm builds 44–50 on a real phone (shimmer, call fix, Pulse, Rooms, After Dark).
-- Delete the sample "Fresh crab cakes" spotlight. Turn on leaked-password protection in Supabase Auth. Restrict/rotate the YouTube API key.
-- Several game/fighter characters closely resemble real actors and film characters. Before public launch, regenerate faces/details as original to avoid likeness/IP claims.
+- Turn on leaked-password protection in Supabase Auth (dashboard only). Restrict/rotate the YouTube API key (Google Cloud console). Sample spotlight already deleted.
 
 ## Deferred features (owner said later)
 Full After Dark parity (its own Shorts/Rooms/Stories/DMs/etc.), Arcade section in the app, bookings, Passport replacement, notification preferences, Collab Board.
