@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { sb, friendly } from './supabase'
 import Avatar from './Avatar'
 import { RCAT, joinRoom, useRoom, micSupported } from './roomsEngine'
+import Verified from './Verified'
 export const meOf = (me, profile) => ({ id: me.id, name: profile?.display_name || profile?.username || 'Member', avatar: profile?.avatar_url || null })
 export const roomRow = r => ({ id: r.id, host_id: r.host.id, title: r.title, category: r.category, audience: r.audience, status: r.status, started_at: r.started_at, peak_listeners: 0 })
 const MicI = ({ s = 22 }) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
@@ -13,7 +14,7 @@ function RoomCard({ r, join, remind, goLive, mine }) {
     <Avatar p={r.host} size={58} />
     <span className="evi"><b>{r.title}</b>
       <span className="evt"><i className="gtag alt">#{RCAT[r.category]}</i>{r.audience === 'followers' && <i className="gtag grn">Followers</i>}</span>
-      <small>Hosted by {r.host.display_name || r.host.username}{r.host.is_verified && ' ✓'}</small>
+      <small>Hosted by {r.host.display_name || r.host.username}{r.host.is_verified && <Verified />}</small>
       {live ? <span className="rspk">{r.speakers.map(s => <Avatar key={s.id} p={s} size={26} />)}<em>🎧 {r.listeners}</em></span> : <small>{when(r.scheduled_for)}</small>}</span>
     {live && <i className="livebadge"><u />LIVE</i>}</button>
     {!live && <div className="ract">{mine ? <button className="wb p sm" onClick={() => goLive(r)}>Go live now</button> : <button className={'wb sm' + (r.reminded ? '' : ' p')} onClick={() => remind(r)}>{r.reminded ? 'Reminder on ✓' : 'Remind me'}</button>}</div>}

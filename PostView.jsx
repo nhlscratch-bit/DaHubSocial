@@ -7,6 +7,7 @@ import { sb, SEL, REACTIONS, mediaUrl, ago, friendly } from './supabase'
 import Avatar from './Avatar'
 import { useMediaUrls } from './admedia'
 import { FEATURES } from './features'
+import Verified from './Verified'
 const LBL = ['Love', 'Like', 'F*ck', 'Sad', 'Lick', 'Wink', 'Wow']
 const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n
 const CSEL = 'id,body,created_at,parent_id,author:profiles!comments_author_id_fkey(id,username,display_name,avatar_url,is_verified),comment_reactions(user_id,reaction_id)'
@@ -45,12 +46,12 @@ export default function PostView({ id, focus, me, profile, back, openProfile }) 
   const byNew = (a, b) => new Date(b.created_at) - new Date(a.created_at)
   const tops = cs.filter(c => !c.parent_id).sort(sort === 'top' ? (a, b) => b.comment_reactions.length - a.comment_reactions.length || byNew(a, b) : byNew)
   const cm = (c, sub) => <div key={c.id} className={'cm' + (sub ? ' subc' : '')}><Avatar p={c.author} size={sub ? 32 : 42} onClick={() => openProfile(c.author.id)} />
-    <div className="bub"><div className="bt"><b>{c.author.display_name}{c.author.is_verified && <span className="ver">✔</span>}</b><small>· {ago(c.created_at)}</small></div><p>{c.body}</p>
+    <div className="bub"><div className="bt"><b>{c.author.display_name}{c.author.is_verified && <Verified />}</b><small>· {ago(c.created_at)}</small></div><p>{c.body}</p>
       <div className="br"><button onClick={() => setReply(c)}>Reply</button><button className={c.comment_reactions.some(r => r.user_id === me.id) ? 'on' : ''} onClick={() => like(c)}>❤️ {c.comment_reactions.length}</button></div></div></div>
   return <div className="sheet"><div className="pvtop"><button className="ib" onClick={back} aria-label="Back">←</button><img src={wm} alt="DAHUB" /><button className="ib" onClick={share} aria-label="Share">⋯</button></div>
     <div className="sbody">{err && <p className="msg">{err}</p>}
       <div className="ph pp"><Avatar p={p.author} size={62} onClick={() => openProfile(p.author.id)} />
-        <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}</small></div>
+        <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <Verified />}</b><small>@{p.author.username} · {ago(p.created_at)}</small></div>
         {p.author.id !== me.id && <button className="wb p sm" onClick={follow}>{fol === 'accepted' ? 'Following' : fol === 'pending' ? 'Requested' : 'Follow'}</button>}</div>
       {(text || tags.length > 0) && <div className="cap pp" style={{ cursor: 'auto' }}>{text}{tags.length > 0 && <div className="tags">{tags.join(' ')}</div>}</div>}
       <Poll p={p} me={me} />

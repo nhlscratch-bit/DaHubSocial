@@ -3,6 +3,7 @@ import { sb, SEL, mediaUrl, hiddenIds, friendly } from './supabase'
 import Avatar from './Avatar'
 import I from './Icons'
 import ReportSheet from './ReportSheet'
+import Verified from './Verified'
 let sound = true
 const vid = p => [...p.post_media].sort((a, b) => a.position - b.position).find(m => m.media_type === 'video')
 export default function Shorts({ me, active, openPost, openProfile, goCreate }) {
@@ -67,7 +68,7 @@ function Slide({ p, me, on, near, rel, muted, setMuted, openPost, openProfile, f
       <button onClick={() => openPost(p.id, true)} aria-label="Comments"><I n="comment" s={32} /><small>{p.comments[0]?.count || 0}</small></button>
       <button onClick={share} aria-label="Share"><I n="share" s={30} /><small>Share</small></button>
       <button onClick={more} aria-label="More"><I n="more" s={30} /></button></div>
-    <div className="shinfo"><b onClick={() => openProfile(p.author.id)}>@{p.author.username}{p.author.is_verified && <span className="ver">✔</span>}</b>
+    <div className="shinfo"><b onClick={() => openProfile(p.author.id)}>@{p.author.username}{p.author.is_verified && <Verified />}</b>
       {p.body && <p>{p.body.split(/(#\w+)/g).map((x, i) => x.startsWith('#') ? <button key={i} className="shtag" onClick={() => window.dispatchEvent(new CustomEvent('open-tag', { detail: x.slice(1) }))}>{x}</button> : x)}</p>}</div>
     <i className="shbar"><b style={{ width: pct + '%' }} /></i></div>
 }
