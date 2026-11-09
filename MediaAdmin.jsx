@@ -7,14 +7,14 @@ export default function MediaAdmin({ me }) {
   const load = async () => { const { data } = await sb.from('media_artists').select('*').order('created_at', { ascending: false }); setList(data || []) }
   const loadV = async id => { const { data } = await sb.from('media_videos').select('*').eq('artist_id', id).order('created_at', { ascending: false }); setVids(data || []) }
   useEffect(() => { load() }, [])
-  useEffect(() => { if (sel) { loadV(sel.id); setF({ name: sel.name, city: sel.city, genres: sel.genres.join(', '), bio: sel.bio || '', tagline: sel.spotlight_tagline || '', featured: sel.featured, links: (sel.links || []).map(l => `${l.label} | ${l.url}`).join('\n') }) } }, [sel])
+  useEffect(() => { if (sel) { if (sel.id) loadV(sel.id); setF({ name: sel.name, city: sel.city, genres: sel.genres.join(', '), bio: sel.bio || '', tagline: sel.spotlight_tagline || '', featured: sel.featured, links: (sel.links || []).map(l => `${l.label} | ${l.url}`).join('\n') }) } }, [sel])
   const links = () => f.links.split('\n').map(l => l.split('|').map(x => x.trim())).filter(x => x[1] && /^https?:\/\//.test(x[1])).map(x => ({ label: x[0] || 'Link', url: x[1] }))
   async function save() {
     if (!f.name.trim()) return setMsg('Name is required.'); setBusy(true); setMsg('')
     try {
       const row = { name: f.name.trim(), city: f.city.trim() || 'Baltimore, MD', genres: f.genres.split(',').map(x => x.trim()).filter(Boolean).slice(0, 5), bio: f.bio.trim() || null, spotlight_tagline: f.tagline.trim() || null, featured: f.featured, links: links() }
       if (file) row.photo_path = await upload('media-submissions', me.id, file)
-      const r = sel ? await sb.from('media_artists').update(row).eq('id', sel.id).select().single() : await sb.from('media_artists').insert(row).select().single()
+      const r = sel?.id ? await sb.from('media_artists').update(row).eq('id', sel.id).select().single() : await sb.from('media_artists').insert(row).select().single()
       if (r.error) throw r.error; setMsg('Saved.'); setSel(r.data); setFile(null); load()
     } catch (e) { setMsg(e.message) } setBusy(false)
   }
