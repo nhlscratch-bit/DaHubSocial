@@ -25,7 +25,6 @@ import Topic from './Topic'
 import Shorts from './Shorts'
 import Locked from './Locked'
 import Passport from './Passport'
-import PassportEditor from './PassportEditor'
 import Communities, { NewCommunity } from './Communities'
 import CommunityView from './CommunityView'
 import { registerSW } from './push'
@@ -119,8 +118,7 @@ export default function App() {
     {top?.t === 'communities' && <Communities me={me} back={back} open={id => push({ t: 'community', id })} create={() => push({ t: 'newcommunity' })} />}
     {top?.t === 'newcommunity' && <NewCommunity me={me} back={back} created={id => setStack(s => [...s.slice(0, -1), { t: 'community', id }])} />}
     {top?.t === 'community' && <CommunityView key={top.id} id={top.id} me={me} back={back} openPost={openPost} openProfile={openProfile} gone={back} />}
-    {top?.t === 'passport' && <Passport key={top.id + (top.v || '')} id={top.id} me={me} back={back} edit={() => push({ t: 'passportedit' })} openPost={openPost} openDM={openDM} openOpps={openOpps} openProfile={openProfile} />}
-    {top?.t === 'passportedit' && <PassportEditor me={me} profile={profile} back={back} saved={() => setStack(s => [...s.slice(0, -2), { t: 'passport', id: me.id, v: Date.now() }])} />}
+    {top?.t === 'passport' && <Passport key={top.id} id={top.id} me={me} back={back} openPassport={pid => push({ t: 'passport', id: pid })} openDM={openDM} openProfile={openProfile} />}
     {top?.t === 'artist' && <ArtistPage key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} play={v => setPlayV(v)} />}
     {playV && <Player v={playV} close={() => setPlayV(null)} openArtist={id => { setPlayV(null); push({ t: 'artist', id }) }} />}
     {top?.t === 'submit' && <Submit me={me} back={back} />}
@@ -131,7 +129,7 @@ export default function App() {
     {top?.t === 'admin' && isAdmin && <Admin me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} />}
     {top?.t === 'chat' && <Chat key={top.id} id={top.id} me={me} online={online} back={back} openProfile={openProfile} />}
     <CallManager me={me} />
-    <nav className={top?.t === 'profile' ? 'over' : undefined}>{NAV.map(([k, i, l]) => k === 'create' ? <button key={k} className="fabn" onClick={() => go(k)} aria-label="Create"><I n="plus" s={34} /></button>
+    <nav className={top?.t === 'profile' || top?.t === 'passport' ? 'over' : undefined}>{NAV.map(([k, i, l]) => k === 'create' ? <button key={k} className="fabn" onClick={() => go(k)} aria-label="Create"><I n="plus" s={34} /></button>
       : <button key={k} className="n" aria-current={tab === k && !top ? 'page' : undefined} onClick={() => go(k)}><I n={i} s={26} />{l}</button>)}</nav>
   </div>
 }

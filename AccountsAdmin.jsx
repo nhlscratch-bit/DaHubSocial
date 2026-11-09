@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { sb } from './supabase'
 import { ACCT } from './media'
-const AL = { suspend: 'Suspended account', ban: 'Banned account', reinstate: 'Reinstated account', verify: 'Verified', revoke_verification: 'Revoked verification', change_account_type: 'Changed account type', remove_content: 'Removed content', dismiss_report: 'Dismissed report', action_report: 'Handled report', remove_spotlight: 'Removed spotlight' }
+const AL = { grant_badge: 'Granted badge', revoke_badge: 'Removed badge', suspend: 'Suspended account', ban: 'Banned account', reinstate: 'Reinstated account', verify: 'Verified', revoke_verification: 'Revoked verification', change_account_type: 'Changed account type', remove_content: 'Removed content', dismiss_report: 'Dismissed report', action_report: 'Handled report', remove_spotlight: 'Removed spotlight' }
 export default function AccountsAdmin({ me, mode, openProfile }) {
-  const [q, setQ] = useState(''), [res, setRes] = useState(null), [sel, setSel] = useState(null), [type, setType] = useState('standard'), [ver, setVer] = useState(false), [note, setNote] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [log, setLog] = useState(null), [days, setDays] = useState(7), [why, setWhy] = useState(''), [names, setNames] = useState({})
+  const [q, setQ] = useState(''), [res, setRes] = useState(null), [sel, setSel] = useState(null), [type, setType] = useState('standard'), [ver, setVer] = useState(false), [note, setNote] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [log, setLog] = useState(null), [days, setDays] = useState(7), [why, setWhy] = useState(''), [bdg, setBdg] = useState('launch'), [names, setNames] = useState({})
   async function find() { const s = q.replace(/[^\w ]/g, '').trim(); if (!s) return; setMsg(''); const { data, error } = await sb.from('profiles').select('id,username,display_name,is_verified,account_type,account_status,suspended_until,status_reason').or(`username.ilike.%${s}%,display_name.ilike.%${s}%`).limit(15); if (error) return setMsg(error.message); setRes(data || []) }
   const pick = p => { setSel(p); setType(p.account_type || 'standard'); setVer(!!p.is_verified); setNote(''); setMsg('') }
   async function save() {
@@ -17,6 +17,7 @@ export default function AccountsAdmin({ me, mode, openProfile }) {
     const u = { ...sel, account_status: st, suspended_until: st === 'suspended' ? new Date(Date.now() + days * 864e5).toISOString() : null, status_reason: st === 'active' ? null : why.trim() || null }
     setSel(u); setRes(r => r && r.map(x => x.id === u.id ? u : x)); setWhy(''); setMsg(st === 'active' ? 'Reinstated.' : st === 'banned' ? 'Banned.' : 'Suspended.')
   }
+  async function badge(g) { setBusy(true); setMsg(''); const { error } = await sb.rpc('grant_badge', { p_user: sel.id, p_badge: bdg, p_grant: g }); setBusy(false); setMsg(error ? error.message : g ? 'Badge granted.' : 'Badge removed.') }
   const cur = sel && (sel.account_status === 'banned' ? 'banned' : sel.account_status === 'suspended' && (!sel.suspended_until || new Date(sel.suspended_until) > new Date()) ? 'suspended' : 'active')
   useEffect(() => { if (mode !== 'audit') return; (async () => {
     const { data } = await sb.from('audit_log').select('*').order('created_at', { ascending: false }).limit(100); setLog(data || [])
@@ -37,6 +38,7 @@ export default function AccountsAdmin({ me, mode, openProfile }) {
       <label className="aact"><input type="checkbox" checked={ver} onChange={e => setVer(e.target.checked)} /> Show the verified badge</label>
       <input className="anote" value={note} onChange={e => setNote(e.target.value)} maxLength={200} placeholder="Why (saved in the audit log)" />
       <button className="wb p sm" disabled={busy} onClick={save}>{busy ? 'Saving…' : 'Save'}</button>
+      <h4 style={{ marginTop: 10 }}>Passport badge</h4><div className="aact"><select value={bdg} onChange={e => setBdg(e.target.value)} aria-label="Badge"><option value="launch">DAHUB Launch (event)</option><option value="award_creator">Creator Award</option></select><button className="wb p sm" disabled={busy} onClick={() => badge(true)}>Grant</button><button className="wb sm" disabled={busy} onClick={() => badge(false)}>Remove</button></div>
       <h4 style={{ marginTop: 10 }}>Account status: {cur === 'active' ? 'Active' : cur === 'banned' ? 'Banned' : `Suspended until ${sel.suspended_until ? new Date(sel.suspended_until).toLocaleDateString() : 'further notice'}`}</h4>
       {sel.status_reason && cur !== 'active' && <small>Reason: {sel.status_reason}</small>}
       <input className="anote" value={why} onChange={e => setWhy(e.target.value)} maxLength={200} placeholder="Reason (shown to the person)" />

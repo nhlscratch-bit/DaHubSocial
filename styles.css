@@ -465,3 +465,20 @@ body.inshorts::after{display:none}
 .ppwork{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px}.ppwork button{position:relative;aspect-ratio:1;border-radius:18px;border:1.5px solid #0d556080;background:#d8eef0 center/cover;display:grid;place-items:center;padding:8px;font-size:13px;overflow:hidden;color:#05303a}.ppwork button.on{border:3px solid #e8561a}.ppwork em{position:absolute;top:6px;right:8px;background:#e8561a;color:#fff;border-radius:50%;width:24px;height:24px;display:grid;place-items:center;font-style:normal}
 .swr{display:flex;gap:10px;flex-wrap:wrap}.sw{width:36px;height:36px;border-radius:50%;border:2px solid #0d556080}.sw.on{outline:3px solid #e8561a;outline-offset:2px}
 .emr{display:flex;gap:6px;flex-wrap:wrap}.emr button{font-size:26px;width:46px;height:46px;border-radius:14px;border:1.5px solid #0d556060;background:#fff}.emr button.on{background:#d9f4f6;border-color:#e8561a}
+/* ===== Clout Passport v2 (build 44) ===== */
+.pthead{text-align:center;padding:4px 14px 6px}.pthead h1{margin:0;font-size:34px;font-style:italic;font-weight:800;letter-spacing:1px;background:linear-gradient(180deg,#fff,#9fd9e4 45%,#1b6a7a);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1.4px #0d3a44;filter:drop-shadow(0 3px 6px #0a4a5566)}.pthead p{margin:2px 0 0;font-size:12px;font-weight:700;letter-spacing:2px;color:#0d4350}
+.pgrid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:10px;padding:0 10px}
+.pcv{position:relative;border-radius:18px;overflow:hidden;line-height:0;box-shadow:0 12px 28px #0a2a3a66}.pcv canvas{width:100%;height:auto;display:block}
+.pcv.anim::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#ffffff55 48%,#c8fbff66 52%,transparent 65%);background-size:250% 100%;animation:foil 3.6s linear infinite;mix-blend-mode:screen;pointer-events:none}
+.pnote{display:block;text-align:center;margin-top:6px;color:#0d4350}
+.ppanel{display:grid;gap:8px;align-content:start}
+.pcust{border-radius:999px;padding:11px 8px;text-align:center;font-weight:800;font-size:14px;color:#fff;background:linear-gradient(180deg,#1b9fb2,#0a5f6e);border:2px solid #0a3a44;box-shadow:0 0 12px #00d1d166}
+.psec{background:#ffffffb8;border:1.5px solid #ffffff;border-radius:16px;padding:8px;display:grid;gap:5px;box-shadow:0 4px 12px #0a4a5522}.psec>b{font-size:13px;color:#06323c}.psec small{color:#2d6a78;font-size:11px}
+.p4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.swx,.bdg{aspect-ratio:1;padding:0;border-radius:10px;border:2px solid #0d5560;overflow:hidden;background:#0a1620;display:block;line-height:0}.swx canvas{width:100%;height:100%;display:block}
+.swx.on,.bdg.on{border-color:#31e0ee;box-shadow:0 0 0 2px #31e0ee,0 0 10px #31e0ee}
+.bdg{display:grid;place-items:center;color:#fff;font-weight:800;font-size:11px;line-height:1}
+.pfx{display:flex;gap:5px;flex-wrap:wrap}.pfx .chipb{padding:6px 9px;font-size:12px}.chipb.on{background:linear-gradient(180deg,#1b9fb2,#0e7f90);color:#fff;box-shadow:0 0 10px #00d1d166}
+.pbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 10px 2px}.pbtns .wb{padding:14px 6px;font-size:14px}
+.pone{max-width:360px;margin:6px auto;padding:0 14px}
+.pmini{flex:none;width:130px;display:grid;gap:4px;background:none;border:0;padding:0;color:inherit;text-align:center}.pmini small{font-size:12px;color:#06323c;font-weight:700}.pmini .pcv{border-radius:12px;border:2px solid transparent}.pmini.on .pcv{border-color:#31e0ee;box-shadow:0 0 12px #31e0ee}
