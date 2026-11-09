@@ -15,7 +15,7 @@ function Skyline() {
     {B.map(([x, w, h], i) => <g key={i}><rect x={x} y={100 - h} width={w} height={h} fill="url(#sg)" />{Array.from({ length: Math.floor(h / 12) }, (_, j) => <rect key={j} x={x + 4 + (j % 2) * 9} y={100 - h + 6 + j * 12} width="3" height="4" fill="#00d1d1" opacity={(i + j) % 3 ? 0.35 : 0.95} />)}</g>)}</svg>
 }
 const TABS = ['Posts', 'Photos', 'Videos', 'Likes']
-export default function Profile({ id, me, back, openSettings, openPost, openDM, openProfile, onUpdated }) {
+export default function Profile({ openPassport, id, me, back, openSettings, openPost, openDM, openProfile, onUpdated }) {
   const [pr, setPr] = useState(null), [posts, setPosts] = useState([]), [likes, setLikes] = useState([]), [rel, setRel] = useState(null), [n, setN] = useState({ f: 0, g: 0, p: 0 })
   const [tab, setTab] = useState('Posts'), [menu, setMenu] = useState(false), [rep, setRep] = useState(false), [bm, setBm] = useState({ b: false, m: false }), [edit, setEdit] = useState(false), [sc, setSc] = useState(false), own = id === me.id
   const load = async () => {
@@ -62,6 +62,7 @@ export default function Profile({ id, me, back, openSettings, openPost, openDM, 
         <div className="meta">{pr.location && <span><I n="pin" s={15} /> {pr.location}</span>}{pr.link && <a href={/^https?:/.test(pr.link) ? pr.link : 'https://' + pr.link} target="_blank" rel="noreferrer"><I n="link" s={15} /> {pr.link.replace(/^https?:\/\//, '')}</a>}<span><I n="cal" s={15} /> Joined {joined}</span></div></div>
       <div className="srow"><div className="stats"><div><b>{fmt(n.f)}</b>Followers</div><div><b>{fmt(n.g)}</b>Following</div><div><b>{fmt(n.p)}</b>Posts</div></div>
         {own && <><button className="wb sm" onClick={() => setEdit(true)}>Edit Profile</button><button className="go" onClick={share} aria-label="Share profile"><I n="send" s={18} fill /></button></>}</div>
+      <div className="acts"><button className="wb" onClick={() => openPassport?.(id)}>🪪 Clout Passport</button></div>
       {!own && <div className="acts"><button className="wb p" onClick={follow}><I n="userplus" s={20} /> {rel === 'accepted' ? 'Following' : rel === 'pending' ? 'Requested' : 'Follow'}</button>
         <button className="wb" onClick={() => openDM(id)}><I n="comment" s={20} /> Message</button><button className="wb" onClick={share}><I n="share" s={20} /> Share</button></div>}
       {own && <div className="hl"><button className="st" onClick={() => window.dispatchEvent(new Event('add-story'))}><span className="ring plain"><I n="plus" s={26} /></span><small>Add Story</small></button></div>}</div>

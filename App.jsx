@@ -24,6 +24,8 @@ import More from './More'
 import Topic from './Topic'
 import Shorts from './Shorts'
 import Locked from './Locked'
+import Passport from './Passport'
+import PassportEditor from './PassportEditor'
 import Communities, { NewCommunity } from './Communities'
 import CommunityView from './CommunityView'
 import { registerSW } from './push'
@@ -76,8 +78,8 @@ export default function App() {
   useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
   useEffect(() => {
     if (!uid) return
-    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community')
-    if (post || prof || art || evn || cht || cmn) { setStack([cmn ? { t: 'community', id: cmn } : cht ? { t: 'chat', id: cht } : post ? { t: 'post', id: post } : evn ? { t: 'event', id: evn } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
+    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community'), psp = q.get('passport')
+    if (post || prof || art || evn || cht || cmn || psp) { setStack([psp ? { t: 'passport', id: psp } : cmn ? { t: 'community', id: cmn } : cht ? { t: 'chat', id: cht } : post ? { t: 'post', id: post } : evn ? { t: 'event', id: evn } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
   }, [uid])
   if (!booted) return <Boot onDone={() => setBooted(true)} />
   if (session === undefined) return null
@@ -97,13 +99,13 @@ export default function App() {
         <span className="ringav"><Avatar p={profile} size={46} online={online.has(me.id)} onClick={() => openProfile(me.id)} /></span></div></header>
     <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} goDiscover={() => setTab('discover')} active={tab === 'home' && !top} /></main>
     {tab === 'discover' && <div hidden={!!top}><Discover me={me} openProfile={openProfile} openOpps={openOpps} /></div>}
-    {tab === 'more' && !top && <More go={k => push({ t: k })} openProfile={openProfile} me={me} isAdmin={isAdmin} />}
+    {tab === 'more' && !top && <More go={k => push(k === 'passport' ? { t: 'passport', id: me.id } : { t: k })} openProfile={openProfile} me={me} isAdmin={isAdmin} />}
     {tab === 'shorts' && <div hidden={!!top}><Shorts me={me} active={tab === 'shorts' && !top} openPost={openPost} openProfile={openProfile} goCreate={() => go('create')} /></div>}
     {tab !== 'home' && tab !== 'discover' && tab !== 'more' && tab !== 'shorts' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>
       {tab === 'more' ? <><button className="wb p" onClick={() => push({ t: 'settings' })}>Settings and Activity</button><button className="wb p" onClick={openOpps}>Opportunity Board</button><button className="wb p" onClick={() => push({ t: 'media' })}>Media</button><button className="wb" onClick={() => push({ t: 'submit' })}>Get featured</button><button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => push({ t: 'safety' })}>Blocked & muted</button>{isAdmin && <button className="wb p" onClick={() => push({ t: 'admin' })}>Admin</button>}<button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button><small className="bld inl">DAHUB {BUILD}</small></>
         : <p>Not built yet. Placeholder for a later milestone.</p>}</div>}
     {top?.t === 'post' && <PostView key={top.id} id={top.id} focus={top.focus} me={me} profile={profile} back={back} openProfile={openProfile} />}
-    {top?.t === 'profile' && <Profile key={top.id} id={top.id} me={me} back={back} openSettings={() => push({ t: 'settings' })} openPost={openPost} openDM={openDM} openProfile={openProfile} onUpdated={refreshProfile} />}
+    {top?.t === 'profile' && <Profile openPassport={pid => push({ t: 'passport', id: pid })} key={top.id} id={top.id} me={me} back={back} openSettings={() => push({ t: 'settings' })} openPost={openPost} openDM={openDM} openProfile={openProfile} onUpdated={refreshProfile} />}
     {top?.t === 'inbox' && <Inbox me={me} online={online} back={back} openChat={openChat} openDM={openDM} />}
     {top?.t === 'notifs' && <Notifications me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} />}
     {top?.t === 'opps' && <Opportunities me={me} back={back} openOpp={openOpp} newOpp={newOpp} />}
@@ -117,6 +119,8 @@ export default function App() {
     {top?.t === 'communities' && <Communities me={me} back={back} open={id => push({ t: 'community', id })} create={() => push({ t: 'newcommunity' })} />}
     {top?.t === 'newcommunity' && <NewCommunity me={me} back={back} created={id => setStack(s => [...s.slice(0, -1), { t: 'community', id }])} />}
     {top?.t === 'community' && <CommunityView key={top.id} id={top.id} me={me} back={back} openPost={openPost} openProfile={openProfile} gone={back} />}
+    {top?.t === 'passport' && <Passport key={top.id + (top.v || '')} id={top.id} me={me} back={back} edit={() => push({ t: 'passportedit' })} openPost={openPost} openDM={openDM} openOpps={openOpps} openProfile={openProfile} />}
+    {top?.t === 'passportedit' && <PassportEditor me={me} profile={profile} back={back} saved={() => setStack(s => [...s.slice(0, -2), { t: 'passport', id: me.id, v: Date.now() }])} />}
     {top?.t === 'artist' && <ArtistPage key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} play={v => setPlayV(v)} />}
     {playV && <Player v={playV} close={() => setPlayV(null)} openArtist={id => { setPlayV(null); push({ t: 'artist', id }) }} />}
     {top?.t === 'submit' && <Submit me={me} back={back} />}
