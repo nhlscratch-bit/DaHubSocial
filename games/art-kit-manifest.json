@@ -1,0 +1,159 @@
+{
+  "kit": "DAHUB Fighters asset kit",
+  "version": 1,
+  "naming": "fighters/<id>/raw/<id>_<pose>.png (original from ChatGPT), fighters/<id>/cutouts/<id>_<pose>[_view].png (green removed, trimmed)",
+  "fighters": {
+    "kenndogg": {
+      "files": {
+        "raw/kenndogg_blazin_gun_pose.png": "1224x1285",
+        "raw/kenndogg_blazin_slam.png": "1672x941",
+        "raw/kenndogg_grab.png": "1224x1285",
+        "raw/kenndogg_heavy_attack.png": "1024x1536",
+        "raw/kenndogg_hit.png": "1224x1285",
+        "raw/kenndogg_idle.png": "1024x1536",
+        "raw/kenndogg_knockdown.png": "1536x1024",
+        "raw/kenndogg_light_attack.png": "1024x1536",
+        "raw/kenndogg_portrait.png": "1254x1254",
+        "raw/kenndogg_sheet_turnaround.png": "1224x1285",
+        "raw/kenndogg_victory.png": "1024x1536",
+        "raw/kenndogg_walk.png": "1024x1536",
+        "raw/kenndogg_walk_b.png": "1024x1536",
+        "cutouts/kenndogg_back.png": "425x1248",
+        "cutouts/kenndogg_blazin_gun_pose.png": "1194x1266",
+        "cutouts/kenndogg_front.png": "463x1238",
+        "cutouts/kenndogg_grab.png": "1209x1238",
+        "cutouts/kenndogg_heavy_attack.png": "989x1498",
+        "cutouts/kenndogg_hit.png": "1192x1267",
+        "cutouts/kenndogg_idle.png": "801x1511",
+        "cutouts/kenndogg_knockdown.png": "1516x700",
+        "cutouts/kenndogg_light_attack.png": "997x1405",
+        "cutouts/kenndogg_portrait.png": "1254x1253",
+        "cutouts/kenndogg_side.png": "270x1259",
+        "cutouts/kenndogg_victory.png": "920x1492",
+        "cutouts/kenndogg_walk.png": "916x1508",
+        "cutouts/kenndogg_walk_b.png": "903x1504",
+        "art/kenndogg_blazin_slam_keyart.png": "1672x941"
+      },
+      "poses_done": [
+        "sheet_turnaround",
+        "portrait",
+        "idle",
+        "walk",
+        "walk_b",
+        "light_attack",
+        "heavy_attack",
+        "grab",
+        "hit",
+        "knockdown",
+        "victory",
+        "blazin"
+      ],
+      "poses_needed": []
+    },
+    "mabel": {
+      "files": {
+        "raw/mabel_blazin_keyart.png": "1672x941",
+        "raw/mabel_grab.png": "1207x1303",
+        "raw/mabel_heavy_attack.png": "1207x1303",
+        "raw/mabel_hit.png": "1207x1303",
+        "raw/mabel_idle.png": "1207x1303",
+        "raw/mabel_knockdown.png": "1672x941",
+        "raw/mabel_light_attack.png": "1207x1303",
+        "raw/mabel_portrait.png": "1229x1280",
+        "raw/mabel_sheet_purse.png": "1536x1024",
+        "raw/mabel_sheet_turnaround.png": "1536x1024",
+        "raw/mabel_victory.png": "1207x1303",
+        "raw/mabel_walk.png": "1207x1303",
+        "raw/mabel_walk_b.png": "1207x1303",
+        "cutouts/mabel_back.png": "517x992",
+        "cutouts/mabel_front.png": "533x993",
+        "cutouts/mabel_grab.png": "1179x1258",
+        "cutouts/mabel_heavy_attack.png": "1122x1262",
+        "cutouts/mabel_hit.png": "1173x1240",
+        "cutouts/mabel_idle.png": "1130x1256",
+        "cutouts/mabel_knockdown.png": "1637x871",
+        "cutouts/mabel_light_attack.png": "1132x1262",
+        "cutouts/mabel_portrait.png": "1229x1273",
+        "cutouts/mabel_side.png": "368x1004",
+        "cutouts/mabel_victory.png": "1043x1257",
+        "cutouts/mabel_walk.png": "993x1257",
+        "cutouts/mabel_walk_b.png": "946x1263",
+        "art/mabel_blazin_keyart.png": "1672x941"
+      },
+      "poses_done": [
+        "sheet_turnaround",
+        "portrait",
+        "idle",
+        "walk",
+        "walk_b",
+        "light_attack",
+        "heavy_attack",
+        "grab",
+        "hit",
+        "knockdown",
+        "victory",
+        "blazin"
+      ],
+      "poses_needed": []
+    },
+    "freshprince": {
+      "files": {
+        "raw/freshprince_blazin_keyart.png": "1672x941",
+        "raw/freshprince_grab.png": "1199x1312",
+        "raw/freshprince_heavy_attack.png": "1199x1312",
+        "raw/freshprince_hit.png": "1199x1312",
+        "raw/freshprince_idle.png": "1199x1312",
+        "raw/freshprince_knockdown.png": "1672x941",
+        "raw/freshprince_light_attack.png": "1199x1312",
+        "raw/freshprince_portrait.png": "1199x1312",
+        "raw/freshprince_sheet_turnaround.png": "1536x1024",
+        "raw/freshprince_victory.png": "1199x1312",
+        "raw/freshprince_walk.png": "1199x1312",
+        "raw/freshprince_walk_b.png": "1199x1312",
+        "cutouts/freshprince_grab.png": "776x1293",
+        "cutouts/freshprince_heavy_attack.png": "1182x1272",
+        "cutouts/freshprince_hit.png": "962x1271",
+        "cutouts/freshprince_idle.png": "669x1301",
+        "cutouts/freshprince_knockdown.png": "1619x688",
+        "cutouts/freshprince_light_attack.png": "1082x1277",
+        "cutouts/freshprince_portrait.png": "1091x1302",
+        "cutouts/freshprince_victory.png": "775x1277",
+        "cutouts/freshprince_walk.png": "843x1271",
+        "cutouts/freshprince_walk_b.png": "888x1275",
+        "art/freshprince_blazin_keyart.png": "1672x941"
+      },
+      "poses_done": [
+        "sheet_turnaround",
+        "portrait",
+        "idle",
+        "walk",
+        "walk_b",
+        "light_attack",
+        "heavy_attack",
+        "grab",
+        "hit",
+        "knockdown",
+        "victory",
+        "blazin"
+      ],
+      "poses_needed": []
+    }
+  },
+  "stages": {
+    "baltimore_alley": {
+      "file": "stages/stage_baltimore_alley.png",
+      "size": "1672x941",
+      "home_of": [
+        "kenndogg"
+      ],
+      "floor_line": "~74% from top"
+    },
+    "parking_lot": {
+      "file": "stages/stage_parking_lot.png",
+      "home_of": [
+        "mabel"
+      ]
+    }
+  },
+  "ui": {}
+}
