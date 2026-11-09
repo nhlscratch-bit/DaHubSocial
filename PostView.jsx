@@ -1,7 +1,7 @@
 import AutoVideo from './AutoVideo'
 import wm from './wordmark.png'
 import { useEffect, useRef, useState } from 'react'
-import { sb, SEL, REACTIONS, mediaUrl, ago } from './supabase'
+import { sb, SEL, REACTIONS, mediaUrl, ago, friendly } from './supabase'
 import Avatar from './Avatar'
 const LBL = ['Love', 'Like', 'F*ck', 'Sad', 'Lick', 'Wink', 'Wow']
 const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n
@@ -34,7 +34,7 @@ export default function PostView({ id, focus, me, profile, back, openProfile }) 
   async function send() {
     if (!t.trim()) return
     const { error } = await sb.from('comments').insert({ post_id: id, author_id: me.id, body: t.trim(), parent_id: reply ? (reply.parent_id || reply.id) : null })
-    if (error) setErr(error.message); else { setT(''); setReply(null); loadC(); loadP() }
+    if (error) setErr(friendly(error)); else { setT(''); setReply(null); loadC(); loadP() }
   }
   const like = async c => { const m = c.comment_reactions.some(r => r.user_id === me.id), q = sb.from('comment_reactions'); m ? await q.delete().eq('comment_id', c.id).eq('user_id', me.id) : await q.insert({ comment_id: c.id, user_id: me.id, reaction_id: 0 }); loadC() }
   const byNew = (a, b) => new Date(b.created_at) - new Date(a.created_at)

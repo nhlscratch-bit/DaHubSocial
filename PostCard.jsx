@@ -21,10 +21,11 @@ export default function PostCard({ post, me, openPost, openProfile }) {
   const rp = p.reposts.some(r => r.user_id === me.id), bm = p.bookmarks.length > 0
   const media = [...p.post_media].sort((a, b) => a.position - b.position)
   const del = async () => { setMenu(false); if (!confirm('Delete this post? This cannot be undone.')) return; const { error } = await sb.from('posts').delete().eq('id', p.id); error ? alert('Could not delete: ' + error.message) : setGone(true) }
+  const block = async () => { setMenu(false); if (!confirm(`Block @${p.author.username}? You'll both be unfollowed and you won't see their posts.`)) return; const { error } = await sb.from('blocks').insert({ blocker_id: me.id, blocked_id: p.author.id }); error ? alert('Could not block: ' + error.message) : setGone(true) }
   if (gone) return null
   return <article className="post">
     <button className="pmore" onClick={() => setMenu(!menu)} aria-label="Post options" />
-    {menu && <div className="pmenu">{p.author.id === me.id ? <button onClick={del}>Delete post</button> : <button onClick={() => { setMenu(false); setRep(true) }}>Report post</button>}<button onClick={() => setMenu(false)}>Cancel</button></div>}
+    {menu && <div className="pmenu">{p.author.id === me.id ? <button onClick={del}>Delete post</button> : <><button onClick={() => { setMenu(false); setRep(true) }}>Report post</button><button onClick={block}>Block @{p.author.username}</button></>}<button onClick={() => setMenu(false)}>Cancel</button></div>}
     {rep && <ReportSheet me={me} type="post" targetId={p.id} reportedUser={p.author.id} close={() => setRep(false)} />}
     <div className="ph"><Avatar p={p.author} size={46} onClick={() => openProfile(p.author.id)} />
       <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small></div></div>

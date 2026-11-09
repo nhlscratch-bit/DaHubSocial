@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { sb } from './supabase'
+import { sb, hiddenIds, friendly } from './supabase'
 import Avatar from './Avatar'
 import briefcase from './briefcase.png'
 // People search only. DAHUB never lists everyone: you find people by searching a name or @handle.
@@ -14,11 +14,11 @@ export default function Discover({ me, openProfile, openOpps }) {
     const t = setTimeout(async () => {
       const { data, error } = await sb.from('profiles').select('id,username,display_name,avatar_url,is_verified').neq('id', me.id)
         .or(`username.ilike.${s.replace(/ /g, '_')}%,display_name.ilike.${s}%`).limit(15)
-      setErr(error ? error.message : ''); setList(data || []); setBusy(false)
+      const hid = await hiddenIds(); setErr(error ? error.message : ''); setList((data || []).filter(x => !hid.has(x.id))); setBusy(false)
     }, 300)
     return () => clearTimeout(t)
   }, [s])
-  async function toggle(id) { rel[id] ? await sb.from('follows').delete().eq('follower_id', me.id).eq('followee_id', id) : await sb.from('follows').insert({ follower_id: me.id, followee_id: id }); loadRel() }
+  async function toggle(id) { const { error } = rel[id] ? await sb.from('follows').delete().eq('follower_id', me.id).eq('followee_id', id) : await sb.from('follows').insert({ follower_id: me.id, followee_id: id }); if (error) alert(friendly(error)); loadRel() }
   return <div className="disc"><h1 className="dmt">Discover</h1>
     <div className="isr"><input value={q} onChange={e => setQ(e.target.value)} placeholder="🔍 Search by name or @handle" aria-label="Search people" autoCapitalize="none" autoCorrect="off" /></div>
     <button className="gl oppcard" onClick={openOpps}><img src={briefcase} alt="" className="obc" /><div><b>Opportunity Board</b><small>Get in the room: gigs, bookings, collabs</small></div></button>

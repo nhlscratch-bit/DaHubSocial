@@ -3,7 +3,7 @@ import { sb } from './supabase'
 import wm from './wordmark.png'
 import Avatar from './Avatar'
 const CAT = { food: 'Food', music: 'Music', podcast: 'Podcast', beauty: 'Beauty', retail: 'Retail', services: 'Services', tech: 'Tech', events: 'Events', other: 'Local' }
-const SEL = 'id,category,headline,subline,cta_label,cta_url,neighborhood,sponsored,ends_at,profile:profiles!spotlights_profile_id_fkey(id,username,display_name,avatar_url,cover_url,is_verified)'
+const SEL = 'id,category,headline,subline,cta_label,cta_url,neighborhood,sponsored,ends_at,cover_path,profile:profiles!spotlights_profile_id_fkey(id,username,display_name,avatar_url,cover_url,is_verified)'
 const left = t => { if (!t) return null; const ms = new Date(t) - Date.now(); if (ms <= 0 || ms > 48 * 36e5) return null; const m = Math.ceil(ms / 6e4); return m < 60 ? `ends in ${m}m` : `ends in ${Math.ceil(m / 60)}h` }
 // Featured live card shown at the top of every profile.
 export default function Spotlight({ me, openProfile }) {
@@ -19,8 +19,8 @@ export default function Spotlight({ me, openProfile }) {
     return () => { sb.removeChannel(ch); setViewers(0) }
   }, [cur?.id])
   if (items === null) return <div className="spot" />
-  if (!cur) return <div className="spot open"><img src={wm} alt="DAHUB" /><h3>This spot is open</h3><p>Feature your business, music or podcast where everyone sees it.</p><button className="wb p sm" onClick={() => alert('Featured spots are opening soon.')}>Get featured</button></div>
-  const cover = cur.profile.cover_url && sb.storage.from('covers').getPublicUrl(cur.profile.cover_url).data.publicUrl
+  if (!cur) return <div className="spot open"><img src={wm} alt="DAHUB" /><h3>This spot is open</h3><p>Feature your business, music or podcast where everyone sees it.</p><button className="wb p sm" onClick={() => window.dispatchEvent(new Event('open-submit'))}>Get featured</button></div>
+  const cover = cur.cover_path ? sb.storage.from('media-submissions').getPublicUrl(cur.cover_path).data.publicUrl : cur.profile.cover_url && sb.storage.from('covers').getPublicUrl(cur.profile.cover_url).data.publicUrl
   const go = () => { const u = cur.cta_url; u && /^https?:\/\//.test(u) ? window.open(u, '_blank', 'noopener') : openProfile(cur.profile.id) }
   const t = left(cur.ends_at)
   return <div className="spot" style={cover ? { backgroundImage: `url(${cover})` } : undefined}

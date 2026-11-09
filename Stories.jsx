@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { sb, upload, ago, startDM } from './supabase'
+import { sb, upload, ago, startDM, hiddenIds } from './supabase'
 import Avatar from './Avatar'
 import I from './Icons'
 export const storyUrl = p => sb.storage.from('story-media').getPublicUrl(p).data.publicUrl
@@ -13,7 +13,8 @@ export default function Stories({ me, profile }) {
     const { data } = await sb.from('stories').select(SELS).gt('expires_at', new Date().toISOString()).order('created_at', { ascending: true })
     const { data: v } = await sb.from('story_views').select('story_id').eq('viewer_id', me.id)
     setSeen(new Set((v || []).map(x => x.story_id)))
-    const m = new Map(); (data || []).forEach(s => { if (!m.has(s.author_id)) m.set(s.author_id, { author: s.author, items: [] }); m.get(s.author_id).items.push(s) })
+    const hid = await hiddenIds()
+    const m = new Map(); (data || []).filter(s => !hid.has(s.author_id)).forEach(s => { if (!m.has(s.author_id)) m.set(s.author_id, { author: s.author, items: [] }); m.get(s.author_id).items.push(s) })
     setGroups([...m.values()])
   }, [me.id])
   useEffect(() => {

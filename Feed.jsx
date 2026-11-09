@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { sb, SEL, upload } from './supabase'
+import { sb, SEL, upload, hiddenIds, friendly } from './supabase'
 import PostCard from './PostCard'
 import Avatar from './Avatar'
 import I from './Icons'
@@ -23,6 +23,7 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
     const q = sb.from('posts').select(SEL).in('author_id', ids).order('created_at', { ascending: false }).limit(40)
     const { data, error } = await q
     if (error) return setErr(error.message)
+    const hid = await hiddenIds(); for (let i = data.length - 1; i >= 0; i--) if (hid.has(data[i].author.id)) data.splice(i, 1)
     if (tab === 'trend') data.sort((a, b) => b.post_reactions.length - a.post_reactions.length)
     setPosts(data)
   }, [tab, me.id])
@@ -39,7 +40,7 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
         await sb.from('post_media').insert({ post_id: post.id, storage_path: path, media_type: f.type.startsWith('video') ? 'video' : 'image', position: i })
       }
       setText(''); setFiles([]); setTab('for'); load()
-    } catch (e) { setErr(e.message) } finally { setBusy(false) }
+    } catch (e) { setErr(friendly(e)) } finally { setBusy(false) }
   }
   return <div>
     <Stories me={me} profile={profile} />

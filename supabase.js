@@ -30,7 +30,21 @@ export async function signed(path) {
   return data?.signedUrl
 }
 
-export const BUILD = 'build 24'
+export const BUILD = 'build 25'
 
 // People hidden from me: blocked, blocked-me (direction not revealed) and muted.
 export async function hiddenIds() { const { data } = await sb.rpc('hidden_ids'); return new Set((data || []).map(x => (typeof x === 'string' ? x : Object.values(x)[0]))) }
+
+// Plain-English version of database errors (rate limits, blocks).
+export const friendly = e => {
+  const m = e?.message || String(e || '')
+  if (/rate_limit: post/.test(m)) return "You're posting too fast. Wait a minute and try again."
+  if (/rate_limit: comment/.test(m)) return "You're commenting too fast. Wait a minute and try again."
+  if (/rate_limit: follow_day/.test(m)) return "You've followed a lot of people today. Try again tomorrow."
+  if (/rate_limit: follow/.test(m)) return "You're following people too fast. Try again in a bit."
+  if (/rate_limit: report/.test(m)) return "You've sent a lot of reports today. Try again tomorrow."
+  if (/rate_limit/.test(m)) return "You're going too fast. Try again in a bit."
+  if (/blocked:/.test(m)) return "You can't message this account."
+  if (/follow this account/.test(m)) return "You can't follow this account."
+  return m
+}

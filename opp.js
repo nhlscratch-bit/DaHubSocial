@@ -8,4 +8,5 @@ export const REASONS = { spam: 'Spam', scam: 'Scam or fraud', misleading_pay: 'M
 export const oppSel = 'id,title,type,compensation,compensation_note,category,description,requirements,location,is_remote,deadline,status,contact_method,image_path,created_at,poster:profiles!opportunities_poster_id_fkey(id,username,display_name,avatar_url,is_verified)'
 export const oppImg = p => p ? sb.storage.from('opportunity-media').getPublicUrl(p).data.publicUrl : null
 export const dlabel = d => d ? new Date(d + 'T00:00:00').toLocaleDateString([], { month: 'short', day: 'numeric' }) : null
-export const errMsg = e => /rate_limit/.test(e?.message || '') ? "You've hit today's limit for that. Try again tomorrow." : (e?.message || 'Something went wrong.')
+import { friendly } from './supabase'
+export const errMsg = e => /rate_limit: (opp|listing)/.test(e?.message || '') ? "You've hit today's limit for that. Try again tomorrow." : (friendly(e) || 'Something went wrong.')

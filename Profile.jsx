@@ -1,7 +1,7 @@
 import wm from './wordmark.png'
 import wp from './wallpaper.png'
 import { useEffect, useState } from 'react'
-import { sb, SEL, mediaUrl } from './supabase'
+import { sb, SEL, mediaUrl, friendly } from './supabase'
 import Avatar from './Avatar'
 import I from './Icons'
 import EditProfile from './EditProfile'
@@ -31,7 +31,7 @@ export default function Profile({ id, me, back, openSettings, openPost, openDM, 
     const { data: r } = await sb.from('post_reactions').select('post_id').eq('user_id', id).order('created_at', { ascending: false }).limit(60)
     const ids = (r || []).map(x => x.post_id); if (!ids.length) return setLikes([])
     const { data: ps } = await sb.from('posts').select(SEL).in('id', ids); setLikes(ps || []) })() }, [tab, id])
-  async function follow() { rel ? await sb.from('follows').delete().eq('follower_id', me.id).eq('followee_id', id) : await sb.from('follows').insert({ follower_id: me.id, followee_id: id }); load() }
+  async function follow() { const { error } = rel ? await sb.from('follows').delete().eq('follower_id', me.id).eq('followee_id', id) : await sb.from('follows').insert({ follower_id: me.id, followee_id: id }); if (error) alert(friendly(error)); load() }
   async function toggleMute() { setMenu(false); bm.m ? await sb.from('mutes').delete().eq('muter_id', me.id).eq('muted_id', id) : await sb.from('mutes').insert({ muter_id: me.id, muted_id: id }); load() }
   async function toggleBlock() {
     setMenu(false)

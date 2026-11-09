@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { sb, signed } from './supabase'
+import { sb, signed, friendly } from './supabase'
 import Avatar from './Avatar'
 const QUICK = ['❤️', '💯', '🔥', '😍', '👍'], EMO = ['😂', '😭', '😘', '🥺', '😩', '👀', '💙', '🙏', '🤝', '😎', '🔥', '💯', '😍', '😉', '😮', '🖕']
 const tm = d => new Date(d).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
@@ -37,7 +37,7 @@ export default function Chat({ id, me, online, back, openProfile }) {
     const body = kind === 'text' ? t.trim() : ''; if (kind === 'text' && !body) return
     setBusy(true); setErr('')
     const { data, error } = await sb.from('messages').insert({ conversation_id: id, sender_id: me.id, body, kind, media_path: path }).select().single()
-    setBusy(false); if (error) return setErr(error.message)
+    setBusy(false); if (error) return setErr(friendly(error))
     setMsgs(m => m.some(x => x.id === data.id) ? m : [...m, data]); if (kind === 'text') setT(''); setEmo(false); setTray(false)
   }
   async function sendFile(file, kind) {
