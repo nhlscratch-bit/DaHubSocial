@@ -151,7 +151,7 @@ export async function joinRoom(room, me, mic) {
   }
   emit(); return S
 }
-async function loadProfiles(ids) { const ses = S; if (!ids.length) return; const { data } = await sb.from('profiles').select('id,display_name,username,avatar_url').in('id', ids); if (S !== ses || !data) return; for (const p of data) S.profiles[p.id] = { name: p.display_name || p.username, avatar: p.avatar_url }; emit() }
+async function loadProfiles(ids) { const ses = S; if (!ids.length) return; const { data } = await sb.from('profiles').select('id,display_name,username,avatar_url,is_verified').in('id', ids); if (S !== ses || !data) return; for (const p of data) S.profiles[p.id] = { name: p.display_name || p.username, avatar: p.avatar_url, verified: !!p.is_verified }; emit() }
 function endLocal(row) {
   if (!S) return
   S.status = 'ended'; S.summary = { started: row.started_at || S.room.started_at, ended: row.ended_at || new Date().toISOString(), peak: Math.max(row.peak_listeners || 0, S.room.peak_listeners || 0) }
