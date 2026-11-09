@@ -23,6 +23,8 @@ import Settings from './Settings'
 import More from './More'
 import Topic from './Topic'
 import Shorts from './Shorts'
+import ArtistPage from './ArtistPage'
+import { Player } from './MediaPage'
 import CallManager from './Call'
 import Saved from './Saved'
 import Guidelines from './Guidelines'
@@ -59,6 +61,7 @@ export default function App() {
     window.addEventListener('notif-read', refresh); return () => { sb.removeChannel(ch); window.removeEventListener('notif-read', refresh) }
   }, [uid])
   useEffect(() => { document.body.classList.toggle('inshorts', tab === 'shorts' && !stack.length); return () => document.body.classList.remove('inshorts') }, [tab, stack.length])
+  const [playV, setPlayV] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false), sy = useRef(0), prevLen = useRef(0)
   useEffect(() => { if (stack.length === 0 && prevLen.current > 0) requestAnimationFrame(() => window.scrollTo(0, sy.current)); prevLen.current = stack.length }, [stack.length])
   useEffect(() => { const f = e => setStack(s => [...s, { t: 'tag', tag: e.detail }]); window.addEventListener('open-tag', f); return () => window.removeEventListener('open-tag', f) }, [])
@@ -66,8 +69,8 @@ export default function App() {
   useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
   useEffect(() => {
     if (!uid) return
-    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile')
-    if (post || prof) { setStack([post ? { t: 'post', id: post } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
+    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist')
+    if (post || prof || art) { setStack([post ? { t: 'post', id: post } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
   }, [uid])
   if (!booted) return <Boot onDone={() => setBooted(true)} />
   if (session === undefined) return null
@@ -99,7 +102,9 @@ export default function App() {
     {top?.t === 'opp' && <OpportunityDetail key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} openDM={openDM} />}
     {top?.t === 'newopp' && <NewOpportunity me={me} back={back} created={oppCreated} />}
     {top?.t === 'tag' && <Topic key={top.tag} tag={top.tag} me={me} back={back} openPost={openPost} openProfile={openProfile} />}
-    {top?.t === 'media' && <MediaPage me={me} back={back} openProfile={openProfile} openSubmit={() => push({ t: 'submit' })} />}
+    {top?.t === 'media' && <MediaPage me={me} back={back} openProfile={openProfile} openSubmit={() => push({ t: 'submit' })} openArtist={id => push({ t: 'artist', id })} />}
+    {top?.t === 'artist' && <ArtistPage key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} play={v => setPlayV(v)} />}
+    {playV && <Player v={playV} close={() => setPlayV(null)} openArtist={id => { setPlayV(null); push({ t: 'artist', id }) }} />}
     {top?.t === 'submit' && <Submit me={me} back={back} />}
     {top?.t === 'settings' && <Settings me={me} profile={profile} isAdmin={isAdmin} back={back} go={k => push({ t: k })} onUpdated={refreshProfile} />}
     {top?.t === 'saved' && <Saved me={me} back={back} openPost={openPost} openProfile={openProfile} />}
