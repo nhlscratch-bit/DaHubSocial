@@ -18,7 +18,7 @@ export default function CallManager({ me }) {
   const cleanup = () => {
     clearTimers(); pc.current?.close(); pc.current = null; local.current?.getTracks().forEach(t => t.stop()); local.current = null; remote.current = null; pend.current = []; t0.current = 0; setMuted(false); setCamOff(false); setSecs(0)
   }
-  const send = (kind, to, id, payload) => sb.from('call_signals').insert({ call_id: id, to_id: to, kind, payload: payload || null })
+  const send = async (kind, to, id, payload) => { const r = await sb.from('call_signals').insert({ call_id: id, to_id: to, kind, payload: payload || null }); if (r.error) console.warn('call signal failed', kind, r.error.message); return r }
   const logMsg = async (peerId, body) => { try { const cid = await startDM(me.id, peerId); await sb.from('messages').insert({ conversation_id: cid, sender_id: me.id, body, kind: 'text' }) } catch {} }
   const finish = (text, ms = 1800) => { setNote(text); setTimeout(() => { setCall(null); setNote('') }, ms) }
   const getMedia = video => navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: video ? { facingMode: 'user' } : false })
