@@ -44,22 +44,22 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
         const path = await upload('post-media', me.id, f)
         await sb.from('post_media').insert({ post_id: post.id, storage_path: path, media_type: f.type.startsWith('video') ? 'video' : 'image', position: i })
       }
-      setText(''); setFiles([]); setPoll(null); setTab('for'); load()
+      setText(''); if (input.current) input.current.style.height = ''; setFiles([]); setPoll(null); setTab('for'); load()
     } catch (e) { setErr(friendly(e)) } finally { setBusy(false) }
   }
   return <div>
     <Stories me={me} profile={profile} />
     <QotdCard openPost={openPost} />
-    <div className="comp"><div className="crow"><Avatar p={profile} size={46} />
-      <input ref={input} value={text} onChange={e => setText(e.target.value)} placeholder="What's on your mind?" maxLength={2000} aria-label="Compose post" />
+    <div className="comp"><div className="crow"><Avatar p={profile} size={46} /><span className="cgap" />
       <button className="ib" onClick={() => photoIn.current.click()} aria-label="Add photo"><I n="image" /></button>
       <button className="ib" onClick={() => videoIn.current.click()} aria-label="Add video"><I n="video" /></button>
       <button className={'ib' + (poll ? ' on' : '')} onClick={() => setPoll(p => p ? null : ['', ''])} aria-label="Add poll"><I n="poll" /></button>
       <button className="go" disabled={busy || (!text.trim() && !files.length)} onClick={publish} aria-label="Post">{busy ? '…' : <I n="send" s={20} fill />}</button>
       <input ref={photoIn} type="file" hidden multiple accept="image/*" onChange={addFiles} /><input ref={videoIn} type="file" hidden accept="video/*" onChange={addFiles} /></div>
+      <textarea ref={input} className="ctext" rows={2} value={text} onChange={e => { setText(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 240) + 'px' }} placeholder={poll ? 'Ask your poll question…' : "What's on your mind?"} maxLength={2000} aria-label="Compose post" />
       <div className="crow sub"><select value={aud} onChange={e => setAud(e.target.value)} aria-label="Audience"><option value="public">Public</option><option value="followers">Followers</option><option value="friends">Friends</option><option value="only_me">Only me</option></select>
         </div>
-      {poll && <div className="pollc"><small>Poll: write your question above, then add options.</small>{poll.map((o, i) => <input key={i} value={o} maxLength={60} placeholder={`Option ${i + 1}`} onChange={e => setPoll(p => p.map((x, j) => j === i ? e.target.value : x))} />)}{poll.length < 4 && <button className="link" onClick={() => setPoll(p => [...p, ''])}>+ Add option</button>}</div>}
+      {poll && <div className="pollc"><small>Poll: your question goes in the box above. Add 2 to 4 options.</small>{poll.map((o, i) => <input key={i} value={o} maxLength={60} placeholder={`Option ${i + 1}`} onChange={e => setPoll(p => p.map((x, j) => j === i ? e.target.value : x))} />)}{poll.length < 4 && <button className="link" onClick={() => setPoll(p => [...p, ''])}>+ Add option</button>}</div>}
       {files.length > 0 && <div className="thumbs">{files.map((x, i) => <div className="th" key={i}>{x.type.startsWith('video') ? <video src={urls[i] + '#t=0.1'} muted playsInline /> : <img src={urls[i]} alt="" />}<button onClick={() => setFiles(fs => fs.filter((_, j) => j !== i))} aria-label="Remove">✕</button></div>)}</div>}</div>
     <div className="tabs">{TABS.map(([k, l]) => <button key={k} className="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>)}
       <button className="ib flt" onClick={() => setFOpen(true)} aria-label="Filters"><I n="filter" s={20} />{flt !== 'all' && <span className="fdot" />}</button></div>
