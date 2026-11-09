@@ -3,6 +3,7 @@ import { sb, hiddenIds, friendly, ago } from './supabase'
 import { SOTAG } from './media'
 import Avatar from './Avatar'
 import ReportSheet from './ReportSheet'
+import Verified from './Verified'
 const SEL = '*,giver:profiles!shoutouts_giver_id_fkey(id,username,display_name,avatar_url,is_verified)'
 export default function Shoutouts({ id, me, openProfile }) {
   const own = id === me.id, [rows, setRows] = useState(null), [err, setErr] = useState(''), [form, setForm] = useState(false), [rep, setRep] = useState(null), [msg, setMsg] = useState('')
@@ -22,7 +23,7 @@ export default function Shoutouts({ id, me, openProfile }) {
     {rows === null && !err && <div className="skel"><i /><i /></div>}
     {rows?.length === 0 && <div className="empty">{own ? 'No shoutouts yet. When someone gives you one, it shows here.' : 'No shoutouts yet. Be the first to give one.'}</div>}
     {rows?.map(r => <div key={r.id} className={'gl so' + (r.hidden ? ' dim' : '')}>
-      <div className="soh"><Avatar p={r.giver} size={40} onClick={() => openProfile(r.giver.id)} /><span><b>{r.giver.display_name}</b>{r.giver.is_verified && <span className="ver">✔</span>}<br /><small>{ago(r.created_at)}</small></span><span className="gtag">{SOTAG[r.tag][0]} {SOTAG[r.tag][1]}</span></div>
+      <div className="soh"><Avatar p={r.giver} size={40} onClick={() => openProfile(r.giver.id)} /><span><b>{r.giver.display_name}</b>{r.giver.is_verified && <Verified />}<br /><small>{ago(r.created_at)}</small></span><span className="gtag">{SOTAG[r.tag][0]} {SOTAG[r.tag][1]}</span></div>
       <p>{r.body}</p>{r.hidden && <small>Hidden from your profile. Only you and {r.giver.display_name} can see it.</small>}
       <div className="aact">{own && <button className="wb sm" onClick={() => hide(r)}>{r.hidden ? 'Show' : 'Hide'}</button>}{r.giver.id === me.id || own ? <button className="wb sm" onClick={() => del(r)}>Delete</button> : null}{r.giver.id !== me.id && <button className="wb sm" onClick={() => setRep(r)}>Report</button>}</div></div>)}
     {form && <Form id={id} me={me} cur={mine} close={() => setForm(false)} done={() => { setForm(false); load() }} />}

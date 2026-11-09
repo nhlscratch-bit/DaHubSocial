@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { sb } from './supabase'
 import { ACCT } from './media'
+import Verified from './Verified'
 const AL = { grant_badge: 'Granted badge', revoke_badge: 'Removed badge', suspend: 'Suspended account', ban: 'Banned account', reinstate: 'Reinstated account', verify: 'Verified', revoke_verification: 'Revoked verification', change_account_type: 'Changed account type', remove_content: 'Removed content', dismiss_report: 'Dismissed report', action_report: 'Handled report', remove_spotlight: 'Removed spotlight', ad_verify: 'Verified After Dark creator', ad_unverify: 'Removed After Dark creator' }
 export default function AccountsAdmin({ me, mode, openProfile }) {
   const [q, setQ] = useState(''), [res, setRes] = useState(null), [sel, setSel] = useState(null), [type, setType] = useState('standard'), [ver, setVer] = useState(false), [note, setNote] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [log, setLog] = useState(null), [days, setDays] = useState(7), [why, setWhy] = useState(''), [bdg, setBdg] = useState('launch'), [names, setNames] = useState({})
@@ -38,7 +39,7 @@ export default function AccountsAdmin({ me, mode, openProfile }) {
     {msg && <p className="msg" role="status">{msg}</p>}
     {!sel && <><div className="gl arow"><p className="hint" style={{ margin: 0 }}>Find an account, choose its category, and turn the badge on or off. The badge, the category and any feature access are separate. Every change is recorded.</p>
       <input className="anote" value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && find()} placeholder="Search name or @username" /><button className="wb p sm" onClick={find}>Search</button></div>
-      {res && (res.length === 0 ? <div className="empty">No accounts found.</div> : res.map(p => <button key={p.id} className="gl arow" style={{ textAlign: 'left' }} onClick={() => pick(p)}><h4>{p.display_name} {p.is_verified && '✔'}</h4><small>@{p.username} · {ACCT[p.account_type || 'standard']}</small></button>))}</>}
+      {res && (res.length === 0 ? <div className="empty">No accounts found.</div> : res.map(p => <button key={p.id} className="gl arow" style={{ textAlign: 'left' }} onClick={() => pick(p)}><h4>{p.display_name} {p.is_verified && <Verified />}</h4><small>@{p.username} · {ACCT[p.account_type || 'standard']}</small></button>))}</>}
     {sel && <div className="gl arow"><button className="link" onClick={() => { setSel(null); setMsg('') }}>← Back to search</button>
       <h4>{sel.display_name}</h4><small>@{sel.username}</small><button className="link" onClick={() => openProfile(sel.id)}>View profile</button>
       <label className="aact">Account category<select value={type} onChange={e => { setType(e.target.value); if (e.target.value !== 'standard') setVer(true) }}>{Object.entries(ACCT).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>

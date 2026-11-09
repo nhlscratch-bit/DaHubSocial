@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { sb, hiddenIds, friendly } from './supabase'
 import Avatar from './Avatar'
 import briefcase from './briefcase.png'
+import Verified from './Verified'
 // People search only. DAHUB never lists everyone: you find people by searching a name or @handle.
 export default function Discover({ me, openProfile, openOpps }) {
   const [q, setQ] = useState(''), [list, setList] = useState([]), [rel, setRel] = useState({}), [err, setErr] = useState(''), [busy, setBusy] = useState(false)
@@ -25,7 +26,7 @@ export default function Discover({ me, openProfile, openOpps }) {
     {s.length < 2 && <div className="onb"><h3>Find your people</h3><p>Search a name or @handle to find someone. Your timeline starts when you follow people.</p></div>}
     {err && <p className="msg">{err}</p>}{busy && <div className="skel"><i /></div>}
     {s.length >= 2 && !busy && list.map(p => <div key={p.id} className="drow"><Avatar p={p} size={56} onClick={() => openProfile(p.id)} />
-      <div className="itx" onClick={() => openProfile(p.id)}><b>{p.display_name}{p.is_verified && <span className="ver">✔</span>}</b><span>@{p.username}</span></div>
+      <div className="itx" onClick={() => openProfile(p.id)}><b>{p.display_name}{p.is_verified && <Verified />}</b><span>@{p.username}</span></div>
       <button className={'wb sm' + (rel[p.id] ? '' : ' p')} onClick={() => toggle(p.id)}>{rel[p.id] === 'accepted' ? 'Following' : rel[p.id] === 'pending' ? 'Requested' : 'Follow'}</button></div>)}
     {s.length >= 2 && !busy && !err && !list.length && <div className="empty">No one found for "{q.trim()}".</div>}</div>
 }

@@ -3,6 +3,7 @@ import { sb, friendly } from './supabase'
 import { EVCAT, EVSEL, subUrl, evDate } from './media'
 import Avatar from './Avatar'
 import ReportSheet from './ReportSheet'
+import Verified from './Verified'
 const ics = e => { const f = t => new Date(t).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, ''); const en = e.ends_at || new Date(new Date(e.starts_at).getTime() + 2 * 36e5).toISOString()
   return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT', 'UID:' + e.id + '@dahub', 'DTSTAMP:' + f(new Date()), 'DTSTART:' + f(e.starts_at), 'DTEND:' + f(en), 'SUMMARY:' + e.title.replace(/[\n,;]/g, ' '), 'LOCATION:' + (e.venue || '').replace(/[\n,;]/g, ' '), 'END:VEVENT', 'END:VCALENDAR'].join('\r\n') }
 export default function EventView({ id, me, back, openProfile, deleted }) {
@@ -30,7 +31,7 @@ export default function EventView({ id, me, back, openProfile, deleted }) {
       {(e.venue || e.neighborhood) && <p>📍 {[e.venue, e.neighborhood].filter(Boolean).join(' · ')}</p>}
       <p><b>{going}</b> going{intr > 0 && <> · <b>{intr}</b> interested</>}</p>
       {e.description && <p className="evdesc">{e.description}</p>}
-      <div className="who" role="button" onClick={() => openProfile(e.host.id)}><Avatar p={e.host} size={34} /><span>Hosted by {e.host.display_name}{e.host.is_verified && ' ✔'}</span></div></div>
+      <div className="who" role="button" onClick={() => openProfile(e.host.id)}><Avatar p={e.host} size={34} /><span>Hosted by {e.host.display_name}{e.host.is_verified && <Verified />}</span></div></div>
     {msg && <p className="msg" role="alert">{msg}</p>}
     {!e.cancelled && <div className="evact"><button className={'wb sm' + (mine?.status === 'going' ? ' p' : '')} disabled={busy} onClick={() => rsvp('going')}>{mine?.status === 'going' ? '✓ Going' : 'Going'}</button><button className={'wb sm' + (mine?.status === 'interested' ? ' p' : '')} disabled={busy} onClick={() => rsvp('interested')}>{mine?.status === 'interested' ? '★ Interested' : 'Interested'}</button></div>}
     <div className="evact">{e.link_url && <a className="wb p sm" href={e.link_url} target="_blank" rel="noopener noreferrer">Tickets / info</a>}<button className="wb sm" onClick={cal}>Add to calendar</button><button className="wb sm" onClick={share}>Share</button>

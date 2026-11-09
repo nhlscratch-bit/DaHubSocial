@@ -8,6 +8,7 @@ import Lightbox from './Lightbox'
 import ReportSheet from './ReportSheet'
 import { useMediaUrls } from './admedia'
 import { FEATURES } from './features'
+import Verified from './Verified'
 export default function PostCard({ post, me, openPost, openProfile }) {
   const [p, setP] = useState(post), [pick, setPick] = useState(false), [menu, setMenu] = useState(false), [rep, setRep] = useState(false), [gone, setGone] = useState(false), [lb, setLb] = useState(null), [show, setShow] = useState(false)
   const reload = async () => { const { data } = await sb.from('posts').select(SEL).eq('id', p.id).single(); if (data) setP(data) }
@@ -33,7 +34,7 @@ export default function PostCard({ post, me, openPost, openProfile }) {
     {menu && <div className="pmenu">{p.author.id === me.id ? <button onClick={del}>Delete post</button> : <><button onClick={() => { setMenu(false); setRep(true) }}>Report post</button><button onClick={block}>Block @{p.author.username}</button></>}<button onClick={() => setMenu(false)}>Cancel</button></div>}
     {rep && <ReportSheet me={me} type="post" targetId={p.id} reportedUser={p.author.id} close={() => setRep(false)} />}
     <div className="ph"><Avatar p={p.author} size={46} onClick={() => openProfile(p.author.id)} />
-      <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small>{p.after_dark && <span className="adchip">🌙 After Dark{p.sensitive && ' · 18+'}</span>}</div></div>
+      <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <Verified />}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small>{p.after_dark && <span className="adchip">🌙 After Dark{p.sensitive && ' · 18+'}</span>}</div></div>
     {p.body && <div className="cap" onClick={() => openPost?.(p.id)}>{p.body.split(/(#\w+)/g).map((x, i) => x.startsWith('#') ? <button key={i} className="tag" onClick={e => { e.stopPropagation(); window.dispatchEvent(new CustomEvent('open-tag', { detail: x.slice(1) })) }}>{x}</button> : x)}</div>}
     {p.held && <p className="heldn">Hidden while DAHUB reviews a report. Only you can see this.</p>}
     <Poll p={p} me={me} />

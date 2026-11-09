@@ -2,6 +2,7 @@ import wm from './wordmark.png'
 import { useCallback, useEffect, useState } from 'react'
 import { sb, ago } from './supabase'
 import Avatar from './Avatar'
+import Verified from './Verified'
 export default function Inbox({ me, online, back, openChat, openDM }) {
   const [rows, setRows] = useState(null), [tab, setTab] = useState('all'), [q, setQ] = useState(''), [uo, setUo] = useState(false), [fol, setFol] = useState(new Set()), [nd, setNd] = useState(false), [err, setErr] = useState('')
   const load = useCallback(async () => {
@@ -25,7 +26,7 @@ export default function Inbox({ me, online, back, openChat, openDM }) {
     <div className="itabs">{[['all', 'All'], ['pri', 'Primary'], ['req', 'Requests']].map(([k, l]) => <button key={k} aria-selected={tab === k} onClick={() => setTab(k)}>{l}{k === 'req' && reqN > 0 && <span className="rb">{reqN}</span>}</button>)}</div>
     <div className="sbody">{err && <p className="msg">{err}</p>}{rows === null && !err && <div className="skel" />}
       {list.map(r => <button key={r.c.id} className="irow" onClick={() => openChat(r.c.id)}><Avatar p={r.other} size={64} online={r.other ? online.has(r.other.id) : undefined} />
-        <div className="itx"><b>{r.title}{r.other?.is_verified && <span className="ver">✔</span>}</b><span className={r.unread ? 'un' : ''}>{r.c.last_sender_id === me.id && 'You: '}{r.c.last_message_preview || 'Say hi 👋'}</span></div>
+        <div className="itx"><b>{r.title}{r.other?.is_verified && <Verified />}</b><span className={r.unread ? 'un' : ''}>{r.c.last_sender_id === me.id && 'You: '}{r.c.last_message_preview || 'Say hi 👋'}</span></div>
         <div className="itm"><small>{r.c.last_message_preview ? ago(r.c.last_message_at) : ''}</small>{r.unread && <i className="ub" />}</div></button>)}
       {rows && !list.length && <div className="empty">{tab === 'req' ? 'No message requests.' : q || uo ? 'No matches.' : 'No messages yet. Tap + to start one.'}</div>}</div>
     {nd && <NewDM me={me} close={() => setNd(false)} pick={id => { setNd(false); openDM(id) }} online={online} />}</div>
@@ -38,6 +39,6 @@ function NewDM({ me, close, pick, online }) {
     const { data } = await r; setRes(data || []) }, 250); return () => clearTimeout(t) }, [q])
   return <div className="sheet"><div className="bar"><button onClick={close} aria-label="Close">✕</button>New message</div>
     <div className="isr" style={{ marginTop: 10 }}><input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Search people…" aria-label="Search people" /></div>
-    <div className="sbody">{res.map(p => <button key={p.id} className="irow" onClick={() => pick(p.id)}><Avatar p={p} size={52} online={online.has(p.id)} /><div className="itx"><b>{p.display_name}{p.is_verified && <span className="ver">✔</span>}</b><span>@{p.username}</span></div></button>)}
+    <div className="sbody">{res.map(p => <button key={p.id} className="irow" onClick={() => pick(p.id)}><Avatar p={p} size={52} online={online.has(p.id)} /><div className="itx"><b>{p.display_name}{p.is_verified && <Verified />}</b><span>@{p.username}</span></div></button>)}
       {!res.length && <div className="empty">No people found.</div>}</div></div>
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { sb, signed, friendly } from './supabase'
 import Avatar from './Avatar'
 import ReportSheet from './ReportSheet'
+import Verified from './Verified'
 const QUICK = ['❤️', '💯', '🔥', '😍', '👍'], EMO = ['😂', '😭', '😘', '🥺', '😩', '👀', '💙', '🙏', '🤝', '😎', '🔥', '💯', '😍', '😉', '😮', '🖕']
 const tm = d => new Date(d).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 const day = d => { const x = new Date(d), n = new Date(), y = new Date(Date.now() - 864e5); return x.toDateString() === n.toDateString() ? 'Today' : x.toDateString() === y.toDateString() ? 'Yesterday' : x.toLocaleDateString([], { month: 'short', day: 'numeric' }) }
@@ -72,7 +73,7 @@ export default function Chat({ id, me, online, back, openProfile }) {
   let last = ''
   return <div className="sheet clear"><div className="chd"><button className="ib" onClick={back} aria-label="Back">←</button>
     <Avatar p={o} size={58} online={on} onClick={() => o && openProfile(o.id)} />
-    <div className="cn"><b>{o?.display_name || '…'}{o?.is_verified && <span className="ver">✔</span>}</b><small className={on ? 'live' : ''}>{on ? '● Active now' : 'Offline'}</small></div>
+    <div className="cn"><b>{o?.display_name || '…'}{o?.is_verified && <Verified />}</b><small className={on ? 'live' : ''}>{on ? '● Active now' : 'Offline'}</small></div>
     <button className="ib" onClick={() => o && window.dispatchEvent(new CustomEvent('start-call', { detail: { peer: o, video: false } }))} aria-label="Voice call">📞</button><button className="ib" onClick={() => o && window.dispatchEvent(new CustomEvent('start-call', { detail: { peer: o, video: true } }))} aria-label="Video call">🎥</button><button className="ib" onClick={() => setMenu(true)} aria-label="Chat options">⋯</button></div>
     {menu && <div className="scrim" onClick={() => setMenu(false)}><div className="msheet" onClick={e => e.stopPropagation()}><button className="wb" onClick={() => { setMenu(false); openProfile(o.id) }}>View profile</button><button className="wb" onClick={() => { setMenu(false); setRep(true) }}>Report @{o?.username}</button><button className="wb" onClick={blockUser}>Block @{o?.username}</button><button className="wb" onClick={() => setMenu(false)}>Cancel</button></div></div>}
     {rep && <ReportSheet me={me} type="profile" targetId={o.id} reportedUser={o.id} close={() => setRep(false)} />}

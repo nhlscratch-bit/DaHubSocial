@@ -10,6 +10,7 @@ import I from './Icons'
 import EditProfile from './EditProfile'
 import Spotlight from './Spotlight'
 import ReportSheet from './ReportSheet'
+import Verified from './Verified'
 const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n
 const B = [[0, 26, 40], [26, 18, 62], [44, 30, 48], [74, 16, 78], [90, 28, 52], [118, 20, 36], [138, 34, 70], [172, 18, 44], [190, 26, 86], [216, 22, 58], [238, 30, 40], [268, 20, 72], [288, 28, 50], [316, 24, 64], [340, 30, 44], [370, 20, 56]]
 function Skyline() {
@@ -59,7 +60,7 @@ export default function Profile({ openPassport, id, me, back, openSettings, open
       <button className="ib cb" onClick={back} aria-label="Back"><I n="back" s={22} /></button>
       <button className="ib cb r" onClick={own ? openSettings : () => setMenu(true)} aria-label={own ? 'Settings and activity' : 'More'}>{own ? <I n="menu" s={22} /> : <I n="more" s={22} />}</button></div>
     <div className="pbg">
-      <div className="avw"><Avatar p={pr} size={116} />{pr.is_verified && <span className="vb"><I n="check" s={18} /></span>}</div>
+      <div className="avw"><Avatar p={pr} size={116} />{pr.is_verified && <Verified big />}</div>
       <div className="ptext"><h2>{pr.display_name}</h2><small>@{pr.username}</small>{pr.account_type && pr.account_type !== 'standard' && <span className={'acct ' + pr.account_type}>{pr.account_type === 'official' ? '★ ' : '✔ '}{ACCT[pr.account_type]}</span>}{pr.bio && <p className="bio">{pr.bio}</p>}
         <div className="meta">{pr.location && <span><I n="pin" s={15} /> {pr.location}</span>}{pr.link && <a href={/^https?:/.test(pr.link) ? pr.link : 'https://' + pr.link} target="_blank" rel="noreferrer"><I n="link" s={15} /> {pr.link.replace(/^https?:\/\//, '')}</a>}<span><I n="cal" s={15} /> Joined {joined}</span></div></div>
       <div className="srow"><div className="stats"><div><b>{fmt(n.f)}</b>Followers</div><div><b>{fmt(n.g)}</b>Following</div><div><b>{fmt(n.p)}</b>Posts</div></div>

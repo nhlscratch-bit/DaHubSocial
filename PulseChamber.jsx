@@ -3,6 +3,7 @@ import Avatar from './Avatar'
 import { artistPhoto, subUrl } from './media'
 import btnImg from './pulse-button.png'
 import { FILTERS, FNAME, usePulse, setFilter, setArea, scan, ago } from './pulse'
+import Verified from './Verified'
 
 export function Thumb({ it, size = 44 }) {
   const url = it.photo ? artistPhoto(it.photo) : it.cover ? subUrl(it.cover) : null
@@ -11,7 +12,7 @@ export function Thumb({ it, size = 44 }) {
   return <span className="pth" style={{ width: size, height: size }}>{(it.title || '?')[0].toUpperCase()}</span>
 }
 export function Row({ it, onClick }) {
-  return <button className="gl prow" onClick={onClick}><Thumb it={it} /><span className="evi"><b>{it.title}{it.verified && ' ✓'}</b>{it.sub && <small>{it.sub}</small>}<span className="evt"><i className={'gtag alt'}>{it.signal}</i></span></span></button>
+  return <button className="gl prow" onClick={onClick}><Thumb it={it} /><span className="evi"><b>{it.title}{it.verified && <Verified />}</b>{it.sub && <small>{it.sub}</small>}<span className="evt"><i className={'gtag alt'}>{it.signal}</i></span></span></button>
 }
 function PulseButton({ phase, onPress, disabled }) {
   return <div className={'pbtn' + (phase === 'scanning' ? ' scanning' : '')}>

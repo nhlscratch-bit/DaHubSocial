@@ -4,6 +4,7 @@ import { TYPES, TSHORT, COMP, oppSel, oppImg, dlabel, errMsg } from './opp'
 import Avatar from './Avatar'
 import I from './Icons'
 import ReportSheet from './ReportSheet'
+import Verified from './Verified'
 const RS = { sent: 'Sent', viewed: 'Viewed', accepted: 'Accepted', declined: 'Not a fit' }
 const STATUSES = [['open', 'Open'], ['paused', 'Paused'], ['filled', 'Filled'], ['closed', 'Closed']]
 export default function OpportunityDetail({ id, me, back, openProfile, openDM }) {
@@ -39,7 +40,7 @@ export default function OpportunityDetail({ id, me, back, openProfile, openDM })
         <div className="obad"><span className={'tb t-' + o.type}>{TSHORT[o.type]}</span><span className={'tb c-' + o.compensation}>{o.compensation === 'paid' ? '$ Paid' : COMP[o.compensation]}</span>{!open && <span className="tb st">{o.status}</span>}</div>
         <h1>{o.title}</h1>
         <div className="ometa"><I n="pin" s={14} /> {o.is_remote ? 'Remote' : o.location || 'Location not set'}{o.is_remote && o.location ? ' · ' + o.location : ''} · Posted {ago(o.created_at)} ago</div>
-        <div className="oposter" onClick={() => openProfile(o.poster.id)}><Avatar p={o.poster} size={46} /><div><b>{o.poster.display_name}{o.poster.is_verified && <span className="ver">✔</span>}</b><br /><small>@{o.poster.username}</small></div></div>
+        <div className="oposter" onClick={() => openProfile(o.poster.id)}><Avatar p={o.poster} size={46} /><div><b>{o.poster.display_name}{o.poster.is_verified && <Verified />}</b><br /><small>@{o.poster.username}</small></div></div>
         <h4>About this opportunity</h4><p className="odesc full">{o.description}</p>
         {o.requirements && <><h4>Requirements</h4><p className="odesc full">{o.requirements}</p></>}
         <div className="orow"><span>Type</span><b>{TYPES[o.type]}</b></div>
@@ -63,7 +64,7 @@ export default function OpportunityDetail({ id, me, back, openProfile, openDM })
         <div className="seg">{STATUSES.map(([k, l]) => <button key={k} className={o.status === k ? 'wb p' : 'wb'} disabled={busy} onClick={() => setStatus(k)}>{l}</button>)}</div>
         <h4>Responses ({resps.length})</h4>
         {!resps.length && <p className="onote">No responses yet.</p>}
-        {resps.map(r => <div key={r.id} className="oresp"><div className="oposter" onClick={() => openProfile(r.responder.id)}><Avatar p={r.responder} size={42} /><div><b>{r.responder.display_name}{r.responder.is_verified && <span className="ver">✔</span>}</b> <span className={'tb r-' + r.status}>{RS[r.status]}</span><br /><small>{ago(r.created_at)} ago</small></div></div>
+        {resps.map(r => <div key={r.id} className="oresp"><div className="oposter" onClick={() => openProfile(r.responder.id)}><Avatar p={r.responder} size={42} /><div><b>{r.responder.display_name}{r.responder.is_verified && <Verified />}</b> <span className={'tb r-' + r.status}>{RS[r.status]}</span><br /><small>{ago(r.created_at)} ago</small></div></div>
           {r.message && <p className="odesc full">{r.message}</p>}
           <div className="oact"><button className="wb sm" onClick={() => openDM(r.responder.id)}>Message</button><button className="wb p sm" disabled={busy} onClick={() => setResp(r.id, 'accepted')}>Accept</button><button className="wb sm" disabled={busy} onClick={() => setResp(r.id, 'declined')}>Not a fit</button></div></div>)}
         <button className="wb" style={{ marginTop: 12, color: '#b3261e' }} onClick={del}>Delete listing</button></div>}
