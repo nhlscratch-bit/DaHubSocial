@@ -20,7 +20,8 @@ DAHUB ("ONE HUB. EVERY SIDE OF LIFE.") is a Baltimore-focused social / networkin
 - Deployed on Vercel from this GitHub repo: framework Vite, build `npm run build`, output `dist`.
 - Env vars (set in Vercel, never commit values): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Optional TURN for calls/rooms: `VITE_TURN_URL`, `VITE_TURN_USER`, `VITE_TURN_PASS`.
 - `vite.config.js` emits `sw.js` (push) and the PWA manifest/icons.
-- Bump `BUILD` in `supabase.js` on each release (currently `build 58`); it shows in Settings so the owner can confirm a deploy landed.
+- Bump `BUILD` in `supabase.js` on each release (currently `build 59`); it shows in Settings so the owner can confirm a deploy landed.
+- Glow Mode (Settings > Look and feel, saved per device): `glow.js` cycles `--gx` on `<html>` through Glacier #19e0f0, Moonstone #7aa8ff, Frost Orchid #c79bff, Aurora Mint #5cf5c4 every 3s; `html.glow` CSS recolors `--rim`/`--rim2` and the glow on nav, cards, tiles and room screens with 2.8s transitions.
 - `features.js` holds feature switches: `passport: false` (Clout Passport off for maintenance), `adNudity: true` (After Dark nudity kill switch).
 
 ## Navigation

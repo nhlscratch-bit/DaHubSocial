@@ -715,3 +715,21 @@ img.vb.vb{position:absolute;right:-8px;bottom:-2px;width:48px;height:48px;paddin
 @media (max-width:380px){.lrhead h1,.lrstart h1{font-size:32px}.lrgo{font-size:21px}.lrcb i{width:62px;height:62px}.lropts button{font-size:13.5px;padding:10px 4px}.lrspk{gap:6px 2px}}
 @media (prefers-reduced-motion:reduce){.lrwave i,.lrlive u,.lrav.talk{animation:none!important}}
 .lrlis .lrl .av{width:48px!important;height:48px!important}.lrmore{width:48px;height:48px}
+/* ===== Glow Mode (Settings > Look and feel). --gx is set on <html> by glow.js; transitions fade between colors. ===== */
+html.glow{--gxs:color-mix(in srgb,var(--gx) 55%,transparent);--rim:color-mix(in srgb,var(--gx) 50%,#04262e);--rim2:var(--gx)}
+html.glow :is(nav,.fabn,.gl,.post,.mtile,.hdr .ib,.ringav,.setpanel,.lrcard,.lrcirc,.lrcb i,.rmini,.lrgo,.gobtn,.lrhost,.lrav,.lrmicbig,.lrpill.dark,.lrlive,.tgl.on,.arc-card){transition:border-color 2.8s linear,box-shadow 2.8s linear,background-color 2.8s linear,color 2.8s linear}
+html.glow nav{box-shadow:inset 0 0 0 2px var(--rim2),0 0 0 1.5px var(--gx),0 0 24px var(--gxs),0 14px 30px #0a4a5540}
+html.glow .fabn{box-shadow:0 0 0 5px #ffffffd9,0 0 0 7px var(--gx),0 0 28px var(--gx),0 14px 28px #06485266,inset 0 0 0 2px var(--rim2)}
+html.glow .hdr .ib{border:1.5px solid var(--gx);box-shadow:0 0 14px var(--gxs),0 8px 16px #43515b24}
+html.glow .ringav{border-radius:50%;box-shadow:0 0 0 2px var(--gx),0 0 18px var(--gxs)}
+html.glow .post{border-color:var(--gx);box-shadow:0 0 0 1px var(--gx),0 0 20px var(--gxs),0 10px 28px #43515b1f}
+html.glow .gl{box-shadow:inset 0 0 0 2px var(--rim2),inset 0 2px 0 #fffffff0,0 12px 26px #0a4a5538,0 0 18px var(--gxs)}
+html.glow .mtile{box-shadow:0 0 0 2px var(--gx),0 0 18px var(--gxs),0 8px 16px #0a4a5530}
+html.glow .arc-card{border-color:var(--gx);box-shadow:0 0 0 1px var(--gx),0 0 18px var(--gxs)}
+html.glow .lrcard{box-shadow:0 0 0 1.5px var(--gx),0 0 20px var(--gxs),0 10px 24px #2a5a6630,inset 0 2px 0 #fff}
+html.glow :is(.lrcirc,.lrpill.dark,.lrlive){border-color:var(--gx);box-shadow:0 0 0 2px #cfe9ee,0 0 18px var(--gx)}
+html.glow :is(.lrhost,.lrav:not(.talk),.lrmicbig){box-shadow:0 0 0 3px var(--gx),0 0 20px var(--gx)}
+html.glow .lrcb:not(.end):not(.off) i{box-shadow:0 0 0 3px #cfe9ee,0 0 0 5px var(--gx),0 0 20px var(--gx),inset 0 2px 3px #ffffff40}
+html.glow :is(.lrgo,.gobtn){box-shadow:0 0 0 3px #d8eef2,0 0 26px var(--gx),inset 0 3px 0 #ffffffb0,inset 0 -4px 8px #06607055}
+html.glow .rmini{border-color:var(--gx);box-shadow:0 0 0 2px #cfe9ee,0 0 22px var(--gx),0 10px 20px #0007}
+html.glow .tgl.on{background:var(--gx)}
