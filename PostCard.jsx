@@ -25,7 +25,7 @@ export default function PostCard({ post, me, openPost, openProfile }) {
     <button className="pmore" onClick={() => setMenu(!menu)} aria-label="Post options" />
     {menu && <div className="pmenu">{p.author.id === me.id ? <button onClick={del}>Delete post</button> : <button onClick={() => { setMenu(false); setRep(true) }}>Report post</button>}<button onClick={() => setMenu(false)}>Cancel</button></div>}
     {rep && <ReportSheet me={me} type="post" targetId={p.id} reportedUser={p.author.id} close={() => setRep(false)} />}
-    <div className="ph"><Avatar p={p.author} size={38} onClick={() => openProfile(p.author.id)} />
+    <div className="ph"><Avatar p={p.author} size={46} onClick={() => openProfile(p.author.id)} />
       <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small></div></div>
     {p.body && <div className="cap" onClick={() => openPost?.(p.id)}>{p.body.split(/(#\w+)/g).map((x, i) => x.startsWith('#') ? <span key={i} className="tag">{x}</span> : x)}</div>}
     {media.length > 0 && <div className="mgrid">{media.map(m => m.media_type === 'video'

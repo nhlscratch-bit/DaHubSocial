@@ -248,31 +248,28 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:170px;z-index:
 /* Glass title bar on detail screens so scrolled content doesn't clip against the wallpaper */
 .sheet.clear>.pvtop{background:linear-gradient(180deg,#ffffffe0,#e4f8f8d0);backdrop-filter:blur(10px);border-bottom:1.5px solid var(--rim)}
 
-/* ===== build 18: real kit art (cut from the asset sheets) ===== */
-nav,nav.over{background:url(./nav_bar.png) center/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;backdrop-filter:none;height:auto;aspect-ratio:896/198;bottom:calc(0px + env(safe-area-inset-bottom));grid-template-columns:.215fr .191fr .196fr .188fr .21fr;box-sizing:border-box}
-nav .n{font-size:0;gap:0;color:#dffbff;filter:drop-shadow(0 1px 1px #02303a99)}
-nav .n[aria-current=page]{color:#fff;filter:drop-shadow(0 0 7px #8df2f2) drop-shadow(0 0 2px #fff)}
-nav .n[aria-current=page]:after{bottom:20%;width:34px;height:3px;background:#bffcff;box-shadow:0 0 8px #8df2f2}
-nav .fabn{width:92px;height:92px;margin:0 auto;border:0;border-radius:50%;background:none;box-shadow:none}
-nav .fabn svg{display:none}nav .fabn:active{background:#ffffff22}
+/* ===== build 18b: kit buttons + icons only; cards coded ===== */
+nav .fabn{width:78px;height:78px;margin:-30px auto 0;border:0;border-radius:50%;background:url(./orb.png) center/100% 100% no-repeat;box-shadow:0 10px 22px #06485255}
+nav .fabn svg{display:none}nav .fabn:active{transform:scale(.95)}
 .hbar .ib{width:44px;height:44px;border:0;box-shadow:none;background:url(./btn.png) center/100% 100% no-repeat;color:#e8ffff;filter:drop-shadow(0 4px 5px #06485244)}
 .hbar .ib svg{filter:drop-shadow(0 0 3px #8df2f299)}
 .ringav{position:relative;display:inline-grid;place-items:center;width:62px;height:62px;flex:none}
 .ringav:after{content:'';position:absolute;inset:0;background:url(./ring.png) center/100% 100% no-repeat;pointer-events:none}
-.post{border-style:solid;border-color:transparent;border-width:54px 14px 46px 14px;border-image:url(./card.png) 108 28 60 28 fill/54px 14px 46px 14px stretch;background:none;box-shadow:none;backdrop-filter:none;border-radius:0;padding:0 6px;margin:12px 6px 2px;color:#05303a}
-.post .ph{margin:-47px 0 4px -3px;height:46px;padding-right:44px}
-.post .ph b{font-size:17px;color:#042a33}.post .ph small{color:#0a4a58}
-.post .ver{background:#042a33}
-.post .cap,.post .sum{color:#05303a}
-.post .mgrid img,.post .mgrid video{border:1.5px solid #043640}
-.post .act{margin:8px -20px -44px;height:42px;display:block}
-.post .act>button{position:absolute;top:0;height:42px;transform:translateX(-50%);color:#e9feff;padding:0 4px;gap:5px;font-size:14px;filter:drop-shadow(0 1px 1px #02303a88);white-space:nowrap}
-.post .act>button:nth-child(1){left:13.4%}.post .act>button:nth-child(2){left:33.4%}.post .act>button:nth-child(3){left:51.8%}.post .act>button:nth-child(4){left:70.8%}.post .act>button:nth-child(5){left:87.5%}
+/* post card: cyan glass like the sheet, built in code */
+.post{position:relative;margin:12px 10px 2px;padding:12px 14px 0;border-radius:30px;border:2px solid #0d4350;color:#05303a;overflow:visible;
+ background:linear-gradient(115deg,transparent 30%,#ffffff66 42%,transparent 54%),linear-gradient(115deg,transparent 58%,#ffffff40 66%,transparent 74%),linear-gradient(160deg,#d9f9fb 0%,#9be6ee 55%,#6fd3de 100%);
+ box-shadow:inset 0 0 0 2px #8df2f2,inset 0 3px 0 #ffffffd0,inset 0 -14px 24px #1aa3b533,0 12px 26px #0a4a5540,0 0 18px #00d1d133;backdrop-filter:none}
+.post .ph b{font-size:18px;color:#042a33}.post .ph small{color:#0a5565}.post .ver{background:#0d6b78}
+.post .cap,.post .sum{color:#05303a}.post .tag{color:#075a68;font-weight:700}
+.post .mgrid img,.post .mgrid video{border:2px solid #0d4350;border-radius:22px}
+.post .act{margin:10px -14px 0;padding:0 8px;height:50px;display:flex;justify-content:space-between;align-items:center;border-top:1.5px solid #0d435066;border-radius:0 0 28px 28px;background:linear-gradient(180deg,#1b9fb2,#0e7f90);box-shadow:inset 0 2px 0 #ffffff55}
+.post .act>button{position:static;transform:none;height:44px;padding:0 10px;color:#eaffff;font-weight:600;font-size:14px;gap:6px;filter:drop-shadow(0 1px 1px #02303a88);background:none;border:0;box-shadow:none}
+.post .act>button+button{border-left:1px solid #ffffff2e}
 .post .act .on{color:#fff;filter:drop-shadow(0 0 6px #8df2f2)}
-.post .picker{left:10px;bottom:46px}
-
-.post{position:relative}
-.post .pmore{position:absolute;top:-48px;right:-9px;width:48px;height:42px;background:none;border:0}
-.post .pmenu{position:absolute;top:-6px;right:0;z-index:30;background:#fff;border:1.5px solid #043640;border-radius:16px;box-shadow:0 10px 24px #0004;display:flex;flex-direction:column;overflow:hidden}
+.post .picker{left:10px;bottom:56px}
+.post .pmore{position:absolute;top:12px;right:12px;width:36px;height:36px;border:0;border-radius:50%;background:url(./btn.png) center/100% 100% no-repeat}
+.post .pmore:after{content:'•••';color:#e8ffff;font-size:11px;letter-spacing:1px}
+.post .pmenu{position:absolute;top:50px;right:12px;z-index:30;background:#fff;border:1.5px solid #043640;border-radius:16px;box-shadow:0 10px 24px #0004;display:flex;flex-direction:column;overflow:hidden}
 .post .pmenu button{padding:13px 20px;font-weight:600;text-align:left;color:#05303a;background:none;border:0;border-bottom:1px solid var(--line)}
-.post .ph{padding-left:4px}
+.post .ph{padding-right:44px}
+.post .act>button{flex:1;justify-content:center;padding:0 2px}
