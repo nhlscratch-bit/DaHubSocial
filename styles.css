@@ -381,11 +381,11 @@ body.inshorts .hdr{display:none}
 .mfilters{display:flex;gap:8px;padding:0 14px 10px;overflow-x:auto;scrollbar-width:none}
 .mf{flex:none;padding:10px 16px;border-radius:999px;border:1.5px solid #0d5560;background:linear-gradient(180deg,#fff,#dff3f6);color:#05303a;font-weight:700;font-size:15px;max-width:150px}
 .mf.on,.mf[aria-selected=true]{background:linear-gradient(180deg,#ff9a55,#e8561a);color:#fff;border-color:#e8561a}
-.spot{position:relative;margin:4px 14px 6px;border-radius:24px;min-height:210px;padding:18px 16px;color:#fff;background-size:cover;background-position:right center;border:2px solid #ff8a45;box-shadow:0 8px 22px #ff7a2f40;display:flex;flex-direction:column;align-items:flex-start;gap:6px;justify-content:center}
+.mspot{position:relative;margin:4px 14px 6px;border-radius:24px;min-height:210px;padding:18px 16px;color:#fff;background-size:cover;background-position:right center;border:2px solid #ff8a45;box-shadow:0 8px 22px #ff7a2f40;display:flex;flex-direction:column;align-items:flex-start;gap:6px;justify-content:center}
 .spl{background:#ff7a2f;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:800;letter-spacing:.3px}
-.spot h2{margin:2px 0 0;font-size:34px;line-height:1;max-width:60%;text-shadow:0 2px 12px #000}.spot p{margin:0;max-width:60%;font-size:15px;text-shadow:0 1px 8px #000}
+.mspot h2{margin:2px 0 0;font-size:34px;line-height:1;max-width:60%;text-shadow:0 2px 12px #000}.mspot p{margin:0;max-width:60%;font-size:15px;text-shadow:0 1px 8px #000}
 .watch{border:1.5px solid #ffb98a;border-radius:999px;padding:12px 22px;font-weight:800;font-size:17px;color:#fff;background:linear-gradient(180deg,#ff8a45,#d9480f);box-shadow:0 0 14px #ff7a2f80}.watch.sm{padding:9px 14px;font-size:14px;flex:none}
-.dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px}.dots i{width:8px;height:8px;border-radius:50%;background:#fff6}.dots i.on{width:22px;border-radius:6px;background:#ff7a2f}
+.mdots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px}.mdots i{width:8px;height:8px;border-radius:50%;background:#fff6}.mdots i.on{width:22px;border-radius:6px;background:#ff7a2f}
 .msec{margin:18px 14px 8px;font-size:21px;padding-left:10px;border-left:4px solid #ff7a2f}
 .vrow{display:flex;gap:12px;overflow-x:auto;padding:2px 14px 6px;scrollbar-width:none;scroll-snap-type:x proximity}.vrow>*{scroll-snap-align:start}
 .vcard{flex:none;width:200px;display:flex;flex-direction:column;gap:3px;text-align:left;background:none;border:0;padding:0;color:inherit}.vcard b{font-size:15px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.vcard small{color:#2d6a78;font-size:13px}
@@ -412,3 +412,13 @@ body.inshorts .hdr{display:none}
 .form,.arow{box-sizing:border-box}.arow{width:auto}
 /* ===== account types (build 33) ===== */
 .acct{display:inline-block;margin:4px 0 2px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#0e7f90;color:#fff}.acct.business{background:#1b6fd1}.acct.media{background:#7b3fd1}.acct.creator{background:#e8561a}.acct.official{background:linear-gradient(90deg,#f5b400,#e8561a)}
+/* ===== clean tags + living shimmer (build 34) ===== */
+.schips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.schips .chip{flex:none;height:26px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.2px;white-space:nowrap;background:#ffffff26;border:1px solid #ffffff4d;color:#fff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.schips .chip.t{background:#fff;color:#075560;border-color:#fff}
+.schips .chip.live{background:#0a3d4599}.schips .chip.live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4cf08a;margin-right:6px;box-shadow:0 0 6px #4cf08a;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+body::after{content:"";position:fixed;top:0;left:0;width:220vw;height:100%;pointer-events:none;z-index:90;background:linear-gradient(105deg,transparent 40%,#ffffff10 45%,#ffffff3d 49%,#d4fbffcc 50%,#ffffff3d 51%,#ffffff10 55%,transparent 60%);transform:translate3d(-110vw,0,0);animation:wave 9s cubic-bezier(.45,.05,.55,.95) infinite;will-change:transform;opacity:.55}
+@keyframes wave{0%{transform:translate3d(-120vw,0,0)}70%,100%{transform:translate3d(100vw,0,0)}}
+body.inshorts::after{display:none}
+@media (prefers-reduced-motion:reduce){body::after{animation:none;display:none}.schips .chip.live i{animation:none}}

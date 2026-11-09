@@ -45,10 +45,10 @@ export default function MediaPage({ me, back, openProfile, openSubmit, openArtis
       <button className={'mf' + (onlyFeat ? ' on' : '')} onClick={() => setOnlyFeat(x => !x)}>★ Featured</button></div>
     {err && <p className="msg" role="alert">{err} <button className="link" onClick={load}>Retry</button></p>}
     {artists === null && !err && <div className="skel"><i /><i /></div>}
-    {cur && <div className="spot" style={{ backgroundImage: `linear-gradient(90deg,#000d 10%,#0000 80%),url(${artistPhoto(cur.photo_path)})` }}>
+    {cur && <div className="mspot" style={{ backgroundImage: `linear-gradient(90deg,#000d 10%,#0000 80%),url(${artistPhoto(cur.photo_path)})` }}>
       <span className="spl">★ DAHUB SPOTLIGHT</span><h2>{cur.name}</h2><p>{cur.spotlight_tagline || cur.city}</p>
       <button className="watch" onClick={() => spotVid ? setPlay({ ...spotVid, artist: cur }) : openArtist(cur.id)}>{spotVid ? 'Watch Now ▶' : 'See artist ›'}</button>
-      {spot.length > 1 && <div className="dots">{spot.map((_, i) => <i key={i} className={i === slide % spot.length ? 'on' : ''} onClick={() => setSlide(i)} />)}</div>}</div>}
+      {spot.length > 1 && <div className="mdots">{spot.map((_, i) => <i key={i} className={i === slide % spot.length ? 'on' : ''} onClick={() => setSlide(i)} />)}</div>}</div>}
     {music.length > 0 && <><h4 className="msec">New Music</h4>{row(music)}</>}
     {A.length > 0 && <><h4 className="msec">Artists to Discover</h4><div className="vrow">{A.map(a => <button key={a.id} className="acard" onClick={() => openArtist(a.id)}>
       <span className="aph" style={a.photo_path ? { backgroundImage: `url(${artistPhoto(a.photo_path)})` } : undefined} /><b>{a.name}</b><small>📍 {a.city}</small><span className="gtags">{a.genres.slice(0, 2).map(g => <i key={g} className="gtag">{g}</i>)}</span></button>)}</div></>}
