@@ -18,3 +18,4 @@ export const SELV = '*,artist:media_artists(id,name,city,genres,photo_path)'
 export const EVCAT = { music: 'Music', food: 'Food', party: 'Party', community: 'Community', sports: 'Sports', art: 'Art', networking: 'Networking', other: 'Other' }
 export const EVSEL = '*,host:profiles!events_host_id_fkey(id,username,display_name,avatar_url,is_verified),event_rsvps(user_id,status)'
 export const evDate = (t, o) => new Date(t).toLocaleString([], o || { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+export const CCAT = { music: 'Music', food: 'Food', neighborhood: 'Neighborhood', sports: 'Sports', business: 'Business', art: 'Art', faith: 'Faith', school: 'School', fitness: 'Fitness', other: 'Other' }

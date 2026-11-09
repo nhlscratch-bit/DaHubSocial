@@ -24,6 +24,8 @@ import More from './More'
 import Topic from './Topic'
 import Shorts from './Shorts'
 import Locked from './Locked'
+import Communities, { NewCommunity } from './Communities'
+import CommunityView from './CommunityView'
 import { registerSW } from './push'
 import Events, { NewEvent } from './Events'
 import EventView from './EventView'
@@ -74,8 +76,8 @@ export default function App() {
   useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
   useEffect(() => {
     if (!uid) return
-    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat')
-    if (post || prof || art || evn || cht) { setStack([cht ? { t: 'chat', id: cht } : post ? { t: 'post', id: post } : evn ? { t: 'event', id: evn } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
+    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community')
+    if (post || prof || art || evn || cht || cmn) { setStack([cmn ? { t: 'community', id: cmn } : cht ? { t: 'chat', id: cht } : post ? { t: 'post', id: post } : evn ? { t: 'event', id: evn } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
   }, [uid])
   if (!booted) return <Boot onDone={() => setBooted(true)} />
   if (session === undefined) return null
@@ -112,6 +114,9 @@ export default function App() {
     {top?.t === 'events' && <Events me={me} back={back} open={id => push({ t: 'event', id })} create={() => push({ t: 'newevent' })} />}
     {top?.t === 'newevent' && <NewEvent me={me} back={back} created={id => setStack(s => [...s.slice(0, -1), { t: 'event', id }])} />}
     {top?.t === 'event' && <EventView key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} deleted={back} />}
+    {top?.t === 'communities' && <Communities me={me} back={back} open={id => push({ t: 'community', id })} create={() => push({ t: 'newcommunity' })} />}
+    {top?.t === 'newcommunity' && <NewCommunity me={me} back={back} created={id => setStack(s => [...s.slice(0, -1), { t: 'community', id }])} />}
+    {top?.t === 'community' && <CommunityView key={top.id} id={top.id} me={me} back={back} openPost={openPost} openProfile={openProfile} gone={back} />}
     {top?.t === 'artist' && <ArtistPage key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} play={v => setPlayV(v)} />}
     {playV && <Player v={playV} close={() => setPlayV(null)} openArtist={id => { setPlayV(null); push({ t: 'artist', id }) }} />}
     {top?.t === 'submit' && <Submit me={me} back={back} />}

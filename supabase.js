@@ -30,7 +30,7 @@ export async function signed(path) {
   return data?.signedUrl
 }
 
-export const BUILD = 'build 41'
+export const BUILD = 'build 42'
 
 // People hidden from me: blocked, blocked-me (direction not revealed) and muted.
 export async function hiddenIds() { const { data } = await sb.rpc('hidden_ids'); return new Set((data || []).map(x => (typeof x === 'string' ? x : Object.values(x)[0]))) }

@@ -15,12 +15,13 @@ export default function More({ go, openProfile, me, isAdmin }) {
     [trophy, 'Opportunity Board', () => go('opps')],
     [play, 'Media', () => go('media')],
     [null, 'Events', () => go('events')],
+    [null, 'Communities', () => go('communities')],
     [star, 'Get Featured', () => go('submit')],
     [person, 'My Profile', () => openProfile(me.id)],
     [shieldlock, 'Blocked & Muted', () => go('safety')],
     ...(isAdmin ? [[shieldx, 'Admin', () => go('admin')]] : []),
     [door, 'Sign Out', () => confirm('Sign out of DAHUB?') && sb.auth.signOut()]]
   return <div className="more">
-    <div className="mtiles">{T.map(([img, label, fn]) => <button key={label} className="mtile" onClick={fn}>{img ? <img src={img} alt="" /> : <span className="mti"><I n="cal" s={30} /></span>}<b>{label}</b><I n="chev" s={20} /></button>)}</div>
+    <div className="mtiles">{T.map(([img, label, fn]) => <button key={label} className="mtile" onClick={fn}>{img ? <img src={img} alt="" /> : <span className="mti"><I n={label === 'Events' ? 'cal' : 'user'} s={30} /></span>}<b>{label}</b><I n="chev" s={20} /></button>)}</div>
     <div className="mdiv"><i /><img src={crown} alt="" /><i /></div><small className="mbuild">DAHUB {BUILD}</small></div>
 }

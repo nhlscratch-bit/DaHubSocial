@@ -443,3 +443,6 @@ body.inshorts::after{display:none}
 /* ===== Question of the Day (build 39) ===== */
 .qotd{display:grid;gap:4px;width:calc(100% - 28px);margin:8px 14px;padding:14px 16px;border-radius:22px;text-align:left;color:#fff;border:1.5px solid #ffffff80;background:linear-gradient(135deg,#0e7f90,#1b9fb2 60%,#52d6d6);box-shadow:0 8px 20px #0a4a5540}
 .qotd small{font-weight:800;letter-spacing:.4px;font-size:12px;opacity:.9}.qotd b{font-size:19px;line-height:1.2}.qotd .watch{justify-self:start;margin-top:4px;background:#fff;color:#075560;border-color:#fff;box-shadow:none}
+/* ===== Communities (build 42) ===== */
+.cph{flex:none;width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#1b9fb2,#52d6d6) center/cover;color:#fff;font-size:28px;font-weight:800;display:grid;place-items:center}
+.cvh{padding:8px 14px}.cvh h2{margin:8px 0 4px}.cvh p{margin:8px 0}.cvc{height:150px;border-radius:22px;background:#cde center/cover}
