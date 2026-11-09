@@ -3,6 +3,7 @@ import { sb, SEL, REACTIONS, mediaUrl, ago } from './supabase'
 import Avatar from './Avatar'
 import I from './Icons'
 import AutoVideo from './AutoVideo'
+import Poll from './Poll'
 import Lightbox from './Lightbox'
 import ReportSheet from './ReportSheet'
 export default function PostCard({ post, me, openPost, openProfile }) {
@@ -31,6 +32,7 @@ export default function PostCard({ post, me, openPost, openProfile }) {
     <div className="ph"><Avatar p={p.author} size={46} onClick={() => openProfile(p.author.id)} />
       <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}{p.audience !== 'public' && ' · ' + p.audience.replace('_', ' ')}</small></div></div>
     {p.body && <div className="cap" onClick={() => openPost?.(p.id)}>{p.body.split(/(#\w+)/g).map((x, i) => x.startsWith('#') ? <button key={i} className="tag" onClick={e => { e.stopPropagation(); window.dispatchEvent(new CustomEvent('open-tag', { detail: x.slice(1) })) }}>{x}</button> : x)}</div>}
+    <Poll p={p} me={me} />
     {media.length > 0 && <div className="mgrid">{media.map(m => m.media_type === 'video'
       ? <AutoVideo key={m.storage_path} src={mediaUrl(m.storage_path)} />
       : <img key={m.storage_path} src={mediaUrl(m.storage_path)} alt="" loading="lazy" onClick={() => setLb(media.filter(x => x.media_type !== 'video').findIndex(x => x.storage_path === m.storage_path))} />)}</div>}

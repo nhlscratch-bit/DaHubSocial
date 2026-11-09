@@ -4,9 +4,17 @@ import wm from './wordmark.png'
 import I from './Icons'
 import EditProfile from './EditProfile'
 import { BUILD } from './supabase'
+import { useEffect } from 'react'
+import { supported, current, enable, disable } from './push'
 
 export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) {
   const [q, setQ] = useState(''), [edit, setEdit] = useState(false), [pw, setPw] = useState(false), [priv, setPriv] = useState(!!profile?.is_private), [err, setErr] = useState('')
+  const [pushOn, setPushOn] = useState(false)
+  useEffect(() => { current().then(s => setPushOn(!!s)) }, [])
+  async function togglePush() {
+    setErr(''); if (pushOn) { await disable(); setPushOn(false); return }
+    try { await enable(me); setPushOn(true) } catch (e) { setErr(e.message) }
+  }
   async function togglePrivate() {
     const v = !priv; setPriv(v); setErr('')
     const { error } = await sb.from('profiles').update({ is_private: v }).eq('id', me.id)
@@ -20,6 +28,7 @@ export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) 
     ['How you use DAHUB', [
       ['bookmark', 'Saved', 'Posts you bookmarked', () => go('saved'), 'bookmarks'],
       ['bell', 'Notifications', 'Likes, follows, requests, replies', () => go('notifs'), 'alerts'],
+      ...(supported() ? [['bell', 'Push notifications', pushOn ? 'On: alerts for messages, calls and activity' : 'Off: tap to get alerts when the app is closed', togglePush, 'alerts phone push messages calls', pushOn, true]] : []),
       ['chat', 'Messages', 'Your conversations', () => go('inbox'), 'dm inbox']]],
     ['Grow your hustle', [
       ['compass', 'Opportunity Board', 'Gigs, collabs, bookings, talent calls', () => go('opps'), 'jobs gigs'],

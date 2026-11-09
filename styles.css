@@ -422,3 +422,24 @@ body::after{content:"";position:fixed;top:0;left:0;width:200vw;height:100%;point
 @keyframes wave{0%{transform:translate3d(-110vw,0,0)}85%,100%{transform:translate3d(110vw,0,0)}}
 @-webkit-keyframes wave{0%{-webkit-transform:translate3d(-110vw,0,0)}85%,100%{-webkit-transform:translate3d(110vw,0,0)}}
 body.inshorts::after{display:none}
+/* ===== locked account (build 36) ===== */
+.locked{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:30px;background:#f4f3f0 url(./wallpaper.png) center/cover}.locked img{height:70px;object-fit:contain}.locked h2{margin:6px 0 0}.locked p{margin:0;max-width:320px}.locked .why{background:#fff;border-radius:14px;padding:10px 14px}
+/* ===== Events (build 37) ===== */
+.evc{display:flex;align-items:stretch;gap:12px;margin:10px 14px;padding:12px;border-radius:22px;text-align:left;width:calc(100% - 28px)}
+.evd{flex:none;width:58px;border-radius:16px;background:linear-gradient(180deg,#1b9fb2,#0e7f90);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 0}.evd b{font-size:26px;line-height:1}.evd small{font-weight:800;letter-spacing:.5px;font-size:12px}
+.evi{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.evi b{font-size:17px;overflow-wrap:anywhere}.evi small{color:#2d6a78}
+.evt{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0}.gtag.alt{background:#0e7f90}.gtag.red{background:#c0392b}.gtag.grn{background:#1f9d55}
+.evp{flex:none;width:70px;border-radius:14px;background:#cde center/cover}
+.evh{padding:6px 14px}.evh h2{margin:8px 0 4px}.evh p{margin:4px 0}.evdesc{white-space:pre-wrap}
+.evact{display:flex;gap:8px;flex-wrap:wrap;padding:6px 14px}
+.mti{width:44px;height:44px;display:grid;place-items:center;color:#0e7f90}
+/* ===== Polls (build 38) ===== */
+.poll{display:grid;gap:8px;margin:8px 14px 4px}.poll small{color:#2d6a78;font-size:13px}
+.popt{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:10px 14px;border-radius:14px;border:1.5px solid #0d5560;background:linear-gradient(180deg,#fff,#dff3f6);color:#05303a;font-weight:600;font-size:15px;text-align:left;overflow:hidden}
+.popt.res{cursor:default}.popt.res i{position:absolute;left:0;top:0;bottom:0;background:#1b9fb240;border-radius:0 12px 12px 0;transition:width .5s}.popt.res.mine{border-color:#e8561a}.popt.res.mine i{background:#ff7a2f40}
+.popt>*{position:relative}
+.pollc{display:grid;gap:8px;padding:4px 0 8px}.pollc input{width:100%;box-sizing:border-box;padding:11px 14px;border-radius:14px;border:1.5px solid #0d556080;background:#ffffffb0;font-size:16px}.pollc small{color:#2d6a78}
+.crow .ib.on{color:#0e7f90;background:#d9f4f6}
+/* ===== Question of the Day (build 39) ===== */
+.qotd{display:grid;gap:4px;width:calc(100% - 28px);margin:8px 14px;padding:14px 16px;border-radius:22px;text-align:left;color:#fff;border:1.5px solid #ffffff80;background:linear-gradient(135deg,#0e7f90,#1b9fb2 60%,#52d6d6);box-shadow:0 8px 20px #0a4a5540}
+.qotd small{font-weight:800;letter-spacing:.4px;font-size:12px;opacity:.9}.qotd b{font-size:19px;line-height:1.2}.qotd .watch{justify-self:start;margin-top:4px;background:#fff;color:#075560;border-color:#fff;box-shadow:none}

@@ -4,8 +4,9 @@ import { CAT, SUBSEL, subUrl } from './media'
 import { REASONS } from './opp'
 import Avatar from './Avatar'
 import MediaAdmin from './MediaAdmin'
+import DailyAdmin from './Daily'
 import AccountsAdmin from './AccountsAdmin'
-const TABLE = { post: 'posts', comment: 'comments', opportunity: 'opportunities' }
+const TABLE = { post: 'posts', comment: 'comments', opportunity: 'opportunities', event: 'events' }
 export default function Admin({ me, back, openPost, openProfile, openOpp }) {
   const [tab, setTab] = useState('subs'), [subs, setSubs] = useState(null), [reps, setReps] = useState(null), [live, setLive] = useState(null), [names, setNames] = useState({}), [note, setNote] = useState({}), [days, setDays] = useState({}), [msg, setMsg] = useState('')
   const load = useCallback(async () => {
@@ -32,9 +33,10 @@ export default function Admin({ me, back, openPost, openProfile, openOpp }) {
   const nm = id => names[id] ? `${names[id].display_name} (@${names[id].username})` : 'unknown'
   const noteBox = id => <input className="anote" value={note[id] || ''} onChange={e => setNote(n => ({ ...n, [id]: e.target.value }))} placeholder="Note (shown to the creator on a rejection)" maxLength={200} />
   return <div className="sheet"><div className="bar"><button onClick={back}>←</button>Admin</div><div className="sbody">
-    <div className="chips">{[['subs', `Submissions${subs ? ` (${subs.length})` : ''}`], ['reps', `Reports${reps ? ` (${reps.length})` : ''}`], ['accts', 'Accounts'], ['audit', 'Audit log'], ['arts', 'Artists'], ['live', 'Live spotlights']].map(([k, l]) => <button key={k} className="chipb" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>)}</div>
+    <div className="chips">{[['subs', `Submissions${subs ? ` (${subs.length})` : ''}`], ['reps', `Reports${reps ? ` (${reps.length})` : ''}`], ['accts', 'Accounts'], ['audit', 'Audit log'], ['daily', 'Daily question'], ['arts', 'Artists'], ['live', 'Live spotlights']].map(([k, l]) => <button key={k} className="chipb" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>)}</div>
     {msg && <p className="msg" role="status">{msg}</p>}
     {(tab === 'accts' || tab === 'audit') && <AccountsAdmin me={me} mode={tab} openProfile={openProfile} />}
+    {tab === 'daily' && <DailyAdmin me={me} />}
     {tab === 'arts' && <MediaAdmin me={me} />}
     {tab === 'subs' && (subs === null ? <div className="skel"><i /></div> : subs.length === 0 ? <div className="empty">No submissions waiting.</div> : subs.map(s => <div key={s.id} className="gl arow">
       {s.cover_path && <img className="mimg2" src={subUrl(s.cover_path)} alt="" />}
@@ -51,6 +53,7 @@ export default function Admin({ me, back, openPost, openProfile, openOpp }) {
     {tab === 'reps' && (reps === null ? <div className="skel"><i /></div> : reps.length === 0 ? <div className="empty">No open reports.</div> : reps.map(r => <div key={r.id} className="gl arow">
       <span className="chip t">{r.target_type}</span><h4>{REASONS[r.reason] || r.reason}</h4>{r.details && <p>{r.details}</p>}
       <small>Reported by {nm(r.reporter_id)} · {ago(r.created_at)}{r.reported_user_id && <> · About {nm(r.reported_user_id)}</>}</small>
+      {r.target_type === 'event' && <small>Event id {r.target_id.slice(0, 8)}. Use Remove content to delete it.</small>}
       {r.target_type === 'artist' && <small>Artist id {r.target_id.slice(0, 8)}. Edit or delete it under the Artists tab.</small>}
       {['post', 'profile', 'opportunity'].includes(r.target_type) && <button className="link" onClick={() => view(r)}>View reported {r.target_type}</button>}
       {noteBox(r.id)}

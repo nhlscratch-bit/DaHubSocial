@@ -1,4 +1,5 @@
 import AutoVideo from './AutoVideo'
+import Poll from './Poll'
 import Lightbox from './Lightbox'
 import wm from './wordmark.png'
 import { useEffect, useRef, useState } from 'react'
@@ -49,6 +50,7 @@ export default function PostView({ id, focus, me, profile, back, openProfile }) 
         <div style={{ flex: 1 }}><b>{p.author.display_name}{p.author.is_verified && <span className="ver">✔</span>}</b><small>@{p.author.username} · {ago(p.created_at)}</small></div>
         {p.author.id !== me.id && <button className="wb p sm" onClick={follow}>{fol === 'accepted' ? 'Following' : fol === 'pending' ? 'Requested' : 'Follow'}</button>}</div>
       {(text || tags.length > 0) && <div className="cap pp" style={{ cursor: 'auto' }}>{text}{tags.length > 0 && <div className="tags">{tags.join(' ')}</div>}</div>}
+      <Poll p={p} me={me} />
       {media.length > 0 && <div className="carw"><div className="car" onScroll={e => setSlide(Math.round(e.target.scrollLeft / e.target.clientWidth))}>{media.map(m => m.media_type === 'video' ? <AutoVideo key={m.storage_path} src={mediaUrl(m.storage_path)} /> : <img key={m.storage_path} src={mediaUrl(m.storage_path)} alt="" onClick={() => setLb(media.filter(x => x.media_type !== 'video').findIndex(x => x.storage_path === m.storage_path))} />)}</div>{media.length > 1 && <span className="cnt">{slide + 1}/{media.length}</span>}</div>}
       {lb !== null && <Lightbox urls={media.filter(x => x.media_type !== 'video').map(x => mediaUrl(x.storage_path))} start={lb} close={() => setLb(null)} />}
       <div className="rstrip">{REACTIONS.map((r, i) => <button key={i} className={mine?.reaction_id === i ? 'sel' : ''} onClick={() => react(i)} aria-label={r[0]}><span>{r[1]}</span>{LBL[i]}</button>)}</div>

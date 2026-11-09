@@ -1,15 +1,23 @@
 import { useEffect, useState } from 'react'
 import { sb } from './supabase'
 import { ACCT } from './media'
-const AL = { verify: 'Verified', revoke_verification: 'Revoked verification', change_account_type: 'Changed account type', remove_content: 'Removed content', dismiss_report: 'Dismissed report', action_report: 'Handled report', remove_spotlight: 'Removed spotlight' }
+const AL = { suspend: 'Suspended account', ban: 'Banned account', reinstate: 'Reinstated account', verify: 'Verified', revoke_verification: 'Revoked verification', change_account_type: 'Changed account type', remove_content: 'Removed content', dismiss_report: 'Dismissed report', action_report: 'Handled report', remove_spotlight: 'Removed spotlight' }
 export default function AccountsAdmin({ me, mode, openProfile }) {
-  const [q, setQ] = useState(''), [res, setRes] = useState(null), [sel, setSel] = useState(null), [type, setType] = useState('standard'), [ver, setVer] = useState(false), [note, setNote] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [log, setLog] = useState(null), [names, setNames] = useState({})
-  async function find() { const s = q.replace(/[^\w ]/g, '').trim(); if (!s) return; setMsg(''); const { data, error } = await sb.from('profiles').select('id,username,display_name,is_verified,account_type').or(`username.ilike.%${s}%,display_name.ilike.%${s}%`).limit(15); if (error) return setMsg(error.message); setRes(data || []) }
+  const [q, setQ] = useState(''), [res, setRes] = useState(null), [sel, setSel] = useState(null), [type, setType] = useState('standard'), [ver, setVer] = useState(false), [note, setNote] = useState(''), [msg, setMsg] = useState(''), [busy, setBusy] = useState(false), [log, setLog] = useState(null), [days, setDays] = useState(7), [why, setWhy] = useState(''), [names, setNames] = useState({})
+  async function find() { const s = q.replace(/[^\w ]/g, '').trim(); if (!s) return; setMsg(''); const { data, error } = await sb.from('profiles').select('id,username,display_name,is_verified,account_type,account_status,suspended_until,status_reason').or(`username.ilike.%${s}%,display_name.ilike.%${s}%`).limit(15); if (error) return setMsg(error.message); setRes(data || []) }
   const pick = p => { setSel(p); setType(p.account_type || 'standard'); setVer(!!p.is_verified); setNote(''); setMsg('') }
   async function save() {
     setBusy(true); setMsg(''); const { error } = await sb.rpc('set_account', { p_user: sel.id, p_type: type, p_verified: ver, p_note: note.trim() || null }); setBusy(false)
     if (error) return setMsg(error.message); setMsg('Saved and recorded in the audit log.'); const u = { ...sel, account_type: type, is_verified: ver }; setSel(u); setRes(r => r && r.map(x => x.id === u.id ? u : x))
   }
+  async function status(st) {
+    if (st !== 'active' && !confirm(st === 'banned' ? `Ban @${sel.username}? They will be locked out and hidden.` : `Suspend @${sel.username} for ${days} day(s)?`)) return
+    setBusy(true); setMsg(''); const { error } = await sb.rpc('set_status', { p_user: sel.id, p_status: st, p_days: st === 'suspended' ? Number(days) : null, p_reason: why.trim() || null }); setBusy(false)
+    if (error) return setMsg(error.message)
+    const u = { ...sel, account_status: st, suspended_until: st === 'suspended' ? new Date(Date.now() + days * 864e5).toISOString() : null, status_reason: st === 'active' ? null : why.trim() || null }
+    setSel(u); setRes(r => r && r.map(x => x.id === u.id ? u : x)); setWhy(''); setMsg(st === 'active' ? 'Reinstated.' : st === 'banned' ? 'Banned.' : 'Suspended.')
+  }
+  const cur = sel && (sel.account_status === 'banned' ? 'banned' : sel.account_status === 'suspended' && (!sel.suspended_until || new Date(sel.suspended_until) > new Date()) ? 'suspended' : 'active')
   useEffect(() => { if (mode !== 'audit') return; (async () => {
     const { data } = await sb.from('audit_log').select('*').order('created_at', { ascending: false }).limit(100); setLog(data || [])
     const ids = [...new Set((data || []).flatMap(x => [x.admin_id, x.target_type === 'profile' ? x.target_id : null]).filter(Boolean))]
@@ -28,6 +36,10 @@ export default function AccountsAdmin({ me, mode, openProfile }) {
       <label className="aact">Account category<select value={type} onChange={e => { setType(e.target.value); if (e.target.value !== 'standard') setVer(true) }}>{Object.entries(ACCT).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
       <label className="aact"><input type="checkbox" checked={ver} onChange={e => setVer(e.target.checked)} /> Show the verified badge</label>
       <input className="anote" value={note} onChange={e => setNote(e.target.value)} maxLength={200} placeholder="Why (saved in the audit log)" />
-      <button className="wb p sm" disabled={busy} onClick={save}>{busy ? 'Saving…' : 'Save'}</button></div>}
+      <button className="wb p sm" disabled={busy} onClick={save}>{busy ? 'Saving…' : 'Save'}</button>
+      <h4 style={{ marginTop: 10 }}>Account status: {cur === 'active' ? 'Active' : cur === 'banned' ? 'Banned' : `Suspended until ${sel.suspended_until ? new Date(sel.suspended_until).toLocaleDateString() : 'further notice'}`}</h4>
+      {sel.status_reason && cur !== 'active' && <small>Reason: {sel.status_reason}</small>}
+      <input className="anote" value={why} onChange={e => setWhy(e.target.value)} maxLength={200} placeholder="Reason (shown to the person)" />
+      <div className="aact">{cur === 'active' ? <><select value={days} onChange={e => setDays(e.target.value)} aria-label="Days">{[1, 3, 7, 14, 30, 90].map(d => <option key={d} value={d}>{d} day{d > 1 && 's'}</option>)}</select><button className="wb sm" disabled={busy} onClick={() => status('suspended')}>Suspend</button><button className="wb sm" disabled={busy} onClick={() => status('banned')}>Ban</button></> : <button className="wb p sm" disabled={busy} onClick={() => status('active')}>Reinstate</button>}</div></div>}
   </div>
 }

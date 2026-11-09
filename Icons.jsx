@@ -16,6 +16,7 @@ const D = {
   search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" /></>,
   bell: <><path d="M6 17v-6a6 6 0 0 1 12 0v6l1.5 2h-15z" /><path d="M10 21.5h4" /></>,
   chat: <><path d="M4 5h16v11H10l-4 4v-4H4z" /><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" strokeWidth="2.6" /></>,
+  poll: <><path d="M5 20V10M12 20V4M19 20v-7" /></>,
   image: <><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m4 18 5-5 4 4 3-3 4 4" /></>,
   video: <><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m10 9 5 3-5 3z" /></>,
   send: <path d="M21 3 3 10.5l7 2.5 2.5 7z" />,

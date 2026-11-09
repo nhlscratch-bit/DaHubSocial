@@ -23,6 +23,10 @@ import Settings from './Settings'
 import More from './More'
 import Topic from './Topic'
 import Shorts from './Shorts'
+import Locked from './Locked'
+import { registerSW } from './push'
+import Events, { NewEvent } from './Events'
+import EventView from './EventView'
 import ArtistPage from './ArtistPage'
 import { Player } from './MediaPage'
 import CallManager from './Call'
@@ -62,6 +66,7 @@ export default function App() {
   }, [uid])
   useEffect(() => { document.body.classList.toggle('inshorts', tab === 'shorts' && !stack.length); return () => document.body.classList.remove('inshorts') }, [tab, stack.length])
   const [playV, setPlayV] = useState(null)
+  useEffect(() => { if (uid) registerSW() }, [uid])
   const [isAdmin, setIsAdmin] = useState(false), sy = useRef(0), prevLen = useRef(0)
   useEffect(() => { if (stack.length === 0 && prevLen.current > 0) requestAnimationFrame(() => window.scrollTo(0, sy.current)); prevLen.current = stack.length }, [stack.length])
   useEffect(() => { const f = e => setStack(s => [...s, { t: 'tag', tag: e.detail }]); window.addEventListener('open-tag', f); return () => window.removeEventListener('open-tag', f) }, [])
@@ -69,12 +74,13 @@ export default function App() {
   useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
   useEffect(() => {
     if (!uid) return
-    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist')
-    if (post || prof || art) { setStack([post ? { t: 'post', id: post } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
+    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat')
+    if (post || prof || art || evn || cht) { setStack([cht ? { t: 'chat', id: cht } : post ? { t: 'post', id: post } : evn ? { t: 'event', id: evn } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
   }, [uid])
   if (!booted) return <Boot onDone={() => setBooted(true)} />
   if (session === undefined) return null
   if (!session) return <Auth />
+  if (profile && (profile.account_status === 'banned' || (profile.account_status === 'suspended' && (!profile.suspended_until || new Date(profile.suspended_until) > new Date())))) return <Locked profile={profile} />
   const me = session.user, push = v => { if (!stack.length) sy.current = window.scrollY; setStack(s => [...s, v]) }, back = () => setStack(s => s.slice(0, -1)), top = stack[stack.length - 1]
   const refreshProfile = () => sb.from('profiles').select('*').eq('id', uid).single().then(({ data }) => setProfile(data))
   const openOpp = id => push({ t: 'opp', id }), openOpps = () => push({ t: 'opps' }), newOpp = () => push({ t: 'newopp' }), oppCreated = id => setStack(s => [...s.slice(0, -1), { t: 'opp', id }])
@@ -103,6 +109,9 @@ export default function App() {
     {top?.t === 'newopp' && <NewOpportunity me={me} back={back} created={oppCreated} />}
     {top?.t === 'tag' && <Topic key={top.tag} tag={top.tag} me={me} back={back} openPost={openPost} openProfile={openProfile} />}
     {top?.t === 'media' && <MediaPage me={me} back={back} openProfile={openProfile} openSubmit={() => push({ t: 'submit' })} openArtist={id => push({ t: 'artist', id })} />}
+    {top?.t === 'events' && <Events me={me} back={back} open={id => push({ t: 'event', id })} create={() => push({ t: 'newevent' })} />}
+    {top?.t === 'newevent' && <NewEvent me={me} back={back} created={id => setStack(s => [...s.slice(0, -1), { t: 'event', id }])} />}
+    {top?.t === 'event' && <EventView key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} deleted={back} />}
     {top?.t === 'artist' && <ArtistPage key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} play={v => setPlayV(v)} />}
     {playV && <Player v={playV} close={() => setPlayV(null)} openArtist={id => { setPlayV(null); push({ t: 'artist', id }) }} />}
     {top?.t === 'submit' && <Submit me={me} back={back} />}
