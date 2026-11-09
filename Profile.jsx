@@ -2,6 +2,7 @@ import wm from './wordmark.png'
 import wp from './wallpaper.png'
 import { useEffect, useState } from 'react'
 import { sb, SEL, mediaUrl, friendly } from './supabase'
+import { ACCT } from './media'
 import Avatar from './Avatar'
 import I from './Icons'
 import EditProfile from './EditProfile'
@@ -57,7 +58,7 @@ export default function Profile({ id, me, back, openSettings, openPost, openDM, 
       <button className="ib cb r" onClick={own ? openSettings : () => setMenu(true)} aria-label={own ? 'Settings and activity' : 'More'}>{own ? <I n="menu" s={22} /> : <I n="more" s={22} />}</button></div>
     <div className="pbg">
       <div className="avw"><Avatar p={pr} size={116} />{pr.is_verified && <span className="vb"><I n="check" s={18} /></span>}</div>
-      <div className="ptext"><h2>{pr.display_name}</h2><small>@{pr.username}</small>{pr.bio && <p className="bio">{pr.bio}</p>}
+      <div className="ptext"><h2>{pr.display_name}</h2><small>@{pr.username}</small>{pr.account_type && pr.account_type !== 'standard' && <span className={'acct ' + pr.account_type}>{pr.account_type === 'official' ? '★ ' : '✔ '}{ACCT[pr.account_type]}</span>}{pr.bio && <p className="bio">{pr.bio}</p>}
         <div className="meta">{pr.location && <span><I n="pin" s={15} /> {pr.location}</span>}{pr.link && <a href={/^https?:/.test(pr.link) ? pr.link : 'https://' + pr.link} target="_blank" rel="noreferrer"><I n="link" s={15} /> {pr.link.replace(/^https?:\/\//, '')}</a>}<span><I n="cal" s={15} /> Joined {joined}</span></div></div>
       <div className="srow"><div className="stats"><div><b>{fmt(n.f)}</b>Followers</div><div><b>{fmt(n.g)}</b>Following</div><div><b>{fmt(n.p)}</b>Posts</div></div>
         {own && <><button className="wb sm" onClick={() => setEdit(true)}>Edit Profile</button><button className="go" onClick={share} aria-label="Share profile"><I n="send" s={18} fill /></button></>}</div>

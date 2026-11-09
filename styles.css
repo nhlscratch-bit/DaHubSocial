@@ -410,3 +410,5 @@ body.inshorts .hdr{display:none}
 .arow .aact{min-width:0}.arow .aact>span{min-width:0;overflow-wrap:anywhere}
 .mhead{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
 .form,.arow{box-sizing:border-box}.arow{width:auto}
+/* ===== account types (build 33) ===== */
+.acct{display:inline-block;margin:4px 0 2px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#0e7f90;color:#fff}.acct.business{background:#1b6fd1}.acct.media{background:#7b3fd1}.acct.creator{background:#e8561a}.acct.official{background:linear-gradient(90deg,#f5b400,#e8561a)}

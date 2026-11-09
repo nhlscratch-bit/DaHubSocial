@@ -13,4 +13,5 @@ export async function yt(body) {
   if (data?.error) throw new Error(YTERR[data.error] || data.error)
   return data.videos || []
 }
+export const ACCT = { standard: 'Standard member', business: 'Verified Business', media: 'Verified Media', creator: 'Verified Creator / Artist', official: 'DAHUB Official' }
 export const SELV = '*,artist:media_artists(id,name,city,genres,photo_path)'
