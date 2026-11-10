@@ -85,14 +85,17 @@ export function GamePlayer({ id, back }) {
         const { data: blob, error } = await sb.storage.from('arcade').download(`${id}/index.html`)
         if (error || !blob) throw new Error(error?.message?.match(/not.?found|object/i) ? 'Game files aren’t uploaded yet. The owner needs to tap “Update games from GitHub”.' : 'You don’t have access to this game, or it failed to load.')
         let html = await blob.text()
-        // Collect every asset under the game folder (one level of subfolders) and sign them for this session.
+        // Collect every asset under the game folder (up to 3 levels of subfolders) and sign them for this session.
         const paths = []
-        const { data: top } = await sb.storage.from('arcade').list(id, { limit: 1000 })
-        for (const f of top || []) {
-          if (f.id) { if (f.name !== 'index.html') paths.push(`${id}/${f.name}`); continue }
-          const { data: sub } = await sb.storage.from('arcade').list(`${id}/${f.name}`, { limit: 1000 })
-          for (const s of sub || []) if (s.id) paths.push(`${id}/${f.name}/${s.name}`)
+        const walk = async (dir, depth) => {
+          const { data: items } = await sb.storage.from('arcade').list(dir, { limit: 1000 })
+          for (const f of items || []) {
+            const p = `${dir}/${f.name}`
+            if (f.id) { if (p !== `${id}/index.html`) paths.push(p) }
+            else if (depth < 3) await walk(p, depth + 1)
+          }
         }
+        await walk(id, 0)
         const assets = {}
         if (paths.length) {
           const { data: signed, error: se } = await sb.storage.from('arcade').createSignedUrls(paths, 4 * 3600)
