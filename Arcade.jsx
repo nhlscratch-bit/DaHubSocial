@@ -80,8 +80,50 @@ export default function Arcade({ back, play }) {
 }
 
 // Loads a game's files from the private bucket and runs it in a sandboxed frame.
-export function GamePlayer({ id, back }) {
-  const game = GAMES.find(g => g.id === id), [src, setSrc] = useState(''), [err, setErr] = useState(''), [tick, setTick] = useState(0), urlRef = useRef('')
+// Online play bridge: games run in a sandboxed frame with no login, so they ask the app to call
+// whitelisted server functions and to forward live table updates.
+const SP_RPC = new Set(['sp_create', 'sp_join', 'sp_set_char', 'sp_start', 'sp_bid', 'sp_play', 'sp_tick', 'sp_leave', 'sp_rematch', 'sp_state', 'sp_events_since', 'sp_my_hand', 'sp_my_tables'])
+function useGameBridge(frameRef, code) {
+  useEffect(() => {
+    let ch = null, me = null
+    const post = m => frameRef.current?.contentWindow?.postMessage(m, '*')
+    const unsub = () => { if (ch) { sb.removeChannel(ch); ch = null } }
+    const onMsg = async e => {
+      const w = frameRef.current?.contentWindow; if (!w || e.source !== w) return
+      const m = e.data; if (!m || typeof m !== 'object' || m.dh !== 1) return
+      if (m.type === 'hello') {
+        if (!me) { const { data: { user } } = await sb.auth.getUser(); const { data: p } = user ? await sb.from('profiles').select('id,display_name,username,avatar_url').eq('id', user.id).maybeSingle() : { data: null }; me = p ? { id: p.id, name: p.display_name || p.username, username: p.username, avatar: p.avatar_url ? sb.storage.from('avatars').getPublicUrl(p.avatar_url).data.publicUrl : null } : null }
+        return post({ dh: 1, type: 'hello', me, join: code || null, origin: location.origin })
+      }
+      if (m.type === 'rpc') {
+        if (!SP_RPC.has(m.fn)) return post({ dh: 1, type: 'res', id: m.id, error: 'not allowed' })
+        const { data, error } = await sb.rpc(m.fn, m.args || {})
+        return post({ dh: 1, type: 'res', id: m.id, data, error: error ? friendly(error) : null })
+      }
+      if (m.type === 'sub' && typeof m.table === 'string' && /^[0-9a-f-]{36}$/.test(m.table)) {
+        unsub()
+        ch = sb.channel('sp-' + m.table)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'spades_events', filter: 'table_id=eq.' + m.table }, p => post({ dh: 1, type: 'evt', row: p.new }))
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'spades_seats', filter: 'table_id=eq.' + m.table }, () => post({ dh: 1, type: 'seats' }))
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'spades_tables', filter: 'id=eq.' + m.table }, () => post({ dh: 1, type: 'seats' }))
+          .subscribe(s => post({ dh: 1, type: 'live', status: s }))
+        return
+      }
+      if (m.type === 'unsub') return unsub()
+      if (m.type === 'share' && typeof m.code === 'string') {
+        const url = location.origin + '/?spades=' + encodeURIComponent(m.code)
+        try { if (navigator.share) { await navigator.share({ title: 'DAHUB Spades', text: 'Pull up to my Spades table. Code ' + m.code, url }); return post({ dh: 1, type: 'shared', how: 'share' }) } } catch (x) { if (x?.name === 'AbortError') return }
+        try { await navigator.clipboard.writeText(url); post({ dh: 1, type: 'shared', how: 'copied' }) } catch { post({ dh: 1, type: 'shared', how: 'failed', url }) }
+      }
+    }
+    addEventListener('message', onMsg)
+    return () => { removeEventListener('message', onMsg); unsub() }
+  }, [code])
+}
+
+export function GamePlayer({ id, back, code }) {
+  const game = GAMES.find(g => g.id === id), [src, setSrc] = useState(''), [err, setErr] = useState(''), [tick, setTick] = useState(0), urlRef = useRef(''), frameRef = useRef(null)
+  useGameBridge(frameRef, code)
   useEffect(() => {
     document.body.classList.add('hidenav'); return () => document.body.classList.remove('hidenav')
   }, [])
@@ -91,7 +133,7 @@ export function GamePlayer({ id, back }) {
       try {
         if (!game) throw new Error('That game doesn’t exist.')
         const { data: blob, error } = await sb.storage.from('arcade').download(`${id}/index.html`)
-        if (error || !blob) throw new Error(error?.message?.match(/not.?found|object/i) ? 'Game files aren’t uploaded yet. The owner needs to tap “Update games from GitHub”.' : 'You don’t have access to this game, or it failed to load.')
+        if (error || !blob) throw new Error(error?.message?.match(/not.?found|object/i) ? 'Game files aren’t ready yet. Open the Arcade once so it can update the games.' : 'You don’t have access to this game yet. Go back and unlock the Arcade, or try again.')
         let html = await blob.text()
         // Collect every asset under the game folder (up to 3 levels of subfolders) and sign them for this session.
         const paths = []
@@ -123,6 +165,6 @@ export function GamePlayer({ id, back }) {
     <div className="arc-pbar"><button onClick={back} aria-label="Leave game">← Arcade</button><b>{game?.name || 'Game'}</b><button onClick={() => setTick(t => t + 1)} aria-label="Restart game">↻</button></div>
     {err ? <div className="empty arc-perr"><h3>Couldn’t start the game</h3>{err}<p><button className="gobtn" onClick={() => setTick(t => t + 1)}>Try again</button></p></div>
       : !src ? <div className="empty arc-perr">Loading {game?.name}…</div>
-      : <iframe key={src} title={game.name} src={src} sandbox="allow-scripts allow-pointer-lock" allow="autoplay; fullscreen" allowFullScreen />}
+      : <iframe ref={frameRef} key={src} title={game.name} src={src} sandbox="allow-scripts allow-pointer-lock" allow="autoplay; fullscreen" allowFullScreen />}
   </div>
 }

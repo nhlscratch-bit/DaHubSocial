@@ -84,7 +84,8 @@ export default function App() {
   useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
   useEffect(() => {
     if (!uid) return
-    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community'), psp = q.get('passport'), rom = q.get('room')
+    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community'), psp = q.get('passport'), rom = q.get('room'), spd = q.get('spades')
+    if (spd) { setStack([{ t: 'arcade' }, { t: 'game', id: 'spades', code: spd.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) }]); history.replaceState(null, '', '/'); return }
     if (post || prof || art || evn || cht || cmn || psp || rom) { setStack([rom ? { t: 'room', id: rom } : psp ? { t: 'passport', id: psp } : cmn ? { t: 'community', id: cmn } : cht ? { t: 'chat', id: cht } : post ? { t: 'post', id: post } : evn ? { t: 'event', id: evn } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
   }, [uid])
   if (!booted) return <Boot onDone={() => setBooted(true)} />
@@ -127,7 +128,7 @@ export default function App() {
     {top?.t === 'radar' && <Radar back={back} open={openDest} />}
     {top?.t === 'afterdark' && <AfterDark me={me} profile={profile} back={back} openPost={openPost} openProfile={openProfile} openRoom={id => push({ t: 'room', id })} openEvent={id => push({ t: 'event', id })} />}
     {top?.t === 'arcade' && <Arcade back={back} play={id => push({ t: 'game', id })} />}
-    {top?.t === 'game' && <GamePlayer key={top.id} id={top.id} back={back} />}
+    {top?.t === 'game' && <GamePlayer key={top.id} id={top.id} code={top.code} back={back} />}
     {top?.t === 'rooms' && <Rooms me={me} profile={profile} back={back} create={() => push({ t: 'newroom' })} open={id => push({ t: 'room', id })} />}
     {top?.t === 'newroom' && <NewRoom me={me} profile={profile} back={back} created={id => id ? setStack(s => [...s.slice(0, -1), { t: 'room', id }]) : back()} />}
     {top?.t === 'room' && <RoomGate key={top.id} id={top.id} me={me} profile={profile} back={back} openProfile={openProfile} />}
