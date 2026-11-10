@@ -1,9 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { sb, hiddenIds } from './supabase'
-const env = import.meta.env
-export const ICE = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
-  env.VITE_TURN_URL ? { urls: env.VITE_TURN_URL.split(','), username: env.VITE_TURN_USER, credential: env.VITE_TURN_PASS }
-    : { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }]
+import { iceServers } from './ice'
+export { ICE } from './ice'
 export const RCAT = { music: 'Music', business: 'Business', community: 'Community', sports: 'Sports', openmic: 'Open Mic' }
 export const MAX_ROOM = 25 // audio is peer to peer, so a room is capped
 let S = null // active session
@@ -39,7 +37,7 @@ const send = (to, kind, data) => S?.ch.send({ type: 'broadcast', event: 'sig', p
 const iSpeak = () => S.speakers.has(S.me.id) && !!S.mic
 function closePc(peer, tell) { const p = S.pcs.get(peer); if (!p) return; S.pcs.delete(peer); try { p.pc.close() } catch {} if (tell) send(peer, 'bye') }
 function mkPc(peer, rel) {
-  const pc = new RTCPeerConnection({ iceServers: ICE }), e = { pc, rel, queue: [], ready: false }, ses = S
+  const pc = new RTCPeerConnection({ iceServers: iceServers() }), e = { pc, rel, queue: [], ready: false }, ses = S
   S.pcs.set(peer, e)
   pc.onicecandidate = ev => { if (ev.candidate && S === ses) send(peer, 'ice', ev.candidate.toJSON()) }
   pc.ontrack = ev => { if (S === ses && ev.streams[0] && !e.played) { e.played = true; playRemote(peer, ev.streams[0]) } }

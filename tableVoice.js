@@ -3,7 +3,7 @@
 // at that table join it. Mic starts OFF; you always hear the others. Same audio approach as Live Rooms.
 import { useSyncExternalStore } from 'react'
 import { sb } from './supabase'
-import { ICE } from './roomsEngine'
+import { iceServers } from './ice'
 
 let V = null
 let view = { active: false }
@@ -37,7 +37,7 @@ function closePeer(uid) {
 }
 function mkPeer(uid) {
   closePeer(uid)
-  const pc = new RTCPeerConnection({ iceServers: ICE }), p = { pc, queue: [], el: null }, ses = V
+  const pc = new RTCPeerConnection({ iceServers: iceServers() }), p = { pc, queue: [], el: null }, ses = V
   V.peers.set(uid, p)
   const tr = pc.addTransceiver('audio', { direction: 'sendrecv' })
   p.sender = tr.sender

@@ -8,11 +8,16 @@ import { useEffect } from 'react'
 import { supported, current, enable, disable } from './push'
 import { glowOn, setGlow } from './glow'
 import { tapsOn, setTaps } from './tapsound'
+import { warmIce, iceSource } from './ice'
 
 export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) {
   const [q, setQ] = useState(''), [edit, setEdit] = useState(false), [pw, setPw] = useState(false), [priv, setPriv] = useState(!!profile?.is_private), [err, setErr] = useState('')
   const [pushOn, setPushOn] = useState(false), [glow, setGlowS] = useState(glowOn())
   const toggleGlow = () => { const v = !glow; setGlow(v); setGlowS(v) }
+  const [relay, setRelay] = useState('')
+  const checkRelay = () => { setRelay('checking'); warmIce(true).then(() => setRelay(iceSource())) }
+  useEffect(() => { if (isAdmin) checkRelay() }, [isAdmin])
+  const RELAY = { checking: 'Checking…', metered: 'Private relay (Metered) is on. Calls connect across networks.', static: 'Private relay is on.', env: 'Using the relay from Vercel settings.', openrelay: 'Using the free public relay. Set up Metered for reliable calls.' }
   const [taps, setTapsS] = useState(tapsOn()), toggleTaps = () => { const v = !taps; setTaps(v); setTapsS(v) }
   useEffect(() => { current().then(s => setPushOn(!!s)) }, [])
   async function togglePush() {
@@ -44,7 +49,7 @@ export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) 
     ['Privacy and safety', [
       ['block', 'Blocked and muted', 'People you blocked or muted', () => go('safety'), 'block mute'],
       ['shield', 'Community guidelines', 'How DAHUB keeps it real', () => go('guidelines'), 'rules policy terms'],
-      ...(isAdmin ? [['info', 'Admin', 'Review submissions and reports', () => go('admin'), 'moderation review']] : [])]],
+      ...(isAdmin ? [['info', 'Admin', 'Review submissions and reports', () => go('admin'), 'moderation review'], ['shield', 'Call relay (admin)', RELAY[relay] || 'Tap to check', checkRelay, 'turn relay calls rooms voice metered']] : [])]],
     ['Log in', [['logout', 'Log out', null, () => confirm('Log out of DAHUB?') && sb.auth.signOut(), 'sign out']]]]
   const s = q.trim().toLowerCase()
   const shown = SECTIONS.map(([t, rows]) => [t, rows.filter(r => !s || (r[1] + ' ' + (r[2] || '') + ' ' + r[4]).toLowerCase().includes(s))]).filter(([, r]) => r.length)
