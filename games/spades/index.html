@@ -173,6 +173,67 @@ table.sum td:first-child,table.sum th:first-child{text-align:left}
 .shake{animation:shake .4s ease-out}
 @media (prefers-reduced-motion:reduce){#intro.slam img{animation:none;opacity:1}#intro.slam .spark,#intro.slam .flash{animation:none}.shake{animation:none}}
 @media (prefers-reduced-motion:reduce){.seat.bob{animation:none}.card{transition-duration:.15s}}
+
+/* ===== DAHUB chrome menus (gamified): white/silver glass, turquoise glow, glossy 3D buttons ===== */
+.ov{background:radial-gradient(120% 90% at 50% 40%,#06202acc,#020a0fe6);backdrop-filter:blur(4px) saturate(1.2)}
+.box{--cyan:#0b8fa1;--red:#d42a46;--dim:#34525c;--gold2:#0e7f90;--gold:#19e0f0;
+  position:relative;color:#05202a;border-radius:28px;padding:20px 26px;
+  background:linear-gradient(115deg,transparent 38%,#ffffffa8 47%,transparent 56%) 0 0/250% 100% no-repeat,linear-gradient(160deg,#ffffff 0%,#e3f6f8 45%,#cfe4ea 100%);
+  border:3px solid #fff;box-shadow:0 0 0 2px #8fb5be,0 0 0 6px #ffffff55,0 0 34px #19e0f099,0 24px 60px #000c,inset 0 2px 0 #fff,inset 0 -6px 14px #7fd3df44;
+  animation:boxin .38s cubic-bezier(.2,1.4,.4,1) both,boxshine 5s ease-in-out 0.4s infinite}
+@keyframes boxin{0%{transform:scale(.82) translateY(14px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes boxshine{0%,70%{background-position:130% 0,0 0}100%{background-position:-130% 0,0 0}}
+.box h2{font:400 30px var(--display);letter-spacing:1px;margin:0 0 6px;color:#06141a;background:linear-gradient(180deg,#0e7f90,#06343d);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 0 #fff) drop-shadow(0 0 8px #19e0f066)}
+.box p{color:#34525c;font-weight:600}
+.box p b{color:#06141a!important}
+.box .mlogo{filter:drop-shadow(0 6px 8px #0005) drop-shadow(0 0 14px #19e0f066)}
+.rlabel{color:#0e7f90;text-shadow:0 1px 0 #fff;display:flex;align-items:center;gap:8px}.rlabel:after{content:'';flex:1;height:2px;border-radius:2px;background:linear-gradient(90deg,#19e0f0aa,transparent)}
+.crown{color:#19c6d8;filter:drop-shadow(0 3px 0 #fff) drop-shadow(0 0 12px #19e0f0);animation:bob 2.4s ease-in-out infinite}
+/* buttons: chrome pills, turquoise primary, 3D edge, shine on press */
+.btn{position:relative;overflow:hidden;font:400 16px var(--display);letter-spacing:.6px;padding:13px 24px;border-radius:999px;color:#06202a;border:2px solid #fff;
+  background:linear-gradient(180deg,#ffffff 0%,#e4edf0 50%,#c9d6db 100%);box-shadow:0 0 0 2px #8fa9b0,0 5px 0 #6c8a93,0 9px 16px #0005,inset 0 2px 0 #fff;transition:transform .08s,box-shadow .08s}
+.btn.gold{color:#03222b;background:linear-gradient(180deg,#a8f9ff 0%,#2ad8ec 45%,#0aa3b8 100%);box-shadow:0 0 0 2px #0b3540,0 5px 0 #075664,0 0 18px #19e0f0aa,0 9px 16px #0005,inset 0 2px 0 #ffffffc0}
+.btn:before{content:'';position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,#ffffffcc,transparent);transform:skewX(-20deg);animation:btnshine 3.2s ease-in-out infinite}
+.btn.gold:before{animation-delay:.6s}
+@keyframes btnshine{0%,75%{left:-60%}100%{left:130%}}
+.btn:active{transform:translateY(4px);box-shadow:0 0 0 2px #8fa9b0,0 1px 0 #6c8a93,0 3px 8px #0005,inset 0 2px 0 #fff}
+.btn.gold:active{box-shadow:0 0 0 2px #0b3540,0 1px 0 #075664,0 0 26px #19e0f0,inset 0 2px 0 #ffffffc0}
+.btn:disabled{opacity:.55}
+.btn:focus-visible{outline:3px solid #19e0f0;outline-offset:3px}
+/* settings rows + segmented toggles */
+.opt{border-bottom:1.5px solid #9fc4cc55}.opt span{font-weight:700;color:#06141a}.opt span small{color:#34525c;font-weight:500}
+.seg{border:2px solid #fff;border-radius:999px;box-shadow:0 0 0 1.5px #8fa9b0,inset 0 2px 4px #0002;background:#d8e4e8}
+.seg button{background:transparent;color:#34525c;padding:8px 14px}
+.seg button.on{background:linear-gradient(180deg,#a8f9ff,#2ad8ec 50%,#0aa3b8);color:#03222b;border-radius:999px;box-shadow:0 0 12px #19e0f0aa,inset 0 1px 0 #fff}
+/* player picks + rooms: glossy cards that pop when picked */
+.picks button,.rooms button{border:2px solid #fff;box-shadow:0 0 0 1.5px #8fa9b0,0 6px 12px #0003;transition:transform .15s}
+.picks button{background:linear-gradient(180deg,#ffffff,#dce9ed);color:#06202a}
+.picks button img{border:2.5px solid #fff;box-shadow:0 0 0 2px #8fa9b0}
+.picks button.on,.rooms button.on{border-color:#fff;box-shadow:0 0 0 3px #19e0f0,0 0 22px #19e0f0cc,0 8px 14px #0004;transform:translateY(-3px) scale(1.04)}
+.picks button.on img{box-shadow:0 0 0 2px #19e0f0,0 0 12px #19e0f0}
+.picks button:active,.rooms button:active{transform:scale(.95)}
+.rooms button i{background:linear-gradient(180deg,#a8f9ff,#2ad8ec);color:#03222b}
+/* join code, lobby seats */
+.joinrow input{border:2px solid #fff;border-radius:999px;background:#ffffffd9;color:#06141a;box-shadow:0 0 0 2px #23414a,inset 0 2px 5px #0002}
+.joinrow input:focus{outline:none;box-shadow:0 0 0 2px #19e0f0,0 0 16px #19e0f0aa}
+.ls{background:linear-gradient(180deg,#ffffff,#e1eef1);border:2px solid #fff;box-shadow:0 0 0 2.5px var(--cyan),0 0 16px #19e0f055,0 6px 12px #0003}
+.ls.them{box-shadow:0 0 0 2.5px var(--red),0 0 16px #d42a4644,0 6px 12px #0003}
+.ls b{color:#06141a}.ls small{color:#34525c}
+.ls img,.ls .empty{border:3px solid #fff;box-shadow:0 0 0 2px #8fa9b0;background:#cfe0e5}.ls .empty{color:#6c8a93}
+.ls i{background:linear-gradient(180deg,#a8f9ff,#19c6d8);color:#03222b}.ls.them i{background:linear-gradient(180deg,#ff8fa0,#d42a46);color:#fff}
+/* bids */
+.bidgrid button{background:linear-gradient(180deg,#ffffff,#dbe7eb);color:#06202a;border:2px solid #fff;box-shadow:0 0 0 1.5px #8fa9b0,0 4px 0 #8fa9b0;transition:transform .08s}
+.bidgrid button.nil{color:#0e7f90}
+.bidgrid button.sug{box-shadow:0 0 0 2.5px #19e0f0,0 4px 0 #0aa3b8}
+.bidgrid button.on{background:linear-gradient(180deg,#a8f9ff,#2ad8ec 50%,#0aa3b8);color:#03222b;border-color:#fff;box-shadow:0 0 0 2px #0b3540,0 0 18px #19e0f0;transform:translateY(-3px) scale(1.06)}
+.bidgrid button:active{transform:translateY(3px)}
+/* score table */
+table.sum th{color:#34525c}table.sum td{color:#06141a;font-weight:600}
+table.sum th,table.sum td{border-bottom:1.5px solid #9fc4cc66}
+.box .pos{color:#119c55}.box .neg{color:#d42a46}
+.msgline{color:#0e7f90!important;font-weight:700}
+.box::-webkit-scrollbar{width:6px}.box::-webkit-scrollbar-thumb{background:#8fb5be;border-radius:6px}
+@media (prefers-reduced-motion:reduce){.box,.btn:before,.crown{animation:none!important}}
 </style>
 
 <div id="wrap"><div id="stage" aria-label="DAHUB Spades table">
