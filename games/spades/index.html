@@ -282,6 +282,9 @@ table.sum th,table.sum td{border-bottom:1.5px solid #9fc4cc66}
 #toast{color:#fff;text-shadow:0 3px 0 #06505c,0 0 6px #19e0f0,0 0 26px #19e0f0,0 0 50px #19e0f0aa;-webkit-text-stroke:1.5px #0b3540}
 .bubble{background:linear-gradient(180deg,#fff,#e6f6f8);color:#06141a;border:2px solid #fff;box-shadow:0 0 0 1.5px #19c6d8,0 0 12px #19e0f066,0 6px 14px #0008}
 @media (prefers-reduced-motion:reduce){.panel,.plate.turn,#stage.myturn #turnban{animation:none!important}}
+.plate.talk{box-shadow:0 0 0 3px #7af7ff,0 0 0 7px #19e0f066,0 0 30px #19e0f0,0 6px 14px #0007}
+.plate.talk img{animation:talkpulse .5s ease-in-out infinite alternate}
+@keyframes talkpulse{to{box-shadow:0 0 0 3px #19e0f0,0 0 14px #19e0f0}}
 </style>
 
 <div id="wrap"><div id="stage" aria-label="DAHUB Spades table">
@@ -707,6 +710,7 @@ addEventListener('message', e => {
   else if (m.type === 'seats') ON.onSeats()
   else if (m.type === 'live') BR.live = m.status === 'SUBSCRIBED'
   else if (m.type === 'shared') ON.onShared(m)
+  else if (m.type === 'voice') ON.onVoice(m.state)
 })
 if (parent !== window) bpost({ type:'hello' })
 function onHello(){ if (BR.join) { const c = BR.join; BR.join = null; setTimeout(() => onlineJoin(c), 2300) } else if (G.phase === 'menu' && $('online')) menu() }
@@ -743,7 +747,7 @@ async function onlineJoin(code){
 
 ON.open = async tid => {
   ON.t = tid; ON.active = true; ON.q = []; ON.busy = false
-  bpost({ type:'sub', table: tid })
+  bpost({ type:'sub', table: tid }); bpost({ type:'voice', table: tid, on: true })
   await ON.refresh(true)
   clearInterval(ON.timer); ON.timer = setInterval(ON.heartbeat, 3000)
 }
@@ -779,7 +783,7 @@ ON.lobby = () => {
   const s = ON.snap, o = $('ovl'), host = BR.me && s.table.host_id === BR.me.id, mine = s.seats[ON.me]
   const taken = s.seats.filter(x => x.user_id && x.seat !== ON.me && x.character).map(x => x.character)
   ON.lobbyOpen = true; G.phase = 'menu'
-  o.innerHTML = `<div class="ov"><div class="box" style="min-width:640px"><h2>TABLE ${s.table.code}</h2><p>Send this code to your people. ${host ? 'Deal when you’re ready. Empty seats get bots.' : 'Waiting for the host to deal.'}</p>
+  o.innerHTML = `<div class="ov"><div class="box" style="min-width:640px"><h2>TABLE ${s.table.code}</h2><p>Send this code to your people. ${host ? 'Deal when you’re ready. Empty seats get bots.' : 'Waiting for the host to deal.'}${BR.ok ? ' Tap <b>Talk</b> up top to use your mic.' : ''}</p>
     <div class="btns" style="margin-bottom:10px"><button class="btn" id="invite">Invite friends</button></div><p class="msgline" id="lmsg"></p>
     <div class="lseats">${s.seats.map(x => `<div class="ls ${x.seat % 2 === ON.me % 2 ? 'us' : 'them'}">${x.user_id ? `<img src="${IMG(okChar(x.character || 'fp') + '_portrait')}" alt=""><b>${seatName(x)}</b><small>${NAMES[x.character] || 'Picking…'}${x.user_id === s.table.host_id ? ' · HOST' : ''}</small>` : `<div class="empty">+</div><b>OPEN SEAT</b><small>A bot sits here if it’s empty</small>`}<i>${x.seat % 2 === ON.me % 2 ? 'YOUR TEAM' : 'OPPONENTS'}</i></div>`).join('')}</div>
     ${pickerHTML(mine.character, taken)}
@@ -789,11 +793,17 @@ ON.lobby = () => {
   $('leave').onclick = async () => { try { await rpc('sp_leave', { p_table: ON.t }) } catch {} ON.reset(); onlineMenu() }
   if (host) $('deal').onclick = async () => { const b = $('deal'); b.disabled = true; b.textContent = 'Dealing…'; try { await rpc('sp_start', { p_table: ON.t, p_chars: CHARS }) } catch (e) { $('lmsg').textContent = e.message; b.disabled = false; b.textContent = 'Deal the cards' } }
 }
+// live voice (run by the DAHUB app): glow the name tag of whoever is talking, dip the music while people talk
+ON.onVoice = v => {
+  const talk = new Set(v && v.active ? v.speaking || [] : [])
+  plates.forEach((pl, d) => { const s = ON.snap?.seats?.[(d + ON.me) % 4]; pl.classList.toggle('talk', !!(s && s.user_id && talk.has(s.user_id))) })
+  ON.vOthers = [...talk].some(u => !BR.me || u !== BR.me.id)
+}
 ON.onShared = m => { const l = $('lmsg'); if (!l) return; l.textContent = m.how === 'copied' ? 'Invite link copied. Paste it in a DM.' : m.how === 'failed' ? 'Share this link: ' + m.url : '' }
 ON.syncSeats = async () => { try { const s = await rpc('sp_state', { p_table: ON.t }); ON.snap = s; setCast([0, 1, 2, 3].map(d => s.seats[(d + ON.me) % 4].character || MYCHAR), [0, 1, 2, 3].map(d => seatName(s.seats[(d + ON.me) % 4]))) } catch {} }
 ON.onSeats = () => { if (!ON.active) return; if (ON.lobbyOpen) ON.refresh(); else ON.syncSeats() }
 ON.closed = () => { ON.reset(); $('ovl').innerHTML = `<div class="ov"><div class="box"><h2>TABLE CLOSED</h2><p>The host closed this table.</p><div class="btns"><button class="btn gold" id="om">OK</button></div></div></div>`; $('om').onclick = onlineMenu }
-ON.reset = () => { ON.active = false; ON.lobbyOpen = false; clearInterval(ON.timer); bpost({ type:'unsub' }); ON.q = []; G.phase = 'menu'; humanResolve = null; hint('') }
+ON.reset = () => { bpost({ type:'voice', on: false }); ON.onVoice({ active: false }); ON.active = false; ON.lobbyOpen = false; clearInterval(ON.timer); bpost({ type:'unsub' }); ON.q = []; G.phase = 'menu'; humanResolve = null; hint('') }
 
 /* events from the server, played in order with the normal table animations */
 ON.onRow = row => { if (!ON.active || row.table_id !== ON.t) return; if (row.seq === ON.last + 1) { ON.q.push(row); ON.last = row.seq; ON.pump() } else if (row.seq > ON.last + 1) ON.catchUp() }
@@ -975,6 +985,7 @@ let _wasMine = false, _lastTick = 0
 setInterval(() => {
   const mine = (G.phase === 'play' || G.phase === 'bid') && G.turn === 0 && !G.busy
   if (mine && !_wasMine) SFX.turn(); _wasMine = mine
+  if (typeof ON !== 'undefined' && ON.vOthers && Date.now() - (ON._duckAt || 0) > 700) { ON._duckAt = Date.now(); duck(0.35, 1000) }
   if (mine && typeof ON !== 'undefined' && ON.active) { const left = 45 - (Date.now() - ON.turnAt) / 1000; if (left <= 10 && left > 0 && Date.now() - _lastTick > 950) { _lastTick = Date.now(); SFX.urgent() } }
 }, 250)
 
