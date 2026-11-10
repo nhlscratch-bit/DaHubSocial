@@ -234,6 +234,54 @@ table.sum th,table.sum td{border-bottom:1.5px solid #9fc4cc66}
 .msgline{color:#0e7f90!important;font-weight:700}
 .box::-webkit-scrollbar{width:6px}.box::-webkit-scrollbar-thumb{background:#8fb5be;border-radius:6px}
 @media (prefers-reduced-motion:reduce){.box,.btn:before,.crown{animation:none!important}}
+
+/* ===== in-game HUD: DAHUB chrome glass, gamified ===== */
+.panel{background:linear-gradient(115deg,transparent 40%,#ffffff90 48%,transparent 56%) 0 0/260% 100% no-repeat,linear-gradient(165deg,#ffffffee,#dff3f6e8 55%,#c7dde3e8);
+  border:2.5px solid #fff;border-radius:20px;color:#06141a;box-shadow:0 0 0 1.5px #8fb5be,0 0 18px #19e0f055,0 10px 22px #0008,inset 0 2px 0 #fff,inset 0 -4px 10px #7fd3df33;animation:boxshine 7s ease-in-out infinite}
+#teamA,#teamB{border-radius:22px}
+#teamA{box-shadow:0 0 0 2.5px #19c6d8,0 0 20px #19e0f077,0 10px 22px #0008,inset 0 2px 0 #fff}
+#teamB{box-shadow:0 0 0 2.5px #ff5a74,0 0 20px #ff3b5c55,0 10px 22px #0008,inset 0 2px 0 #fff}
+.tdot{border:3px solid #fff;box-shadow:0 0 0 2.5px var(--team),0 0 12px var(--team)}
+.tname{color:#34525c}
+.tscore{color:#06141a;font-size:30px;text-shadow:0 2px 0 #fff}
+#teamA .tscore{color:#0b7d8e}#teamB .tscore{color:#c41f3c}
+.tbags{color:#34525c}
+.tprog{height:7px;margin-top:4px;border-radius:9px;background:#b9ccd2;box-shadow:inset 0 1px 2px #0003;overflow:hidden;width:150px}
+.tprog b{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,#19e0f0,#7af7ff);box-shadow:0 0 8px #19e0f0;transition:width .5s cubic-bezier(.3,1.4,.5,1)}
+#teamB .tprog b{background:linear-gradient(90deg,#ff3b5c,#ff9aab);box-shadow:0 0 8px #ff3b5c}
+.tprog b.made{background:linear-gradient(90deg,#2fd17a,#9cf5c2);box-shadow:0 0 10px #2fd17a}
+#center{padding:6px 18px}
+#center .info{color:#34525c;display:flex;flex-direction:column;align-items:center;gap:1px;font:700 12px var(--body)}
+#center .info b{font:400 15px var(--display);color:#06141a;letter-spacing:.5px}
+#center .info i{font:700 10px var(--body);font-style:normal;padding:1px 7px;border-radius:999px;background:#c6d6db;color:#6c8a93;transition:.3s}
+#center .info i.on{background:linear-gradient(180deg,#a8f9ff,#19c6d8);color:#03222b;box-shadow:0 0 10px #19e0f0}
+#gear{color:#0e7f90;border-radius:50%;font-size:28px}
+#gear:active{transform:scale(.92)}
+#mytricks{color:#06141a;border-radius:999px;padding:9px 18px}#mytricks span{color:#0b7d8e}
+#score{border-radius:20px}#score h4{color:#0e7f90}
+#score .row:first-of-type{color:#0b7d8e!important}#score .row:last-of-type{color:#c41f3c!important}
+/* nameplates */
+.plate{background:linear-gradient(180deg,#ffffff,#dcecf0);color:#06141a;border:2.5px solid #fff;box-shadow:0 0 0 2px var(--team),0 0 14px color-mix(in srgb,var(--team) 50%,transparent),0 6px 14px #0007;overflow:visible}
+.plate img{border:2.5px solid #fff;box-shadow:0 0 0 2px var(--team)}
+.plate b{color:#06141a}.plate small{color:#0e7f90}
+.plate.turn{box-shadow:0 0 0 3px #19e0f0,0 0 0 6px #ffffffaa,0 0 28px #19e0f0,0 6px 14px #0007;animation:plturn 1.1s ease-in-out infinite}
+.plate.turn::after{border-top-color:#19e0f0;filter:drop-shadow(0 0 4px #19e0f0)}
+@keyframes plturn{50%{transform:translateX(-50%) scale(1.07)}}
+.plate.timed::before{content:'';position:absolute;left:14px;right:14px;bottom:-7px;height:4px;border-radius:4px;background:linear-gradient(90deg,#19e0f0,#ffd36a,#ff3b5c);transform-origin:left;animation:pltime 45s linear both}
+@keyframes pltime{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+/* your turn */
+#turnban{position:absolute;left:50%;bottom:136px;z-index:66;transform:translateX(-50%) scale(.6);opacity:0;pointer-events:none;font:400 22px var(--display);letter-spacing:2px;color:#fff;
+  padding:4px 22px;border-radius:999px;background:linear-gradient(180deg,#a8f9ff,#19c6d8 55%,#0a93a6);border:3px solid #fff;box-shadow:0 0 0 2px #0b3540,0 0 30px #19e0f0,0 8px 18px #0008;text-shadow:0 2px 0 #06505c;transition:opacity .25s,transform .35s cubic-bezier(.2,1.6,.4,1)}
+#stage.myturn #turnban{opacity:1;transform:translateX(-50%) scale(1);animation:banpulse 1.6s ease-in-out .4s infinite}
+@keyframes banpulse{50%{box-shadow:0 0 0 2px #0b3540,0 0 46px #19e0f0,0 8px 18px #0008}}
+#stage.myturn #hand .card.legal{box-shadow:0 0 0 3px #19e0f0,0 0 18px #19e0f0aa,0 6px 14px #000a}
+#hand .card.sel{box-shadow:0 0 0 4px #fff,0 0 0 7px #19e0f0,0 0 30px #19e0f0,0 12px 20px #000}
+#hint{bottom:178px;color:#06141a;font:700 15px var(--body);background:linear-gradient(180deg,#fff,#dcecf0);border:2px solid #fff;box-shadow:0 0 0 1.5px #8fb5be,0 0 14px #19e0f066,0 6px 12px #0007}
+#stage.myturn #hint{opacity:0!important}
+/* big callouts + chat bubbles */
+#toast{color:#fff;text-shadow:0 3px 0 #06505c,0 0 6px #19e0f0,0 0 26px #19e0f0,0 0 50px #19e0f0aa;-webkit-text-stroke:1.5px #0b3540}
+.bubble{background:linear-gradient(180deg,#fff,#e6f6f8);color:#06141a;border:2px solid #fff;box-shadow:0 0 0 1.5px #19c6d8,0 0 12px #19e0f066,0 6px 14px #0008}
+@media (prefers-reduced-motion:reduce){.panel,.plate.turn,#stage.myturn #turnban{animation:none!important}}
 </style>
 
 <div id="wrap"><div id="stage" aria-label="DAHUB Spades table">
@@ -245,13 +293,13 @@ table.sum th,table.sum td{border-bottom:1.5px solid #9fc4cc66}
   <div id="plates"></div>
   <div id="hand"></div>
   <div class="layer" id="vignette"></div>
-  <div class="panel" id="teamA" style="--team:var(--cyan)"><div class="tdot"><img class="por" alt=""></div><div><div class="tname">YOU + PARTNER</div><div class="tscore" id="sA">0</div><div class="tbags" id="bA">0 bags</div></div></div>
+  <div class="panel" id="teamA" style="--team:var(--cyan)"><div class="tdot"><img class="por" alt=""></div><div><div class="tname">YOU + PARTNER</div><div class="tscore" id="sA">0</div><div class="tbags" id="bA">0 bags</div><div class="tprog"><b id="pA"></b></div></div></div>
   <div class="panel" id="center"><div class="logo"><img id="toplogo" alt="DAHUB Spades"></div><div class="info" id="info">Hand 1<br><b>to 500</b></div></div>
-  <div class="panel" id="teamB" style="--team:var(--red)"><div class="tdot"><img class="por" alt=""></div><div><div class="tname">OPPONENTS</div><div class="tscore" id="sB">0</div><div class="tbags" id="bB">0 bags</div></div></div>
+  <div class="panel" id="teamB" style="--team:var(--red)"><div class="tdot"><img class="por" alt=""></div><div><div class="tname">OPPONENTS</div><div class="tscore" id="sB">0</div><div class="tbags" id="bB">0 bags</div><div class="tprog"><b id="pB"></b></div></div></div>
   <button class="panel" id="gear" aria-label="Settings">⚙</button>
   <div class="panel" id="mytricks">♠ BOOKS <span id="mt">0</span>/<span id="mb">–</span></div>
   <div class="panel" id="score"><h4>THIS HAND</h4><div class="row" style="color:var(--cyan)"><b>Your team</b><b id="hA">0 / –</b></div><div class="row" style="color:var(--red)"><b>Opponents</b><b id="hB">0 / –</b></div></div>
-  <div id="hint" style="opacity:0"></div>
+  <div id="hint" style="opacity:0"></div><div id="turnban">YOUR TURN</div>
   <div id="toast"></div>
   <div id="ovl"></div>
   <div id="intro" aria-label="Loading"><div class="flash"></div><img id="introLogo" alt="DAHUB Spades"><div class="bar"><b id="introBar"></b></div><button class="skip" id="introSkip">Skip</button></div>
@@ -417,11 +465,20 @@ function bubble(p, text, ms = 1800){ const S = SEATS[p], b = document.createElem
 const $ = id => document.getElementById(id)
 function hud(){
   $('sA').textContent = G.score[0]; $('sB').textContent = G.score[1]; $('bA').textContent = G.bags[0] + ' bag' + (G.bags[0] === 1 ? '' : 's'); $('bB').textContent = G.bags[1] + ' bag' + (G.bags[1] === 1 ? '' : 's')
-  $('info').innerHTML = `Hand ${G.handNo}<br><b>to ${OPT.target}${OPT.jokers ? ' · Jokers' : ''}</b>`
+  $('info').innerHTML = `<b>HAND ${G.handNo || 1}</b><span>to ${OPT.target}${OPT.jokers ? ' · Jokers' : ''}</span><i id="brk" class="${G.broken && (G.phase === 'play') ? 'on' : ''}">♠ BROKEN</i>`
   SEATS.forEach((S, p) => { const b = G.bids[p]; plates[p].querySelector('small').textContent = b === null ? (G.phase === 'bid' ? 'bidding…' : '–') : (b === 0 ? `NIL · ${G.tricks[p]}` : `${G.tricks[p]}/${b}`); plates[p].classList.toggle('turn', G.turn === p && (G.phase === 'play' || G.phase === 'bid')) })
   const tb = t => { const bs = [0, 1, 2, 3].filter(p => team(p) === t); const bid = bs.every(p => G.bids[p] !== null) ? bs.reduce((a, p) => a + (G.bids[p] || 0), 0) : '–'; return `${bs.reduce((a, p) => a + G.tricks[p], 0)} / ${bid}` }
   $('hA').textContent = tb(0); $('hB').textContent = tb(1)
   $('mt').textContent = G.tricks[0]; $('mb').textContent = G.bids[0] === null ? '–' : (G.bids[0] === 0 ? 'NIL' : G.bids[0])
+  // turn + progress UX
+  const live = G.phase === 'play' || G.phase === 'bid', mine = live && G.turn === 0
+  stage.classList.toggle('myturn', mine && G.phase === 'play'); $('turnban').textContent = G.trick.length ? 'YOUR TURN' : 'YOUR LEAD'; stage.classList.toggle('mybid', mine && G.phase === 'bid')
+  const tk = live && G.turn >= 0 ? G.phase + G.turn + ':' + G.trick.length + ':' + G.handNo : ''
+  if (tk !== hud._tk) { hud._tk = tk; plates.forEach((pl, p) => { pl.classList.remove('timed'); if (tk && p === G.turn && typeof ON !== 'undefined' && ON.active) { void pl.offsetWidth; pl.classList.add('timed') } }) }
+  const prog = t => { const bs = [0, 1, 2, 3].filter(p => team(p) === t), bid = bs.every(p => G.bids[p] !== null) ? bs.reduce((a, p) => a + (G.bids[p] || 0), 0) : 0, got = bs.reduce((a, p) => a + G.tricks[p], 0); return bid ? Math.min(100, got / bid * 100) : 0 }
+  $('pA').style.width = prog(0) + '%'; $('pB').style.width = prog(1) + '%'
+  $('pA').classList.toggle('made', prog(0) >= 100); $('pB').classList.toggle('made', prog(1) >= 100)
+  $('brk').classList.toggle('on', !!G.broken && live)
 }
 function toast(t){ const e = $('toast'); e.textContent = t; e.classList.remove('show'); void e.offsetWidth; e.classList.add('show') }
 function hint(t){ const e = $('hint'); e.textContent = t || ''; e.style.opacity = t ? 1 : 0 }
