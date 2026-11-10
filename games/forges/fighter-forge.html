@@ -1,0 +1,387 @@
+<title>DAHUB Fighter Forge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: arcade select-screen. Builder on the left, live fighter card + generated prompts on the right; stacks on phones. Single dark look by choice. */
+:root{
+  --bg:#070b12; --panel:#0e1622; --panel2:#132033; --line:#21344a;
+  --fg:#e9f3f7; --dim:#8fa6b6; --cyan:#19e0f0; --gold:#ffcc33; --red:#ff3b5c; --ok:#3ddc84;
+  --display:"Bungee","Impact","Arial Black",sans-serif; --body:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;
+  background-image:radial-gradient(90% 60% at 50% -10%,#123048 0%,transparent 60%),repeating-linear-gradient(0deg,transparent 0 3px,#ffffff05 3px 4px)}
+.wrap{max-width:1180px;margin:0 auto;padding-block:18px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:16px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,6vw,46px);line-height:1;margin:0;letter-spacing:.5px;
+  background:linear-gradient(180deg,#fff 0%,#bfefff 45%,#19e0f0 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 30px #19e0f033;text-wrap:balance}
+.sub{color:var(--dim);margin:6px 0 0;max-width:60ch}
+.badge{font-family:var(--display);font-size:12px;letter-spacing:1px;color:#081018;background:var(--gold);padding:6px 12px;border-radius:4px;transform:skewX(-8deg)}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.sticky{position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}
+@media (max-width:880px){.sticky{position:static}}
+.sec{display:flex;flex-direction:column;gap:8px;min-width:0}
+.sec>label,.lab{font-family:var(--display);font-size:12.5px;letter-spacing:1px;color:var(--cyan);text-transform:uppercase}
+.lab small{font-family:var(--body);color:var(--dim);text-transform:none;letter-spacing:0;font-size:12px;margin-left:6px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:520px){.row2{grid-template-columns:minmax(0,1fr)}}
+input[type=text],textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:10px 12px;font:inherit;font-size:15px}
+textarea{min-height:64px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 12px;border-radius:6px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:transform .08s,border-color .12s}
+.chip:hover{border-color:var(--cyan)}.chip:active{transform:scale(.96)}
+.chip[aria-pressed=true]{background:linear-gradient(180deg,#1fe6f5,#0aa9bb);color:#031820;border-color:#7ff8ff;box-shadow:0 0 12px #19e0f066}
+.stat{display:grid;grid-template-columns:88px minmax(0,1fr) 28px;align-items:center;gap:10px}
+.stat span{font-weight:700;font-size:14px}.stat b{font-variant-numeric:tabular-nums;text-align:right}
+input[type=range]{width:100%;accent-color:var(--cyan)}
+.budget{font-size:13px;color:var(--dim)}.budget.over{color:var(--red);font-weight:700}
+.colors{display:flex;gap:14px;flex-wrap:wrap}.colors label{display:flex;align-items:center;gap:8px;font-weight:600}
+input[type=color]{width:44px;height:34px;border:1px solid var(--line);border-radius:6px;background:none;padding:2px}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font-family:var(--display);font-size:14px;letter-spacing:.5px;padding:12px 18px;border-radius:6px;border:0;cursor:pointer;background:var(--gold);color:#140e00;box-shadow:0 4px 0 #9a7400;transform:translateY(0)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #9a7400}
+.btn.gen{background:var(--cyan);color:#031820;box-shadow:0 4px 0 #0a7f8c}.btn.gen:active{box-shadow:0 1px 0 #0a7f8c}
+.step{display:flex;gap:10px;align-items:flex-start}.step i{flex:none;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#140e00;font:400 13px var(--display);display:flex;align-items:center;justify-content:center;font-style:normal;margin-top:6px}.step .pr{flex:1;min-width:0}
+.ph{color:var(--dim);font-size:14px;padding:14px;border:1px dashed var(--line);border-radius:8px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line);box-shadow:none}
+.btn.small{font-size:12px;padding:8px 12px}
+.btn:disabled{opacity:.5;cursor:default}
+/* fighter card */
+.card{position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--c1,#19e0f0);background:linear-gradient(160deg,var(--c2,#0b2a3a) 0%,#05080d 75%);padding:16px;min-height:220px;display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px}
+.card:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 18px,#ffffff06 18px 19px);pointer-events:none}
+.sil{width:110px;height:150px;align-self:end;position:relative}
+.sil canvas{width:100%;height:100%}
+.cn{font-family:var(--display);font-size:26px;line-height:1;margin:0;word-break:break-word}
+.ct{color:var(--gold);font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.tag{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:4px;background:#ffffff14;border:1px solid #ffffff22}
+.bars{display:grid;gap:5px}
+.bar{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;align-items:center;font-size:12px;font-weight:700;color:var(--dim)}
+.bar i{height:8px;border-radius:2px;background:#ffffff14;position:relative;overflow:hidden}
+.bar i u{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--c1,#19e0f0),#fff);border-radius:2px}
+.fin{grid-column:1/-1;border-top:1px dashed #ffffff26;padding-top:10px;font-size:13.5px}
+.fin b{font-family:var(--display);font-weight:400;color:var(--red);letter-spacing:.5px}
+.taunt{grid-column:1/-1;font-style:italic;color:#cfe3ea;font-size:14px}
+/* prompts */
+.prompts{display:flex;flex-direction:column;gap:10px}
+.pr{background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.pr header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0;padding:8px 10px;background:#0a1320;border-bottom:1px solid var(--line)}
+.pr header b{font-size:13.5px}.pr header small{color:var(--dim);font-size:12px;display:block;font-weight:500}
+.pr pre{margin:0;padding:10px 12px;white-space:pre-wrap;word-break:break-word;font-family:var(--body);font-size:13px;color:#d6e6ee;max-height:150px;overflow:auto}
+.copy{flex:none}
+.tip{font-size:13px;color:var(--dim);background:#0a1320;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tip b{color:var(--fg)}
+/* roster */
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.rc{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--c,#19e0f0);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.rc b{font-family:var(--display);font-weight:400;font-size:15px;word-break:break-word}.rc small{color:var(--dim)}
+.rc .actions{gap:6px}
+.status{font-size:13px;color:var(--dim);min-height:18px}.status.ok{color:var(--ok)}.status.err{color:var(--red)}
+.refs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ref{background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.ref img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#000}
+.ref input{border:0;border-top:1px solid var(--line);border-radius:0;font-size:13px;padding:8px 10px}
+.ref .x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:#000c;color:#fff;font-size:15px;cursor:pointer}
+.note{color:var(--dim);font-size:12.5px}
+label.btn{display:inline-flex;align-items:center}
+.empty{color:var(--dim);font-size:14px;padding:10px;border:1px dashed var(--line);border-radius:8px}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div><h1>Fighter Forge</h1><p class="sub">Build a fighter for the DAHUB brawler. 1. Fill in your fighter and add reference pics. 2. Tap Generate my prompts. 3. Copy them into ChatGPT in order. Save to the roster so Claude can pull the fighter into the game.</p></div>
+    <span class="badge">CREATE A FIGHTER</span>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-label="Fighter builder">
+      <div class="row2">
+        <div class="sec"><label for="f-name">Fighter name</label><input id="f-name" type="text" maxlength="28" placeholder="e.g. Old Bay Ox"></div>
+        <div class="sec"><label for="f-title">Title / nickname</label><input id="f-title" type="text" maxlength="40" placeholder="e.g. The Harbor Wrecker"></div>
+      </div>
+      <div class="sec"><span class="lab">What are they?</span><div class="chips" data-k="type"></div>
+        <input id="f-species" type="text" maxlength="60" placeholder="Be specific: pit bull, blue crab, retired security robot, harbor ghost…"></div>
+      <div class="sec"><span class="lab">Build <small>changes how they play</small></span><div class="chips" data-k="build"></div></div>
+      <div class="sec"><span class="lab">Presents as</span><div class="chips" data-k="pres"></div></div>
+      <div class="sec"><span class="lab">Reference pics <small>optional, up to 3</small></span>
+        <div id="refs" class="refs"></div>
+        <div class="actions"><label class="btn ghost small" for="f-ref" tabindex="0">+ Add reference pic</label><input id="f-ref" type="file" accept="image/*" multiple hidden><button class="btn small" id="aidesc" type="button" hidden>Fill the look from my pics</button></div>
+        <span class="note">Add photos of outfits, hairstyles, animals, gear, anything. Under each pic, say what to take from it. The art prompts use them as style inspiration only, so the fighter stays original and doesn’t copy anyone’s face.</span></div>
+      <div class="sec"><span class="lab">Look</span>
+        <div class="row2">
+          <input id="f-skin" type="text" maxlength="60" placeholder="Skin / fur / metal / scales">
+          <input id="f-hair" type="text" maxlength="60" placeholder="Hair / head (fade, locs, horns, visor…)">
+        </div>
+        <input id="f-outfit" type="text" maxlength="120" placeholder="Outfit (puffer, durag, Ravens jersey colors, work boots…)">
+        <input id="f-item" type="text" maxlength="80" placeholder="Signature item (crab mallet, chain, boombox, gloves…)">
+        <div class="colors"><label for="f-c1">Main color <input id="f-c1" type="color" value="#19e0f0"></label><label for="f-c2">Accent color <input id="f-c2" type="color" value="#6b2bd9"></label></div>
+      </div>
+      <div class="sec"><span class="lab">Fighting style</span><div class="chips" data-k="style"></div></div>
+      <div class="sec"><span class="lab">Stats <small>spend 24 points, max 10 each</small></span>
+        <div id="stats"></div><div id="budget" class="budget"></div></div>
+      <div class="sec"><span class="lab">Personality <small>pick up to 3</small></span><div class="chips" data-k="pers"></div></div>
+      <div class="sec"><label for="f-taunt">Trash talk line</label><input id="f-taunt" type="text" maxlength="100" placeholder="“You ain’t from round here, huh?”"></div>
+      <div class="row2">
+        <div class="sec"><label for="f-fin">Blazin’ finisher name</label><input id="f-fin" type="text" maxlength="40" placeholder="e.g. Steamed &amp; Seasoned"></div>
+        <div class="sec"><label for="f-findesc">What happens</label><input id="f-findesc" type="text" maxlength="140" placeholder="Lifts them overhead, spins, slams through a crab table"></div>
+      </div>
+      <div class="sec"><label for="f-entrance">Entrance</label><input id="f-entrance" type="text" maxlength="120" placeholder="Rolls up on a dirt bike doing a wheelie"></div>
+      <div class="sec"><span class="lab">Home stage</span><div class="chips" data-k="stage"></div><input id="f-stage2" type="text" maxlength="80" placeholder="Or type your own stage"></div>
+      <div class="sec"><label for="f-story">Backstory <small style="color:var(--dim);font-family:var(--body);text-transform:none;letter-spacing:0">1–2 lines</small></label><textarea id="f-story" maxlength="300" placeholder="Where they came from and why they fight."></textarea></div>
+      <div class="sec"><label for="f-art">Art direction <small style="color:var(--dim);font-family:var(--body);text-transform:none;letter-spacing:0">shared by every prompt, keep it the same for the whole roster</small></label><textarea id="f-art"></textarea></div>
+      <div class="actions"><button class="btn gen" id="gen" type="button">Generate my prompts</button><button class="btn" id="save">Save to roster</button><button class="btn ghost" id="reset">New fighter</button><button class="btn ghost" id="random">Surprise me</button></div>
+      <div id="status" class="status" role="status"></div>
+    </section>
+
+    <div class="sticky" style="display:flex;flex-direction:column;gap:18px;min-width:0">
+      <section class="panel" aria-label="Fighter preview">
+        <span class="lab">Select screen preview</span>
+        <div class="card" id="card"></div>
+      </section>
+      <section class="panel" aria-label="Art prompts">
+        <span class="lab">ChatGPT art prompts</span>
+        <div id="ptip" class="tip" hidden><b>Run them in order, all in one ChatGPT chat.</b> For prompt 1, attach your reference pics. For every prompt after that, ChatGPT already has the sheet in the chat. If you start a new chat, attach the sheet image. Send each result to Claude to add to the asset kit.</div>
+        <div class="prompts" id="prompts"><div class="ph">Fill in your fighter on the left, then tap <b>Generate my prompts</b>. You’ll get the character sheet prompt plus every pose, written for this fighter.<button class="btn gen small" type="button" onclick="document.getElementById('gen').click()">Generate my prompts</button></div></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top:18px" aria-label="Roster">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="lab">Roster</span><span id="rstatus" class="status"></span></div>
+    <div id="roster" class="roster"><div class="empty">No fighters yet. Build one above and tap Save to roster.</div></div>
+  </section>
+</div>
+
+<script>
+const OPTS = {
+  type: ['Human','Animal','Robot / Cyborg','Creature / Monster','Spirit / Supernatural','Alien','Hybrid'],
+  build: ['Small & fast','Medium','Big & heavy','Giant (boss)'],
+  pres: ['Man','Woman','Androgynous','Not applicable'],
+  style: ['Street','Boxing','Kickboxing','Wrestling','Martial Arts','Capoeira','Beast / Claws','Tech / Gadgets','Supernatural'],
+  pers: ['Cocky','Silent','Funny','Hothead','Wise','Wild','Smooth','Menacing','Hype','Cold'],
+  stage: ['Rowhouse Block','Inner Harbor at Night','Corner Store','Basketball Court','Stadium Lot','Market Hall','Rooftop','Dirt Bike Lot','Crab House','Subway Platform']
+};
+const ART = '2D fighting game character art, bold hand-drawn comic style with thick clean black outlines, cel shading, vibrant saturated colors, dramatic lighting, gritty urban Baltimore vibe, consistent proportions, full body, centered, solid pure green background (#00FF00) with no shadows, props or text on the background';
+const STATS = [['power','Power'],['speed','Speed'],['defense','Defense'],['grapple','Grapple']];
+const BUDGET = 24;
+const blank = () => ({ name:'', title:'', type:'Human', species:'', build:'Medium', pres:'Man', skin:'', hair:'', outfit:'', item:'', c1:'#19e0f0', c2:'#6b2bd9', style:'Street', stats:{power:6,speed:6,defense:6,grapple:6}, pers:[], taunt:'', fin:'', findesc:'', entrance:'', stage:'Rowhouse Block', stage2:'', story:'', art:ART, refs:[], gen:null });
+let F = blank(), editId = null, db = null, roster = [], assets = null, sample = null, canImg = false;
+const $ = id => document.getElementById(id);
+const TXT = ['name','title','species','skin','hair','outfit','item','taunt','fin','findesc','entrance','stage2','story','art'];
+
+function chips(){
+  document.querySelectorAll('.chips[data-k]').forEach(box => {
+    const k = box.dataset.k; box.innerHTML = '';
+    OPTS[k].forEach(v => { const b = document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=v
+      b.setAttribute('aria-pressed', k==='pers' ? F.pers.includes(v) : F[k]===v)
+      b.onclick = () => { if (k==='pers') { F.pers = F.pers.includes(v) ? F.pers.filter(x=>x!==v) : F.pers.length<3 ? [...F.pers,v] : F.pers } else { F[k]=v; if (k==='stage') F.stage2='' } sync(); }
+      box.appendChild(b) })
+  })
+}
+function statsUI(){
+  const box = $('stats'); box.innerHTML = ''
+  STATS.forEach(([k,l]) => { const r = document.createElement('div'); r.className='stat'
+    r.innerHTML = `<span>${l}</span><input type="range" min="1" max="10" id="s-${k}" aria-label="${l}"><b id="v-${k}"></b>`
+    box.appendChild(r); const i = r.querySelector('input'); i.value = F.stats[k]
+    i.oninput = () => { F.stats[k] = +i.value; renderOut() } })
+}
+function fillForm(){ TXT.forEach(k => { $('f-'+k).value = F[k] || '' }); $('f-c1').value=F.c1; $('f-c2').value=F.c2; STATS.forEach(([k]) => $('s-'+k).value = F.stats[k]) }
+function sync(){ chips(); renderOut() }
+TXT.forEach(k => $('f-'+k).addEventListener('input', e => { F[k] = e.target.value; if (k==='stage2' && e.target.value) { F.stage=''; chips() } renderOut() }))
+$('f-c1').oninput = e => { F.c1 = e.target.value; renderOut() }; $('f-c2').oninput = e => { F.c2 = e.target.value; renderOut() }
+
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+const stageName = () => F.stage2.trim() || F.stage
+const used = () => STATS.reduce((a,[k]) => a + F.stats[k], 0)
+function describe(){
+  const what = F.species.trim() ? `${F.species.trim()} (${F.type.toLowerCase()})` : F.type.toLowerCase()
+  const size = {'Small & fast':'small, lean and quick-looking','Medium':'medium, athletic build','Big & heavy':'big, heavy, powerful build','Giant (boss)':'towering giant, massive boss-sized frame'}[F.build]
+  const parts = [`${F.name || 'An original fighter'}${F.title ? ', "'+F.title+'"' : ''}: a ${what}`]
+  if (F.pres !== 'Not applicable') parts.push(F.pres === 'Androgynous' ? 'androgynous' : F.pres.toLowerCase())
+  parts.push(size)
+  if (F.skin) parts.push(F.skin); if (F.hair) parts.push(F.hair)
+  if (F.outfit) parts.push('wearing ' + F.outfit); if (F.item) parts.push('signature item: ' + F.item)
+  parts.push(`color scheme of ${F.c1} and ${F.c2}`)
+  parts.push(`${F.style.toLowerCase()} fighting style`)
+  if (F.pers.length) parts.push(`${F.pers.join(', ').toLowerCase()} personality shown in the face and body language`)
+  return parts.join(', ')
+}
+function prompts(){
+  const d = describe(), st = stageName(), notes = F.refs.map(x => x.note.trim()).filter(Boolean)
+  const refLine = F.refs.length ? ` Use the attached reference image${F.refs.length > 1 ? 's' : ''} only as style inspiration${notes.length ? ' for: ' + notes.join('; ') : ''}. Do not copy any real person's face or identity; keep the character fully original.` : ''
+  const a = (F.art || ART).trim() + (refLine ? '.' + refLine.replace(/\.$/, '') : '')
+  const pose = (label, p, extra='') => `${a}. Character: ${d}. Pose: ${p}.${extra} Keep the exact same design, outfit and colors as the character sheet.`
+  return [
+    ['Character sheet', 'Run this first', `${a}. Character turnaround sheet for ${d}. Show the same character three times side by side: front view, side view, back view, in a neutral fighting stance. Clear readable silhouette, original design, no logos or brand names, no text.`],
+    ['Select-screen portrait', 'Square, for the character grid', `${a.replace('full body, centered, ','')}. Head-and-shoulders portrait of ${d}, square 1:1 crop, confident expression facing slightly right, strong rim light, no text.`],
+    ['Idle stance', 'Loops while waiting', pose('Idle', 'side view facing right, fighting stance, knees bent, guard up, ready to move')],
+    ['Walk', 'Movement', pose('Walk', 'side view facing right, mid-stride walking forward with guard up')],
+    ['Light attack', 'Quick strike', pose('Light', `side view facing right, fast jab or quick strike fitting a ${F.style.toLowerCase()} style, arm fully extended`)],
+    ['Heavy attack', 'Big hit', pose('Heavy', `side view facing right, powerful heavy strike or kick fitting a ${F.style.toLowerCase()} style, full body weight behind it`)],
+    ['Grab / throw', 'Grapple', pose('Grab', 'side view facing right, lunging forward with both hands reaching to grab an opponent (opponent not shown)')],
+    ['Hit reaction', 'Taking damage', pose('Hit', 'side view facing right, recoiling backward from a hit, head snapped back, pained expression')],
+    ['Knocked down', 'On the ground', pose('KO', 'lying flat on the ground on their back, knocked out, side view')],
+    ['Victory pose', 'Win screen', pose('Win', 'front three-quarter view, triumphant victory pose showing off their personality')],
+    ['Blazin’ finisher', 'Signature move key art', `${a.replace('solid pure green background (#00FF00) with no shadows, props or text on the background','dramatic background of '+st)}. Dynamic action key art of ${d} performing their signature finisher "${F.fin || 'Blazin\' finisher'}"${F.findesc ? ': ' + F.findesc : ''}. Explosive energy, motion lines, wide 16:9, opponent shown only as a blurred silhouette, no text.`],
+    ['Home stage', 'Background, no fighters', `2D fighting game stage background, bold hand-drawn comic style matching the roster, wide 16:9 side-view arena: ${st} in Baltimore, detailed street-level scene with a flat ground plane across the bottom third for fighters to stand on, crowd silhouettes at the edges, moody lighting, no characters in the foreground, no text, no logos.`]
+  ]
+}
+function draw(cv){
+  const x = cv.getContext('2d'), w = cv.width = 220, h = cv.height = 300
+  x.clearRect(0,0,w,h)
+  const s = {'Small & fast':.78,'Medium':.9,'Big & heavy':1,'Giant (boss)':1.08}[F.build], wide = {'Small & fast':.8,'Medium':1,'Big & heavy':1.35,'Giant (boss)':1.5}[F.build]
+  x.save(); x.translate(w/2, h-8); x.scale(s*wide, s)
+  const g = x.createLinearGradient(0,-280,0,0); g.addColorStop(0,F.c1); g.addColorStop(1,F.c2); x.fillStyle = g; x.strokeStyle='#000'; x.lineWidth=6
+  const path = () => { x.beginPath(); x.ellipse(0,-245,24,28,0,0,7); x.moveTo(-46,-205); x.quadraticCurveTo(0,-222,46,-205); x.lineTo(62,-120); x.lineTo(40,-118); x.lineTo(32,-170); x.lineTo(28,-100); x.lineTo(38,0); x.lineTo(10,0); x.lineTo(0,-80); x.lineTo(-10,0); x.lineTo(-38,0); x.lineTo(-28,-100); x.lineTo(-32,-170); x.lineTo(-40,-118); x.lineTo(-62,-120); x.closePath() }
+  path(); x.stroke(); x.fill()
+  if (F.type.startsWith('Animal') || F.type.startsWith('Creature')) { x.beginPath(); x.moveTo(-18,-268); x.lineTo(-30,-292); x.lineTo(-6,-272); x.moveTo(18,-268); x.lineTo(30,-292); x.lineTo(6,-272); x.stroke(); x.fill() }
+  if (F.type.startsWith('Robot') || F.type === 'Alien') { x.fillStyle='#fff'; x.fillRect(-16,-252,32,8) }
+  x.restore()
+}
+function renderOut(){
+  const u = used(), over = u > BUDGET
+  STATS.forEach(([k]) => $('v-'+k).textContent = F.stats[k])
+  $('budget').textContent = over ? `${u}/${BUDGET} points: ${u-BUDGET} over. Lower a stat to save.` : `${u}/${BUDGET} points used`
+  $('budget').className = 'budget' + (over ? ' over' : '')
+  $('save').disabled = over
+  const c = $('card'); c.style.setProperty('--c1', F.c1); c.style.setProperty('--c2', F.c2)
+  c.innerHTML = `<div class="sil"><canvas aria-hidden="true"></canvas></div><div style="min-width:0;position:relative"><h2 class="cn">${esc(F.name || 'Your Fighter')}</h2><div class="ct">${esc(F.title || F.style)}</div>
+    <div class="tags"><span class="tag">${esc(F.species || F.type)}</span><span class="tag">${esc(F.build)}</span><span class="tag">${esc(F.style)}</span>${F.pers.map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div>
+    <div class="bars">${STATS.map(([k,l]) => `<div class="bar">${l}<i><u style="width:${F.stats[k]*10}%"></u></i></div>`).join('')}</div></div>
+    ${F.taunt ? `<div class="taunt">“${esc(F.taunt.replace(/^["“]|["”]$/g,''))}”</div>` : ''}
+    <div class="fin"><b>BLAZIN’: ${esc(F.fin || 'name it')}</b>${F.findesc ? ' · ' + esc(F.findesc) : ''}<br><span style="color:var(--dim)">Home stage: ${esc(stageName())}</span></div>`
+  draw(c.querySelector('canvas'))
+  if (F.gen) renderPrompts(F.gen.list)
+}
+const KEYS = [['sheet','Character sheet','Run first. Attach your reference pics.'],['portrait','Select-screen portrait','Square, for the character grid'],['idle','Idle stance','Loops while waiting'],['walk','Walk','Moving forward'],['walk_b','Walk (other step)','Arms and legs swapped'],['light_attack','Light attack','Quick strike'],['heavy_attack','Heavy attack','Big hit'],['grab','Grab / throw','Grapple'],['hit','Hit reaction','Taking damage'],['knockdown','Knocked down','On the ground'],['victory','Victory pose','Win screen'],['blazin','Blazin’ finisher','Signature move art'],['stage','Home stage','Background, no fighters']]
+function renderPrompts(list){
+  const P = $('prompts'); P.innerHTML = ''; $('ptip').hidden = false
+  list.forEach(([t, sub, txt], i) => { const w = document.createElement('div'); w.className = 'step'
+    w.innerHTML = `<i>${i+1}</i><div class="pr"><header><div><b>${esc(t)}</b><small>${esc(sub)}</small></div><button class="btn small copy" type="button">Copy</button></header><pre></pre></div>`
+    const pre = w.querySelector('pre'); pre.textContent = txt
+    const btn = w.querySelector('button'); btn.onclick = async () => { try { await navigator.clipboard.writeText(txt); btn.textContent='Copied' } catch { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent='Selected' } setTimeout(()=>btn.textContent='Copy',1500) }
+    P.appendChild(w) })
+}
+const RULES = `Rules for every prompt:
+- Each prompt must be complete and standalone (paste-ready), 90-170 words, plain text, no markdown.
+- Art style for all character images: ${'${ART}'}.
+- Repeat the exact same physical and outfit details in every prompt (skin tone, hair, build, every clothing item and color, accessories, tattoos) so the character stays identical.
+- From prompt 2 onward, begin with: "Same character as the character sheet above (or attached)."
+- The face is original. Never name or describe any real person, actor or existing movie/game character. No brand names, logos or recognizable brand designs: plain sneakers, plain pockets, generic prints.
+- Fighting poses are side view facing RIGHT (write "facing RIGHT, body and face turned toward the right side of the image" in each), one pose per image, full body, solid pure green background (#00FF00), no shadows, no other characters except where stated.
+- walk_b is the opposite step of walk: say the legs are SWAPPED compared to the first walk image and the arm swing is reversed.
+- Hit reaction recoils toward the LEFT. Knockdown lies flat with head toward the LEFT side of the image.
+- If the fighter's moves use a weapon or signature item, put it in the heavy attack. For a gun finisher, the blazin prompt shows only the pose (arm extended, no target, no muzzle flash); the game adds the flash.
+- Make the moves fit this fighter's style, build and personality (a brawler throws wild haymakers, a boxer throws tight jabs, a beast claws, etc.), with specific body mechanics.
+- Image tools refuse gore and weapons aimed at people. If the finisher involves a weapon, show a dramatic stylized freeze-frame (muzzle flash toward camera edge, opponent as a blurred silhouette) with no wound or blood.
+- The Blazin' finisher is wide 16:9 key art with the home stage behind it. The stage prompt is a wide 16:9 empty fighting-game arena with a flat floor across the bottom third, no fighters, no text.`
+async function generate(){
+  const b = $('gen'); if (!F.name.trim()) return status('Give your fighter a name first.', 'err')
+  b.disabled = true; b.textContent = 'Writing prompts…'; status('Writing prompts for ' + F.name + '…')
+  let list = null, note = ''
+  if (sample) {
+    try {
+      const images = canImg ? (await Promise.all(F.refs.map(refBlob))).filter(Boolean) : []
+      const info = { name:F.name, title:F.title, type:F.type, what:F.species, build:F.build, presents_as:F.pres, skin:F.skin, hair:F.hair, outfit:F.outfit, signature_item:F.item, colors:[F.c1,F.c2], fighting_style:F.style, stats:F.stats, personality:F.pers, trash_talk:F.taunt, finisher:{ name:F.fin, what_happens:F.findesc }, entrance:F.entrance, home_stage:stageName(), backstory:F.story, reference_notes:F.refs.map(x => x.note).filter(Boolean) }
+      const out = await sample.json(`You write image-generation prompts (for ChatGPT image generation) for an original 2D fighting game character. ${images.length ? 'The attached images are the owner\'s reference pics; use them to describe the outfit, hairstyle, build, colors and vibe precisely (style only, original face).' : ''}\nCharacter details from the owner:\n${JSON.stringify(info)}\n${RULES.replace('${ART}', (F.art||ART).trim())}\nReturn JSON only with these keys, each a full prompt string: ${KEYS.map(k => k[0]).join(', ')}.`, { images, modelTier: 'complex' })
+      list = KEYS.map(([k, t, sub]) => [t, sub, String(out[k] || '').trim()]).filter(x => x[2])
+      if (list.length < 10) { list = null; note = 'The AI answer was incomplete, so these are the standard prompts.' }
+    } catch (e) { note = e.code === 'not_granted' ? 'AI help is off for this page, so these are the standard prompts.' : e.code === 'rate_limited' ? 'Too many AI requests right now, so these are the standard prompts.' : 'The AI couldn’t write them (' + (e.message || e.code) + '), so these are the standard prompts.' }
+  } else note = 'Open this page signed in to claude.ai for prompts written by AI. These are the standard prompts.'
+  if (!list) list = prompts()
+  F.gen = { at: new Date().toISOString(), list }; renderPrompts(list)
+  status(note || `Prompts ready for ${F.name}. Save to roster to keep them.`, note ? '' : 'ok')
+  b.disabled = false; b.textContent = 'Generate my prompts'
+  if (innerWidth < 880) $('prompts').scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+$('gen').onclick = generate
+function refsUI(){
+  const R = $('refs'); R.innerHTML = ''
+  F.refs.forEach((x, i) => { const c = document.createElement('div'); c.className = 'ref'; c.style.position = 'relative'
+    c.innerHTML = `<img alt="Reference ${i+1}"><button class="x" type="button" aria-label="Remove reference ${i+1}">✕</button><input type="text" maxlength="80" id="ref-note-${i}" placeholder="Take the… (outfit, hair, vibe)">`
+    c.querySelector('img').src = x.preview || x.url; const n = c.querySelector('input'); n.value = x.note || ''
+    n.oninput = () => { x.note = n.value; renderOut() }
+    c.querySelector('.x').onclick = () => { F.refs.splice(i, 1); refsUI(); renderOut() }
+    R.appendChild(c) })
+  $('aidesc').hidden = !(canImg && F.refs.length)
+  document.querySelector('label[for=f-ref]').hidden = F.refs.length >= 3
+}
+$('f-ref').onchange = e => { const fs = [...e.target.files].filter(f => f.type.startsWith('image/')); e.target.value = ''
+  for (const f of fs) { if (F.refs.length >= 3) break; if (f.size > 15e6) { status('That image is too big. Use one under 15 MB.', 'err'); continue } F.refs.push({ blob: f, preview: URL.createObjectURL(f), note: '' }) }
+  refsUI(); renderOut() }
+document.querySelector('label[for=f-ref]').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('f-ref').click() } }
+async function refBlob(x){ if (x.blob) return x.blob; try { const r = await fetch(x.url); return r.ok ? await r.blob() : null } catch { return null } }
+$('aidesc').onclick = async () => {
+  const b = $('aidesc'); b.disabled = true; b.textContent = 'Looking at your pics…'; status('')
+  try {
+    const images = (await Promise.all(F.refs.map(refBlob))).filter(Boolean)
+    if (!images.length) throw { message: 'Could not read the pics. Remove and add them again.' }
+    const notes = F.refs.map((x, i) => `Image ${i+1}: ${x.note.trim() || 'use whatever fits'}`).join('\n')
+    const out = await sample.json(`You help design an ORIGINAL character for a 2D fighting game. Study the attached reference images. What to take from each:\n${notes}\nCharacter so far: type ${F.type}${F.species ? ' (' + F.species + ')' : ''}, ${F.build}, ${F.style} style.\nDescribe ONLY visual design elements: clothing, colors, hairstyle type, body type, textures, accessories and overall vibe. Never identify or name any person, and never mention brand names or logos. Keep each value short and vivid, written as character design notes.\nReturn JSON only: {"skin": "skin/fur/material description", "hair": "hair or head description", "outfit": "outfit description", "item": "one signature item or accessory, or empty string", "c1": "#rrggbb main color", "c2": "#rrggbb accent color", "vibe": "3-6 words"}`, { images, modelTier: 'default' })
+    ;['skin','hair','outfit','item'].forEach(k => { if (typeof out[k] === 'string' && out[k].trim()) F[k] = out[k].trim().slice(0, k === 'outfit' ? 120 : 80) })
+    ;['c1','c2'].forEach(k => { if (/^#[0-9a-f]{6}$/i.test(out[k] || '')) F[k] = out[k] })
+    fillForm(); sync(); status('Look filled in from your pics' + (out.vibe ? ` (${out.vibe})` : '') + '. Change anything you want.', 'ok')
+  } catch (e) { status(e.code === 'not_granted' ? 'AI help was not allowed, so fill the look in yourself.' : e.code === 'rate_limited' ? 'Too many AI requests. Wait a minute and try again.' : 'Could not read the pics: ' + (e.message || e.code), 'err') }
+  finally { b.disabled = false; b.textContent = 'Fill the look from my pics' }
+}
+function status(m, cls=''){ const s=$('status'); s.textContent=m; s.className='status '+cls }
+function slug(s){ return (s||'fighter').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,30) || 'fighter' }
+$('save').onclick = async () => {
+  if (!F.name.trim()) return status('Give your fighter a name first.','err')
+  if (used() > BUDGET) return status('Too many stat points. Lower a stat first.','err')
+  const id = editId || slug(F.name) + '-' + Math.random().toString(36).slice(2,6)
+  if (F.refs.some(x => x.blob)) {
+    if (!assets) status('Reference pics can only be saved when you open this page signed in to claude.ai. Saving the fighter without them.', 'err')
+    else { status('Uploading reference pics…'); for (const x of F.refs) if (x.blob) { try { const u = await assets.upload(x.blob); x.id = u.id; x.url = u.url; delete x.blob } catch (e) { return status('Could not upload a reference pic: ' + (e.message || e.code), 'err') } } }
+  }
+  const data = { ...F, refs: F.refs.filter(x => x.id).map(x => ({ id: x.id, url: x.url, note: x.note || '' })), prompts: Object.fromEntries((F.gen ? F.gen.list : prompts()).map(([t,,p]) => [t,p])), gen: F.gen ? { at: F.gen.at, list: F.gen.list.map(x => ({ t:x[0], sub:x[1], p:x[2] })) } : null, updatedAt: new Date().toISOString() }
+  if (!db) { try { const all = JSON.parse(localStorage.getItem('forge') || '{}'); all[id] = data; localStorage.setItem('forge', JSON.stringify(all)) } catch {} editId = id; loadLocal(); return status('Saved on this device only. Open this page signed in to claude.ai so Claude can read the roster.','ok') }
+  $('save').disabled = true
+  try { await db.doc('fighters/' + id).set(data); editId = id; status(`${F.name} saved to the roster${data.refs.length ? ` with ${data.refs.length} reference pic${data.refs.length > 1 ? 's' : ''}` : ''}.`, 'ok') }
+  catch (e) { status('Could not save: ' + (e.message || e.code) + '. Try again.', 'err') }
+  finally { renderOut() }
+}
+const phHTML = $('prompts').innerHTML
+function clearPrompts(){ $('prompts').innerHTML = phHTML; $('ptip').hidden = true }
+$('reset').onclick = () => { F = blank(); editId = null; fillForm(); refsUI(); clearPrompts(); sync(); status('') }
+$('random').onclick = () => {
+  const pick = a => a[Math.floor(Math.random()*a.length)]
+  const ideas = [['Old Bay Ox','The Harbor Wrecker','Animal','minotaur-like bull with a crab-shell chest plate','Big & heavy','Wrestling'],['Lil Wheelie','Dirt Bike Demon','Human','teen dirt-bike rider','Small & fast','Capoeira'],['Mother Tremaine','First Lady of the Block','Human','church mother with a heavy purse','Medium','Street'],['Unit 410','Retired Security Bot','Robot / Cyborg','old mall security robot with a flashing siren head','Big & heavy','Tech / Gadgets'],['Shellshock','Blue Crab Bruiser','Animal','giant humanoid blue crab with boxing gloves over his claws','Medium','Boxing'],['Fog','Harbor Ghost','Spirit / Supernatural','sailor ghost made of harbor mist','Medium','Supernatural']]
+  const [n,t,ty,sp,b,s] = pick(ideas)
+  F = { ...blank(), name:n, title:t, type:ty, species:sp, build:b, style:s, pers:[pick(OPTS.pers)], stage:pick(OPTS.stage), c1:pick(['#19e0f0','#ff3b5c','#ffcc33','#3ddc84','#ff7a1a','#b36bff']), c2:pick(['#3a1a6b','#0b2a3a','#5a0f1f','#1a3a14','#2b2b2b']) }
+  editId = null; fillForm(); refsUI(); clearPrompts(); sync(); status('Here’s a starting idea. Change anything you want.')
+}
+function rosterUI(list, note){
+  roster = list; const R = $('roster')
+  if (!list.length) { R.innerHTML = '<div class="empty">No fighters yet. Build one above and tap Save to roster.</div>'; $('rstatus').textContent = note||''; return }
+  R.innerHTML = ''; $('rstatus').textContent = `${list.length} fighter${list.length>1?'s':''}` + (note ? ' · ' + note : '')
+  list.forEach(({id, d}) => { const c = document.createElement('div'); c.className='rc'; c.style.setProperty('--c', d.c1||'#19e0f0')
+    c.innerHTML = `<b>${esc(d.name)}</b><small>${esc(d.species||d.type)} · ${esc(d.style)}</small><div class="actions"><button class="btn small ghost" data-a="edit">Edit</button><button class="btn small ghost" data-a="del">Delete</button></div>`
+    c.querySelector('[data-a=edit]').onclick = () => { F = { ...blank(), ...d, stats:{...blank().stats, ...(d.stats||{})}, refs:(d.refs||[]).map(x => ({ ...x, preview: x.id ? '/_blob/' + x.id : x.url })), gen: d.gen && Array.isArray(d.gen.list) ? { at: d.gen.at, list: d.gen.list.map(x => [x.t, x.sub, x.p]) } : null }; editId = id; fillForm(); refsUI(); if (!F.gen) clearPrompts(); sync(); status(`Editing ${d.name}. Save to update.`); window.scrollTo({top:0,behavior:'smooth'}) }
+    const del = c.querySelector('[data-a=del]'); del.onclick = () => {
+      const act = c.querySelector('.actions'); act.innerHTML = `<span class="confirm">Delete? <button class="btn small" data-y>Yes</button><button class="btn small ghost" data-n>No</button></span>`
+      act.querySelector('[data-n]').onclick = () => rosterUI(roster)
+      act.querySelector('[data-y]').onclick = async () => { if (db) { try { await db.doc('fighters/'+id).delete() } catch (e) { status('Could not delete: '+(e.message||e.code),'err') } } else { try { const all = JSON.parse(localStorage.getItem('forge')||'{}'); delete all[id]; localStorage.setItem('forge', JSON.stringify(all)) } catch {} loadLocal() } if (editId===id) editId=null }
+    }
+    R.appendChild(c) })
+}
+function loadLocal(){ let all = {}; try { all = JSON.parse(localStorage.getItem('forge') || '{}') } catch {} rosterUI(Object.entries(all).map(([id,d]) => ({id,d})), 'saved on this device') }
+
+chips(); statsUI(); fillForm(); refsUI(); renderOut(); loadLocal()
+;(async () => {
+  try { assets = await window.claude?.use?.('assets') } catch { assets = null }
+  try { sample = await window.claude?.use?.('sample'); const lim = sample ? await sample.limits().catch(() => null) : null; canImg = !!lim?.images } catch { sample = null }
+  refsUI()
+  try { db = await window.claude?.use?.('db') } catch { db = null }
+  if (!db) return
+  $('rstatus').textContent = 'Loading roster…'
+  const t = setTimeout(() => { $('rstatus').textContent = 'Roster is taking a while to load.' }, 10000)
+  db.collection('fighters').orderBy('updatedAt','desc').onSnapshot(s => { clearTimeout(t); rosterUI(s.docs.map(x => ({ id:x.id, d:x.data() }))) }, e => { clearTimeout(t); $('rstatus').textContent = 'Could not load the roster: ' + (e.message||e.code) })
+})()
+</script>
