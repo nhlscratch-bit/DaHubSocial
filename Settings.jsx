@@ -7,11 +7,13 @@ import { BUILD } from './supabase'
 import { useEffect } from 'react'
 import { supported, current, enable, disable } from './push'
 import { glowOn, setGlow } from './glow'
+import { tapsOn, setTaps } from './tapsound'
 
 export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) {
   const [q, setQ] = useState(''), [edit, setEdit] = useState(false), [pw, setPw] = useState(false), [priv, setPriv] = useState(!!profile?.is_private), [err, setErr] = useState('')
   const [pushOn, setPushOn] = useState(false), [glow, setGlowS] = useState(glowOn())
   const toggleGlow = () => { const v = !glow; setGlow(v); setGlowS(v) }
+  const [taps, setTapsS] = useState(tapsOn()), toggleTaps = () => { const v = !taps; setTaps(v); setTapsS(v) }
   useEffect(() => { current().then(s => setPushOn(!!s)) }, [])
   async function togglePush() {
     setErr(''); if (pushOn) { await disable(); setPushOn(false); return }
@@ -33,7 +35,8 @@ export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) 
       ...(supported() ? [['bell', 'Push notifications', pushOn ? 'On: alerts for messages, calls and activity' : 'Off: tap to get alerts when the app is closed', togglePush, 'alerts phone push messages calls', pushOn, true]] : []),
       ['chat', 'Messages', 'Your conversations', () => go('inbox'), 'dm inbox']]],
     ['Look and feel', [
-      ['star', 'Glow Mode', glow ? 'On: edges shift through Glacier, Moonstone, Frost Orchid and Aurora Mint' : 'Off: classic white chrome and cyan', toggleGlow, 'rgb glow colors theme lights led', glow, true]]],
+      ['star', 'Glow Mode', glow ? 'On: edges shift through Glacier, Moonstone, Frost Orchid and Aurora Mint' : 'Off: classic white chrome and cyan', toggleGlow, 'rgb glow colors theme lights led', glow, true],
+      ['bell', 'Tap sounds', taps ? 'On: a soft click when you tap buttons (off when your phone is on silent)' : 'Off: no tap sounds', toggleTaps, 'sound click tap audio haptic', taps, true]]],
     ['Grow your hustle', [
       ['compass', 'Opportunity Board', 'Gigs, collabs, bookings, talent calls', () => go('opps'), 'jobs gigs'],
       ['play', 'Media', 'Music, podcasts, businesses and drops', () => go('media'), 'music podcast'],
