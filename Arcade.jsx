@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { sb, friendly } from './supabase'
 import Avatar from './Avatar'
 import I from './Icons'
+import { useTableVoice, joinTableVoice, leaveTableVoice, setTableMic, resumeTableAudio } from './tableVoice'
 
 // DAHUB Arcade (testing). Games live in the private 'arcade' bucket; storage RLS only lets the owner (admins)
 // and people who entered the tester password read them. Layout/design is a placeholder until the owner's redesign.
@@ -110,6 +111,11 @@ function useGameBridge(frameRef, code) {
         return
       }
       if (m.type === 'unsub') return unsub()
+      if (m.type === 'voice') {
+        if (m.on && typeof m.table === 'string' && /^[0-9a-f-]{36}$/.test(m.table) && me?.id) joinTableVoice(m.table, me.id, v => post({ dh: 1, type: 'voice', state: v }))
+        else if (!m.on) leaveTableVoice()
+        return
+      }
       if (m.type === 'share' && typeof m.code === 'string') {
         const url = location.origin + '/?spades=' + encodeURIComponent(m.code)
         try { if (navigator.share) { await navigator.share({ title: 'DAHUB Spades', text: 'Pull up to my Spades table. Code ' + m.code, url }); return post({ dh: 1, type: 'shared', how: 'share' }) } } catch (x) { if (x?.name === 'AbortError') return }
@@ -117,8 +123,21 @@ function useGameBridge(frameRef, code) {
       }
     }
     addEventListener('message', onMsg)
-    return () => { removeEventListener('message', onMsg); unsub() }
+    return () => { removeEventListener('message', onMsg); unsub(); leaveTableVoice() }
   }, [code])
+}
+
+// Table voice controls in the game's top bar (only while you're at an online table)
+function VoiceBar() {
+  const v = useTableVoice()
+  if (!v.active) return null
+  const talking = v.speaking.length > 0
+  return <span className="arc-voice">
+    {v.needTap ? <button className="arc-vtap" onClick={resumeTableAudio}>Tap to hear the table</button>
+      : <small className={talking ? 'on' : ''}>{v.status === 'connecting' ? 'Voice connecting…' : v.status === 'error' ? 'Voice reconnecting…' : v.peers ? `Voice · ${v.peers + 1} here${talking ? ' · talking' : ''}` : 'Voice · just you'}</small>}
+    <button className={'arc-mic' + (v.micOn ? ' on' : '')} onClick={() => setTableMic(!v.micOn)} aria-pressed={v.micOn} aria-label={v.micOn ? 'Mute your mic' : 'Turn on your mic'}><I n={v.micOn ? 'mic' : 'micoff'} s={20} /><span>{v.micOn ? 'Mic on' : 'Talk'}</span></button>
+    {v.error && <em role="alert">{v.error}</em>}
+  </span>
 }
 
 export function GamePlayer({ id, back, code }) {
@@ -162,7 +181,7 @@ export function GamePlayer({ id, back, code }) {
     return () => { dead = true; if (urlRef.current) { URL.revokeObjectURL(urlRef.current); urlRef.current = '' } }
   }, [id, tick])
   return <div className="arc-play">
-    <div className="arc-pbar"><button onClick={back} aria-label="Leave game">← Arcade</button><b>{game?.name || 'Game'}</b><button onClick={() => setTick(t => t + 1)} aria-label="Restart game">↻</button></div>
+    <div className="arc-pbar"><button onClick={back} aria-label="Leave game">← Arcade</button><b>{game?.name || 'Game'}</b><VoiceBar /><button onClick={() => setTick(t => t + 1)} aria-label="Restart game">↻</button></div>
     {err ? <div className="empty arc-perr"><h3>Couldn’t start the game</h3>{err}<p><button className="gobtn" onClick={() => setTick(t => t + 1)}>Try again</button></p></div>
       : !src ? <div className="empty arc-perr">Loading {game?.name}…</div>
       : <iframe ref={frameRef} key={src} title={game.name} src={src} sandbox="allow-scripts allow-pointer-lock" allow="autoplay; fullscreen" allowFullScreen />}
