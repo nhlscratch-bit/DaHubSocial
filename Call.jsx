@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { sb, startDM, friendly } from './supabase'
 import Avatar from './Avatar'
-const env = import.meta.env
-const ICE = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
-  env.VITE_TURN_URL ? { urls: env.VITE_TURN_URL.split(','), username: env.VITE_TURN_USER, credential: env.VITE_TURN_PASS }
-    : { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }]
+import { iceServers } from './ice'
 const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 let actx
 const beep = (f = 440, ms = 400) => { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = f; g.gain.value = 0.06; o.connect(g); g.connect(actx.destination); o.start(); setTimeout(() => o.stop(), ms) } catch {} }
@@ -23,7 +20,7 @@ export default function CallManager({ me }) {
   const finish = (text, ms = 1800) => { setNote(text); setTimeout(() => { setCall(null); setNote('') }, ms) }
   const getMedia = video => navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: video ? { facingMode: 'user' } : false })
   function makePC(id, peerId) {
-    const p = new RTCPeerConnection({ iceServers: ICE }); pc.current = p
+    const p = new RTCPeerConnection({ iceServers: iceServers() }); pc.current = p
     p.onicecandidate = e => e.candidate && send('ice', peerId, id, e.candidate.toJSON())
     p.ontrack = e => { remote.current = e.streams[0]; if (rv.current) rv.current.srcObject = remote.current }
     p.onconnectionstatechange = () => {

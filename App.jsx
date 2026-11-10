@@ -16,6 +16,7 @@ import Rooms, { NewRoom } from './Rooms'
 import AfterDark from './AfterDark'
 import Arcade, { GamePlayer } from './Arcade'
 import { RoomGate, MiniPlayer } from './RoomView'
+import { warmIce } from './ice'
 import Notifications from './Notifications'
 import Opportunities from './Opportunities'
 import OpportunityDetail from './OpportunityDetail'
@@ -82,6 +83,7 @@ export default function App() {
   useEffect(() => { const f = e => setStack(s => [...s, { t: 'tag', tag: e.detail }]); window.addEventListener('open-tag', f); return () => window.removeEventListener('open-tag', f) }, [])
   useEffect(() => { if (uid) sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle().then(({ data }) => setIsAdmin(!!data)) }, [uid])
   useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
+  useEffect(() => { if (uid) warmIce() }, [uid])
   useEffect(() => {
     if (!uid) return
     const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community'), psp = q.get('passport'), rom = q.get('room'), spd = q.get('spades')

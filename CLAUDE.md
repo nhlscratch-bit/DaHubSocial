@@ -19,8 +19,9 @@ DAHUB ("ONE HUB. EVERY SIDE OF LIFE.") is a Baltimore-focused social / networkin
 - Supabase backend (project ref `netegdwqbzqugjbjtrnb`). Client in `supabase.js` (also exports `SEL`, `upload`, `hiddenIds`, `friendly`, and the `BUILD` label).
 - Deployed on Vercel from this GitHub repo: framework Vite, build `npm run build`, output `dist`.
 - Env vars (set in Vercel, never commit values): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Optional TURN for calls/rooms: `VITE_TURN_URL`, `VITE_TURN_USER`, `VITE_TURN_PASS`.
+- TURN relay (build 67): `ice.js` is the single source of ICE servers for calls (`Call.jsx`), Live Rooms (`roomsEngine.js`) and Spades voice (`tableVoice.js`). It fetches credentials from edge function `turn` (signed-in only; Supabase secrets `METERED_APP` + `METERED_API_KEY`, or `TURN_URLS`/`TURN_USERNAME`/`TURN_CREDENTIAL`), warmed at login and refreshed every 30 min; falls back to the `VITE_TURN_*` env vars, then the free Open Relay. Admins see the active relay in Settings > "Call relay (admin)".
 - `vite.config.js` emits `sw.js` (push) and the PWA manifest/icons.
-- Bump `BUILD` in `supabase.js` on each release (currently `build 66`); it shows in Settings so the owner can confirm a deploy landed.
+- Bump `BUILD` in `supabase.js` on each release (currently `build 67`); it shows in Settings so the owner can confirm a deploy landed.
 - Glow Mode (Settings > Look and feel, saved per device): `glow.js` cycles `--gx` on `<html>` through Glacier #19e0f0, Moonstone #7aa8ff, Frost Orchid #c79bff, Aurora Mint #5cf5c4 every 3s; `html.glow` CSS recolors `--rim`/`--rim2` and the glow on nav, cards, tiles and room screens with 2.8s transitions.
 - Tap sounds (build 65): `tapsound.js` plays the owner's `click.wav` on pointerdown over buttons/links/tiles and `toggle.wav` on switches/checkboxes/`aria-pressed` options app-wide (Web Audio, so it respects the phone's silent switch); toggle in Settings > Look and feel (`dahub.taps`). The same files are Spades' `art/sfx/click.wav` and `toggle.wav` (toggle plays on Spades' on/off settings).
 - `features.js` holds feature switches: `passport: false` (Clout Passport off for maintenance), `adNudity: true` (After Dark nudity kill switch).
@@ -42,7 +43,7 @@ Feed with photos/videos/polls, stories, comments/reactions/reposts/bookmarks, ha
 DOB gate (`ad_confirm`), opt-in/out (`ad_set`), posts flagged `after_dark` never appear outside After Dark (enforced in RLS and feed queries). Nudity (`sensitive`) only from admin ID-verified creators (`ad_verify`), blurred until tapped, kill switch in `features.js`. Before going public with nudity: real age verification (Yoti/Persona), lawyer review, FOSTA-SESTA compliance, NCMEC reporting process. Not app-store compatible.
 
 ## Pre-launch checklist (owner's list, still open)
-- Own TURN server (Metered) for calls/rooms across networks; public Open Relay is unreliable.
+- Own TURN server (Metered): code is ready (build 67); owner still needs to create the Metered app and add the `METERED_APP` / `METERED_API_KEY` secrets in Supabase.
 - Confirm builds 44–50 on a real phone (shimmer, call fix, Pulse, Rooms, After Dark).
 - Turn on leaked-password protection in Supabase Auth (dashboard only). Restrict/rotate the YouTube API key (Google Cloud console). Sample spotlight already deleted.
 
