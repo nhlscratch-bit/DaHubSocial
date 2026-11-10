@@ -739,3 +739,4 @@ html.glow .tgl.on{background:var(--gx)}
 .comp .ctext:focus{outline:none;border-color:#19c6d8;box-shadow:inset 0 2px 5px #0a4a5530,0 0 0 3px #19e0f055,0 0 14px #19e0f055}
 .comp .ctext::placeholder{color:#5e8590}
 html.glow .comp .ctext:focus{border-color:var(--gx);box-shadow:inset 0 2px 5px #0a4a5530,0 0 0 3px var(--gxs),0 0 14px var(--gxs)}
+.arc-upd{margin:-4px 0 0;text-align:center;font-size:12.5px;color:#3d5a63}

@@ -59,14 +59,22 @@ function OwnerPanel() {
 }
 
 export default function Arcade({ back, play }) {
-  const [st, setSt] = useState(null), [err, setErr] = useState('')
+  const [st, setSt] = useState(null), [err, setErr] = useState(''), [upd, setUpd] = useState('')
   const load = async () => { setErr(''); const { data, error } = await sb.rpc('arcade_status'); if (error) return setErr(friendly(error)); setSt(data) }
   useEffect(() => { load() }, [])
+  // Pull the newest game files from GitHub automatically (the server only copies when main has a new commit).
+  useEffect(() => {
+    if (!st?.access) return
+    let dead = false; setUpd('checking')
+    sb.functions.invoke('arcade-sync', { body: { auto: true } }).then(({ data }) => { if (!dead) setUpd(data?.synced ? (data.failed?.length ? 'partial' : 'updated') : '') }).catch(() => { if (!dead) setUpd('') })
+    return () => { dead = true }
+  }, [st?.access])
   if (err) return sheet('Arcade', back, <div className="empty"><h3>Couldn’t open the Arcade</h3>{err}<p><button className="gobtn" onClick={load}>Try again</button></p></div>)
   if (!st) return sheet('Arcade', back, <div className="empty">Loading…</div>)
   if (!st.access) return sheet('Arcade', back, <Unlock st={st} done={load} />)
   return sheet('Arcade', back, <div className="arc">
     <p className="arc-tag">Testing build · only the owner and testers can play</p>
+    {upd && <p className="arc-upd" role="status">{upd === 'checking' ? 'Checking for game updates…' : upd === 'updated' ? 'Games updated to the newest version.' : 'Some game files didn’t update. Try again in a minute.'}</p>}
     {GAMES.map(g => <button key={g.id} className="arc-card" onClick={() => play(g.id)}><span className="arc-emo">{g.emoji}</span><span><b>{g.name}</b><small>{g.blurb}</small></span><I n="chev" s={20} /></button>)}
     {st.admin && <OwnerPanel />}</div>)
 }

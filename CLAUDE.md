@@ -20,7 +20,7 @@ DAHUB ("ONE HUB. EVERY SIDE OF LIFE.") is a Baltimore-focused social / networkin
 - Deployed on Vercel from this GitHub repo: framework Vite, build `npm run build`, output `dist`.
 - Env vars (set in Vercel, never commit values): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Optional TURN for calls/rooms: `VITE_TURN_URL`, `VITE_TURN_USER`, `VITE_TURN_PASS`.
 - `vite.config.js` emits `sw.js` (push) and the PWA manifest/icons.
-- Bump `BUILD` in `supabase.js` on each release (currently `build 61`); it shows in Settings so the owner can confirm a deploy landed.
+- Bump `BUILD` in `supabase.js` on each release (currently `build 62`); it shows in Settings so the owner can confirm a deploy landed.
 - Glow Mode (Settings > Look and feel, saved per device): `glow.js` cycles `--gx` on `<html>` through Glacier #19e0f0, Moonstone #7aa8ff, Frost Orchid #c79bff, Aurora Mint #5cf5c4 every 3s; `html.glow` CSS recolors `--rim`/`--rim2` and the glow on nav, cards, tiles and room screens with 2.8s transitions.
 - `features.js` holds feature switches: `passport: false` (Clout Passport off for maintenance), `adNudity: true` (After Dark nudity kill switch).
 
@@ -49,7 +49,7 @@ DOB gate (`ad_confirm`), opt-in/out (`ad_set`), posts flagged `after_dark` never
 Full After Dark parity (its own Shorts/Rooms/Stories/DMs/etc.), bookings, Passport replacement, notification preferences, Collab Board.
 
 ## Arcade (in the app, locked for testing)
-More → Arcade (`Arcade.jsx`). Only admins and people who entered the tester password can play (`arcade_status`, `arcade_unlock`, `arcade_set_pass`, `arcade_testers`, `arcade_revoke`; access rows in `arcade_access`, bcrypt hash in `arcade_config`, 5 wrong tries per 15 min). Game files sit in the private `arcade` bucket (storage RLS via `private.arcade_ok()`), copied from `games/` on GitHub by edge function `arcade-sync` (owner taps "Update games from GitHub" in Arcade; syncs the `main` branch). `GamePlayer` downloads `index.html`, signs every asset, injects `window.__ASSETS`, and runs it in a sandboxed blob iframe, so game code must load assets through `A('path')`. Layout is a placeholder; the owner is designing the real look. Note: the repo is public, so the raw game files are visible on GitHub.
+More → Arcade (`Arcade.jsx`). Only admins and people who entered the tester password can play (`arcade_status`, `arcade_unlock`, `arcade_set_pass`, `arcade_testers`, `arcade_revoke`; access rows in `arcade_access`, bcrypt hash in `arcade_config`, 5 wrong tries per 15 min). Game files sit in the private `arcade` bucket (storage RLS via `private.arcade_ok()`), copied from `games/` on GitHub by edge function `arcade-sync` (automatic: opening the Arcade calls it with `{auto:true}`, which copies only when GitHub `main` has a new commit, checked at most every 2 min, tracked in `arcade_config.synced_sha`; the owner's "Update games from GitHub" button forces a full copy). `GamePlayer` downloads `index.html`, signs every asset, injects `window.__ASSETS`, and runs it in a sandboxed blob iframe, so game code must load assets through `A('path')`. Layout is a placeholder; the owner is designing the real look. Note: the repo is public, so the raw game files are visible on GitHub.
 
 ## Games
 Source lives in `games/` (not part of the Vite build; served to the app through the Arcade):
