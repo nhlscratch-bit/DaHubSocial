@@ -132,6 +132,20 @@ table.sum td:first-child,table.sum th:first-child{text-align:left}
 .rooms button.on{border-color:var(--gold2);box-shadow:0 0 0 2px var(--gold2),0 0 18px #ffc94d88}
 .rooms button span{position:absolute;left:0;right:0;bottom:0;padding:14px 4px 4px;font:400 11px var(--display);background:linear-gradient(transparent,#000d);text-align:center;line-height:1.15}
 .rooms button i{position:absolute;top:4px;left:4px;font:700 9px var(--body);font-style:normal;background:var(--gold2);color:#1a1000;padding:1px 5px;border-radius:6px}
+.picks{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0 4px}
+.picks button{width:92px;padding:6px 4px 5px;border-radius:12px;border:2px solid #ffffff33;background:#0b1430;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.picks button img{width:58px;height:58px;border-radius:50%;object-fit:cover;border:2px solid #ffffff44;background:#000}
+.picks button span{font:400 10px var(--display);letter-spacing:.3px;line-height:1.1}
+.picks button.on{border-color:var(--gold2);box-shadow:0 0 0 2px var(--gold2),0 0 16px #ffc94d88}.picks button.on img{border-color:var(--gold2)}
+.picks button:disabled{opacity:.35;cursor:not-allowed}
+.joinrow{display:flex;gap:10px;justify-content:center;margin:8px 0}
+.joinrow input{width:200px;padding:11px 14px;border-radius:12px;border:2px solid var(--gold);background:#0b1430;color:#fff;font:400 18px var(--display);letter-spacing:3px;text-align:center;text-transform:uppercase}
+.msgline{min-height:18px;color:var(--gold2)!important;margin:6px 0!important}
+.lseats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:6px 0 4px}
+.ls{position:relative;padding:12px 6px 8px;border-radius:14px;background:#0b1430;border:2px solid var(--cyan);display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}.ls.them{border-color:var(--red)}
+.ls img,.ls .empty{width:62px;height:62px;border-radius:50%;object-fit:cover;background:#000;border:2px solid #ffffff44}.ls .empty{display:grid;place-items:center;font:400 28px var(--display);color:#ffffff66;padding:0}
+.ls b{font:400 12px var(--display);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ls small{color:var(--dim);font-size:11px}
+.ls i{position:absolute;top:-9px;left:50%;transform:translateX(-50%);font:700 9px var(--body);font-style:normal;padding:1px 7px;border-radius:6px;background:var(--cyan);color:#001;white-space:nowrap}.ls.them i{background:var(--red);color:#fff}
 .rlabel{font:400 13px var(--display);color:var(--gold2);letter-spacing:1px;text-align:left;margin-top:12px}
 #intro{position:absolute;inset:0;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(70% 70% at 50% 45%,#1d0b38,#05030b);cursor:pointer}
 #intro img{width:720px;opacity:0;filter:drop-shadow(0 12px 20px #000)}
@@ -200,6 +214,8 @@ document.getElementById('table').src = IMG('table')
 const stage = document.getElementById('stage')
 function fit(){ const s = Math.min(innerWidth / 1280, innerHeight / 720); stage.style.transform = `scale(${s})` }
 addEventListener('resize', fit); fit()
+// the stage clips its content; never let focus or taps scroll it out of place
+stage.addEventListener('scroll', () => { if (stage.scrollTop || stage.scrollLeft) { stage.scrollTop = 0; stage.scrollLeft = 0 } })
 const SEAT = { w:802, h:914, ax:335, ay:824 }
 // seat order clockwise from you: 0 you (front-left), 1 left opp (back-left), 2 partner (back-right), 3 right opp (front-right)
 const SEATS = [
@@ -492,8 +508,11 @@ function roomsHTML(){ return `<div class="rlabel">PICK THE SPOT</div><div class=
 function wireRooms(root){ root.querySelectorAll('.rooms button').forEach(b => b.onclick = () => { audio(); OPT.room = b.dataset.r; lset('room', OPT.room); root.querySelectorAll('.rooms button').forEach(x => x.classList.toggle('on', x === b)); SFX.tick(); setRoom(OPT.room) }) }
 function menu(){
   [0, 1, 2, 3].forEach(p => pose(p, 'idle')); $('trick').innerHTML = ''; $('books').innerHTML = ''; $('hand').innerHTML = ''; G.bids = [null, null, null, null]; G.tricks = [0, 0, 0, 0]; G.turn = -1; G.phase = 'menu'; hud()
-  const o = $('ovl'); o.innerHTML = `<div class="ov"><div class="box" style="min-width:620px"><img class="mlogo" src="${LOGO}" alt="DAHUB Spades"><p style="margin-top:2px">Test table · you and your partner vs two bots</p>${roomsHTML()}${optsHTML()}<div class="btns" style="margin-top:16px"><button class="btn gold" id="play">Deal me in</button><button class="btn" id="how">How to play</button></div></div></div>`
-  wireOpts(o); wireRooms(o); $('play').onclick = () => { audio(); o.innerHTML = ''; game() }; $('how').onclick = how
+  if (typeof ON !== 'undefined' && ON.active) ON.reset()
+  offlineCast()
+  const o = $('ovl'); o.innerHTML = `<div class="ov"><div class="box" style="min-width:620px"><img class="mlogo" src="${LOGO}" alt="DAHUB Spades"><p style="margin-top:2px">You and your partner vs two bots, or play your people online</p>${pickerHTML(MYCHAR)}${roomsHTML()}${optsHTML()}<div class="btns" style="margin-top:16px"><button class="btn gold" id="play">Deal me in</button><button class="btn gold" id="online">Play online</button><button class="btn" id="how">How to play</button></div></div></div>`
+  wireOpts(o); wireRooms(o); wirePicker(o, c => { MYCHAR = c; lset('char', c); offlineCast(); o.querySelector('.rooms').outerHTML = roomsHTML().replace(/^<div class="rlabel">PICK THE SPOT<\/div>/, ''); wireRooms(o) })
+  $('play').onclick = () => { audio(); o.innerHTML = ''; game() }; $('how').onclick = how; $('online').onclick = () => { audio(); onlineMenu() }
 }
 function how(){
   $('ovl').innerHTML = `<div class="ov"><div class="box" style="max-width:640px;text-align:left"><h2 style="text-align:center">HOW TO PLAY</h2>
@@ -505,9 +524,11 @@ $('gear').onclick = () => {
   audio(); if (G.phase === 'menu') return
   const prev = $('ovl').innerHTML
   $('ovl').innerHTML = `<div class="ov"><div class="box" style="min-width:520px"><h2>SETTINGS</h2>${optsHTML()}<p>Jokers and target score apply from the next game.</p><div class="btns"><button class="btn gold" id="close">Back to the table</button><button class="btn" id="quit">Quit to menu</button></div></div></div>`
-  wireOpts($('ovl')); $('close').onclick = () => { $('ovl').innerHTML = prev; rewire() }; $('quit').onclick = () => location.reload()
+  wireOpts($('ovl')); $('close').onclick = () => { $('ovl').innerHTML = prev; rewire() }
+  if (ON.active) { $('quit').textContent = 'Leave table'; $('ovl').querySelector('p').textContent = 'Leaving hands your seat to a bot for the rest of this game.' }
+  $('quit').onclick = async () => { if (ON.active) { try { await rpc('sp_leave', { p_table: ON.t }) } catch {} } location.reload() }
 }
-function rewire(){ const n = $('nexth'); if (n) n.onclick = () => location.reload() }
+function rewire(){ const n = $('nexth'); if (n && !ON.active) n.onclick = () => location.reload(); if (ON.active) { ON.bidOpen = false; ON.prompt() } }
 async function intro(){
   const el = $('intro'), bar = $('introBar'), logo = $('introLogo'); let done = false, got = 0
   const step = () => { got++; bar.style.width = (got / 3 * 100) + '%' }
@@ -523,5 +544,225 @@ async function intro(){
   setTimeout(finish, 2000)
 }
 addEventListener('keydown', e => { if (G.phase === 'play' && G.turn === 0 && !G.busy && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const L = G.hands[0]; if (!L.length) return; let i = L.findIndex(c => c.id === G.sel); if (e.key === 'ArrowLeft') i = Math.max(0, i - 1); else if (e.key === 'ArrowRight') i = Math.min(L.length - 1, i + 1); else if (G.sel) return tapCard(G.sel); if (i < 0) i = 0; G.sel = L[i].id; layoutHand() } })
+/* ===== your player + online play =====
+   Online games run on the DAHUB server (deal, rules, bots, scoring). This file only draws the table.
+   Inside DAHUB the Arcade passes messages to the server for us (the game frame has no login). */
+const NAMES = { fp:'Fresh Prince', kd:'KennDogg', mb:'Mabel', tc:'T’Challa' }
+const okChar = c => CHARS.includes(c) ? c : CHARS[0]
+let MYCHAR = okChar(ls('char', CAST[0]))
+function setCast(arr, names){
+  arr.forEach((c, i) => { c = okChar(c); CAST[i] = c
+    seatEls[i].querySelectorAll('img').forEach(im => im.src = IMG(c + '_' + im.dataset.p))
+    plates[i].querySelector('img.por').src = IMG(c + '_portrait'); plates[i].querySelector('b').textContent = (names && names[i]) || SEATS[i].name })
+  document.querySelector('#teamA img.por').src = IMG(CAST[0] + '_portrait'); document.querySelector('#teamB img.por').src = IMG(CAST[1] + '_portrait')
+}
+function offlineCast(){ const rest = CHARS.filter(c => c !== MYCHAR).sort(() => Math.random() - 0.5); while (rest.length < 3) rest.push(CHARS[Math.floor(Math.random() * CHARS.length)]); setCast([MYCHAR, ...rest.slice(0, 3)]) }
+function pickerHTML(cur, taken = []){ return `<div class="rlabel">YOUR PLAYER</div><div class="picks">${CHARS.map(c => `<button data-c="${c}" class="${c === cur ? 'on' : ''}" ${taken.includes(c) ? 'disabled' : ''} aria-label="${NAMES[c] || c}"><img src="${IMG(c + '_portrait')}" alt=""><span>${NAMES[c] || c}</span></button>`).join('')}</div>` }
+function wirePicker(root, fn){ root.querySelectorAll('.picks button').forEach(b => b.onclick = () => { audio(); SFX.tick(); root.querySelectorAll('.picks button').forEach(x => x.classList.toggle('on', x === b)); fn(b.dataset.c) }) }
+
+/* bridge to the DAHUB app */
+const BR = { ok:false, me:null, join:null, n:0, wait:new Map(), live:false }
+const bpost = m => { try { parent.postMessage({ dh:1, ...m }, '*') } catch {} }
+function rpc(fn, args = {}){
+  return new Promise((res, rej) => {
+    if (!BR.ok) return rej(new Error('Online play works inside the DAHUB app (More → Arcade).'))
+    const id = ++BR.n; BR.wait.set(id, { res, rej }); bpost({ type:'rpc', id, fn, args })
+    setTimeout(() => { if (BR.wait.has(id)) { BR.wait.delete(id); rej(new Error('The server took too long. Check your connection and try again.')) } }, 15000)
+  })
+}
+addEventListener('message', e => {
+  if (e.source !== parent || parent === window) return
+  const m = e.data; if (!m || m.dh !== 1) return
+  if (m.type === 'hello') { const first = !BR.ok; BR.ok = true; BR.me = m.me; BR.join = m.join; if (first) onHello() }
+  else if (m.type === 'res') { const w = BR.wait.get(m.id); if (w) { BR.wait.delete(m.id); m.error ? w.rej(new Error(m.error)) : w.res(m.data) } }
+  else if (m.type === 'evt') ON.onRow(m.row)
+  else if (m.type === 'seats') ON.onSeats()
+  else if (m.type === 'live') BR.live = m.status === 'SUBSCRIBED'
+  else if (m.type === 'shared') ON.onShared(m)
+})
+if (parent !== window) bpost({ type:'hello' })
+function onHello(){ if (BR.join) { const c = BR.join; BR.join = null; setTimeout(() => onlineJoin(c), 2300) } else if (G.phase === 'menu' && $('online')) menu() }
+
+const parseCard = id => id === 'LJ' ? { s:'S', r:16, id } : id === 'BJ' ? { s:'S', r:17, id } : { s:id[0], r:+id.slice(1), id }
+const ON = { active:false, t:null, snap:null, me:0, seq:0, last:0, q:[], busy:false, turnAt:0, bidOpen:false, timer:null, lobbyOpen:false }
+const rot = a => (a - ON.me + 4) % 4
+const myTeam = () => ON.me % 2
+function seatName(s){ if (!s) return ''; if (s.user_id && BR.me && s.user_id === BR.me.id) return 'YOU'; if (s.bot || !s.user_id) return s.character ? (NAMES[s.character] || 'BOT').toUpperCase().replace('’', '') + ' (BOT)' : 'OPEN SEAT'; return (s.name || s.username || 'PLAYER').split(/\s+/)[0].slice(0, 14).toUpperCase() }
+function onErr(e){ toast(e.message || 'Something went wrong'); }
+
+function onlineMenu(){
+  G.phase = 'menu'
+  const o = $('ovl')
+  if (!BR.ok) { o.innerHTML = `<div class="ov"><div class="box"><h2>PLAY ONLINE</h2><p>Online tables work inside the DAHUB app. Open DAHUB, go to More → Arcade → DAHUB Spades.</p><div class="btns"><button class="btn gold" id="back">Back</button></div></div></div>`; $('back').onclick = menu; return }
+  o.innerHTML = `<div class="ov"><div class="box" style="min-width:620px"><h2>PLAY ONLINE</h2><p>Start a table and send friends the code, or join theirs. Empty seats get bots so you never wait on a 4th.</p>
+    ${pickerHTML(MYCHAR)}<div id="rejoin"></div>
+    <div class="btns" style="margin:14px 0 6px"><button class="btn gold" id="host">Start a table</button></div>
+    <div class="joinrow"><input id="code" maxlength="8" placeholder="TABLE CODE" autocomplete="off" aria-label="Table code"><button class="btn" id="join">Join</button></div>
+    <p class="msgline" id="omsg"></p><div class="btns"><button class="btn" id="back">Back</button></div></div></div>`
+  wirePicker(o, c => { MYCHAR = c; lset('char', c) })
+  $('back').onclick = menu
+  $('host').onclick = async () => { audio(); const b = $('host'); b.disabled = true; b.textContent = 'Setting up…'; try { const r = await rpc('sp_create', { p_room: OPT.room, p_target: OPT.target, p_jokers: OPT.jokers, p_char: MYCHAR }); await ON.open(r.table_id) } catch (e) { $('omsg').textContent = e.message; b.disabled = false; b.textContent = 'Start a table' } }
+  const doJoin = () => { const c = $('code').value.trim(); if (c) onlineJoin(c) }
+  $('join').onclick = doJoin; $('code').onkeydown = e => { if (e.key === 'Enter') doJoin() }
+  rpc('sp_my_tables').then(list => { const r = list && list[0]; if (!r || !$('rejoin')) return; $('rejoin').innerHTML = `<div class="btns" style="margin-top:12px"><button class="btn" id="rj">Rejoin table ${r.code}${r.status === 'playing' ? ' (game on)' : ''}</button></div>`; $('rj').onclick = () => ON.open(r.table_id) }).catch(() => {})
+}
+async function onlineJoin(code){
+  audio()
+  const o = $('ovl'); o.innerHTML = `<div class="ov"><div class="box"><h2>JOINING ${String(code).toUpperCase()}</h2><p>Pulling up a chair…</p></div></div>`
+  try { const r = await rpc('sp_join', { p_code: code, p_char: MYCHAR }); await ON.open(r.table_id) }
+  catch (e) { o.innerHTML = `<div class="ov"><div class="box"><h2>COULDN’T JOIN</h2><p>${e.message}</p><div class="btns"><button class="btn gold" id="om">Back</button></div></div></div>`; $('om').onclick = onlineMenu }
+}
+
+ON.open = async tid => {
+  ON.t = tid; ON.active = true; ON.q = []; ON.busy = false
+  bpost({ type:'sub', table: tid })
+  await ON.refresh(true)
+  clearInterval(ON.timer); ON.timer = setInterval(ON.heartbeat, 3000)
+}
+ON.refresh = async full => {
+  const s = await rpc('sp_state', { p_table: ON.t }); ON.snap = s; ON.me = s.me
+  const names = [0, 1, 2, 3].map(d => seatName(s.seats[(d + ON.me) % 4]))
+  setCast([0, 1, 2, 3].map(d => s.seats[(d + ON.me) % 4].character || MYCHAR), names)
+  if (s.table.room && s.table.room !== OPT.room) setRoom(s.table.room)
+  OPT.target = s.table.target; OPT.jokers = s.table.jokers
+  if (s.table.status === 'closed') return ON.closed()
+  if (s.table.status === 'lobby') { ON.seq = s.state.seq; ON.last = s.state.seq; return ON.lobby() }
+  if (full) ON.paint(s)
+}
+ON.paint = s => {
+  // draw the table exactly as the server has it right now (used on join / rejoin)
+  ON.lobbyOpen = false; $('ovl').innerHTML = ''
+  const st = s.state, R = a => a.map((_, d) => a[(d + ON.me) % 4])
+  G.handNo = st.hand_no; G.dealer = rot(st.dealer); G.bids = R(st.bids); G.tricks = R(st.tricks); G.broken = st.broken
+  G.score = [st.score[myTeam()], st.score[1 - myTeam()]]; G.bags = [st.bags[myTeam()], st.bags[1 - myTeam()]]
+  G.trick = st.trick.map(t => ({ p: rot(t.p), c: parseCard(t.c) })); G.phase = st.phase; G.turn = st.turn === null ? -1 : rot(st.turn)
+  G.hands = [sortHand((s.hand?.cards || []).map(parseCard)), [], [], []]; G.sel = null; G.busy = false
+  $('trick').innerHTML = ''; $('books').innerHTML = ''; $('hand').innerHTML = ''
+  G.trick.forEach((t, i) => { const e = cardEl(t.c, true); e.style.zIndex = 31 + i; const [dx, dy, r] = SEATS[t.p].trick; place(e, FELT.x + dx, FELT.y + dy, r, 0.78, 52); $('trick').appendChild(e) })
+  G.tricks.forEach((n, p) => { for (let k = 0; k < n; k++) bookPile(p, k + 1) })
+  ON.seq = st.seq; ON.last = st.seq; ON.turnAt = Date.now()
+  layoutHand(); hud()
+  if (st.phase === 'done') return ON.over(st.winner)
+  ON.catchUp(); ON.prompt()
+}
+function bookPile(p, n){ const S = SEATS[p], pile = cardEl(null, false); pile.className = 'card back'; place(pile, FELT.x + S.books[0] + (n - 1) * 4, FELT.y + S.books[1] - (n - 1) * 1.5, (p % 2 ? 90 : 0) + (Math.random() * 8 - 4), 0.42, 55); pile.style.zIndex = 25; $('books').appendChild(pile) }
+
+ON.lobby = () => {
+  const s = ON.snap, o = $('ovl'), host = BR.me && s.table.host_id === BR.me.id, mine = s.seats[ON.me]
+  const taken = s.seats.filter(x => x.user_id && x.seat !== ON.me && x.character).map(x => x.character)
+  ON.lobbyOpen = true; G.phase = 'menu'
+  o.innerHTML = `<div class="ov"><div class="box" style="min-width:640px"><h2>TABLE ${s.table.code}</h2><p>Send this code to your people. ${host ? 'Deal when you’re ready. Empty seats get bots.' : 'Waiting for the host to deal.'}</p>
+    <div class="btns" style="margin-bottom:10px"><button class="btn" id="invite">Invite friends</button></div><p class="msgline" id="lmsg"></p>
+    <div class="lseats">${s.seats.map(x => `<div class="ls ${x.seat % 2 === ON.me % 2 ? 'us' : 'them'}">${x.user_id ? `<img src="${IMG(okChar(x.character || 'fp') + '_portrait')}" alt=""><b>${seatName(x)}</b><small>${NAMES[x.character] || 'Picking…'}${x.user_id === s.table.host_id ? ' · HOST' : ''}</small>` : `<div class="empty">+</div><b>OPEN SEAT</b><small>A bot sits here if it’s empty</small>`}<i>${x.seat % 2 === ON.me % 2 ? 'YOUR TEAM' : 'OPPONENTS'}</i></div>`).join('')}</div>
+    ${pickerHTML(mine.character, taken)}
+    <div class="btns" style="margin-top:14px">${host ? '<button class="btn gold" id="deal">Deal the cards</button>' : ''}<button class="btn" id="leave">Leave table</button></div></div></div>`
+  wirePicker(o, async c => { MYCHAR = c; lset('char', c); try { await rpc('sp_set_char', { p_table: ON.t, p_char: c }); ON.refresh() } catch (e) { $('lmsg').textContent = e.message; ON.refresh() } })
+  $('invite').onclick = () => { audio(); bpost({ type:'share', code: s.table.code }) }
+  $('leave').onclick = async () => { try { await rpc('sp_leave', { p_table: ON.t }) } catch {} ON.reset(); onlineMenu() }
+  if (host) $('deal').onclick = async () => { const b = $('deal'); b.disabled = true; b.textContent = 'Dealing…'; try { await rpc('sp_start', { p_table: ON.t, p_chars: CHARS }) } catch (e) { $('lmsg').textContent = e.message; b.disabled = false; b.textContent = 'Deal the cards' } }
+}
+ON.onShared = m => { const l = $('lmsg'); if (!l) return; l.textContent = m.how === 'copied' ? 'Invite link copied. Paste it in a DM.' : m.how === 'failed' ? 'Share this link: ' + m.url : '' }
+ON.syncSeats = async () => { try { const s = await rpc('sp_state', { p_table: ON.t }); ON.snap = s; setCast([0, 1, 2, 3].map(d => s.seats[(d + ON.me) % 4].character || MYCHAR), [0, 1, 2, 3].map(d => seatName(s.seats[(d + ON.me) % 4]))) } catch {} }
+ON.onSeats = () => { if (!ON.active) return; if (ON.lobbyOpen) ON.refresh(); else ON.syncSeats() }
+ON.closed = () => { ON.reset(); $('ovl').innerHTML = `<div class="ov"><div class="box"><h2>TABLE CLOSED</h2><p>The host closed this table.</p><div class="btns"><button class="btn gold" id="om">OK</button></div></div></div>`; $('om').onclick = onlineMenu }
+ON.reset = () => { ON.active = false; ON.lobbyOpen = false; clearInterval(ON.timer); bpost({ type:'unsub' }); ON.q = []; G.phase = 'menu'; humanResolve = null; hint('') }
+
+/* events from the server, played in order with the normal table animations */
+ON.onRow = row => { if (!ON.active || row.table_id !== ON.t) return; if (row.seq === ON.last + 1) { ON.q.push(row); ON.last = row.seq; ON.pump() } else if (row.seq > ON.last + 1) ON.catchUp() }
+ON.catchUp = async () => {
+  if (!ON.active || ON.catching) return; ON.catching = true
+  try { const list = await rpc('sp_events_since', { p_table: ON.t, p_seq: ON.last }); for (const r of list) if (r.seq === ON.last + 1) { ON.q.push(r); ON.last = r.seq } ON.pump() } catch {}
+  ON.catching = false
+}
+ON.heartbeat = () => {
+  if (!ON.active) return
+  if (!BR.live || ON.lobbyOpen) ON.catchUp()
+  if (!ON.lobbyOpen && (G.phase === 'bid' || G.phase === 'play') && !ON.q.length && Date.now() - ON.turnAt > 48000) { ON.turnAt = Date.now(); rpc('sp_tick', { p_table: ON.t }).catch(() => {}) }
+  if (G.turn === 0 && (G.phase === 'play') && !ON.busy && humanResolve) { const left = Math.max(0, 45 - Math.round((Date.now() - ON.turnAt) / 1000)); hint(left <= 15 ? `Your turn · ${left}s` : (G.trick.length ? 'Your turn' : 'Your lead')) }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && ON.active) ON.catchUp() })
+ON.pump = async () => {
+  if (ON.busy) return; ON.busy = true
+  while (ON.q.length) { const ev = ON.q.shift(); try { await ON.apply(ev) } catch (e) { console.error(e) } ON.seq = ev.seq }
+  ON.busy = false; ON.prompt()
+}
+ON.apply = async ev => {
+  const d = ev.data || {}
+  if (ev.kind === 'start') { ON.lobbyOpen = false; $('ovl').innerHTML = ''; if (d.rematch) { G.score = [0, 0]; G.bags = [0, 0] } await ON.syncSeats(); [0, 1, 2, 3].forEach(p => pose(p, 'idle')); hud(); return }
+  if (ev.kind === 'closed') return ON.closed()
+  if (ev.kind === 'deal') {
+    ON.lobbyOpen = false; $('ovl').innerHTML = ''
+    G.handNo = d.hand_no; G.dealer = rot(d.dealer); G.bids = [null, null, null, null]; G.tricks = [0, 0, 0, 0]; G.trick = []; G.broken = false; G.sel = null
+    let h = null; try { h = await rpc('sp_my_hand', { p_table: ON.t }) } catch {}
+    G.hands = [sortHand((h?.cards || []).map(parseCard)), [], [], []]
+    G.phase = 'deal'; await dealAnim(G.dealer); G.phase = 'bid'; G.turn = rot(d.turn); ON.turnAt = Date.now(); hud(); return
+  }
+  if (ev.kind === 'bid') {
+    const p = rot(d.seat); G.bids[p] = d.bid
+    if (p === 0 && ON.bidOpen) { ON.bidOpen = false; $('ovl').innerHTML = ''; if (d.auto) toast('Time ran out, a bot bid for you') }
+    if (p !== 0) { await wait(500); bubble(p, d.bid === 0 ? 'NIL 😎' : 'Bid ' + d.bid, 1500) } SFX.tick()
+    G.phase = d.phase; G.turn = rot(d.turn); ON.turnAt = Date.now(); if (d.phase === 'play') G.trick = []; hud(); if (d.phase === 'play') await wait(450); return
+  }
+  if (ev.kind === 'play') {
+    const p = rot(d.seat), c = parseCard(d.card)
+    if (p === 0) { humanResolve = null; hint(''); G.sel = null; if (d.auto) toast('Time ran out, a bot played for you') } else await wait(380 + Math.random() * 220)
+    G.phase = 'play'; await playCard(p, c); G.turn = d.turn === null ? -1 : rot(d.turn); ON.turnAt = Date.now(); hud(); return
+  }
+  if (ev.kind === 'trick') {
+    const w = rot(d.winner); G.turn = -1; hud(); await wait(650)
+    G.tricks = d.tricks.map((_, i) => d.tricks[(i + ON.me) % 4]); pose(w, 'celebrate', 1300 * SP()); SFX.chime(); if (w !== 0 && Math.random() < 0.25) say(w, 'win', 1)
+    const S = SEATS[w], cards = [...$('trick').children]
+    cards.forEach((e, i) => { e.style.zIndex = 26; place(e, FELT.x + S.books[0] + (G.tricks[w] - 1) * 4, FELT.y + S.books[1] - (G.tricks[w] - 1) * 1.5, (w % 2 ? 90 : 0) + i * 2, 0.42, 55) })
+    await wait(520); cards.forEach(e => e.remove()); bookPile(w, G.tricks[w])
+    G.trick = []; G.turn = rot(d.turn); ON.turnAt = Date.now(); hud(); await wait(200); return
+  }
+  if (ev.kind === 'score') {
+    const mt = myTeam(), res = d.res.map(r => ({ ...r, t: r.t === mt ? 0 : 1 })).sort((a, b) => a.t - b.t)
+    G.score = [d.score[mt], d.score[1 - mt]]; G.bags = [d.bags[mt], d.bags[1 - mt]]; hud()
+    const nm = abs => { const s = ON.snap?.seats?.[abs]; return s && s.user_id && BR.me && s.user_id === BR.me.id ? 'You' : (NAMES[s?.character] || 'Player') }
+    res.forEach(r => { r.notes = r.nils.map(n => `${nm(n.seat)} ${n.made ? 'made nil +100' : 'busted nil −100'}`); if (r.bag_pen) r.notes.push(`Bag penalty −${r.bag_pen}`); r.nilPlayers = r.nils.map(n => rot(n.seat)) })
+    res.forEach(r => [0, 1, 2, 3].filter(p => team(p) === r.t).forEach(p => pose(p, r.made && r.nils.every(n => n.made) ? 'celebrate' : 'mad', 2600)))
+    const mine = res[0]; mine.made ? SFX.win() : SFX.set(); if (!mine.made) toast('YOU GOT SET'); else if (!res[1].made) toast('THEY GOT SET!')
+    await wait(1400); await onlineSummary(d.hand_no, res); return
+  }
+  if (ev.kind === 'over') { await wait(300); return ON.over(d.winner) }
+  if (ev.kind === 'left') { const p = rot(d.seat); bubble(p, 'Left · bot took over', 2500); ON.onSeats(); return }
+}
+function onlineSummary(no, res){
+  return new Promise(go => {
+    const row = r => `<tr><td style="color:${r.t ? 'var(--red)' : 'var(--cyan)'}">${r.t ? 'Opponents' : 'Your team'}</td><td>${r.contract || (r.nils.length ? 'NIL' : 0)}</td><td>${r.took}</td><td>${r.made ? '<span class="pos">Made it</span>' : '<span class="neg">SET</span>'}</td><td>+${r.bags}</td><td class="${r.pts >= 0 ? 'pos' : 'neg'}">${r.pts >= 0 ? '+' : ''}${r.pts}</td><td><b>${G.score[r.t]}</b></td></tr>`
+    const notes = res.flatMap(r => r.notes), o = $('ovl')
+    o.innerHTML = `<div class="ov"><div class="box" style="min-width:640px"><h2>HAND ${no}</h2><table class="sum"><tr><th>Team</th><th>Bid</th><th>Books</th><th>Result</th><th>Bags</th><th>Points</th><th>Total</th></tr>${res.map(row).join('')}</table>${notes.length ? `<p>${notes.join(' · ')}</p>` : ''}<p>Next hand in <b id="cd">6</b>…</p><div class="btns"><button class="btn gold" id="nexth">Next hand</button></div></div></div>`
+    let n = 6, done = false; const fin = () => { if (done) return; done = true; clearInterval(t); o.innerHTML = ''; go() }
+    const t = setInterval(() => { n--; const c = $('cd'); if (c) c.textContent = n; if (n <= 0) fin() }, 1000)
+    $('nexth').onclick = () => { audio(); fin() }
+  })
+}
+ON.over = w => {
+  const win = w === myTeam(), host = BR.me && ON.snap?.table?.host_id === BR.me.id
+  G.phase = 'done'; G.turn = -1; hud(); [0, 1, 2, 3].forEach(p => pose(p, (team(p) === 0) === win ? 'celebrate' : 'mad')); win ? SFX.win() : SFX.set()
+  $('ovl').innerHTML = `<div class="ov"><div class="box"><div class="crown">♛</div><h2>${win ? 'YOU WON THE TABLE' : 'THEY RAN THE TABLE'}</h2><p>Final score: <b style="color:var(--cyan)">${G.score[0]}</b> to <b style="color:var(--red)">${G.score[1]}</b></p><p class="msgline" id="gmsg">${host ? '' : 'Waiting on the host for a rematch…'}</p><div class="btns">${host ? '<button class="btn gold" id="again">Run it back</button>' : ''}<button class="btn" id="tomenu">Leave table</button></div></div></div>`
+  if (host) $('again').onclick = async () => { try { await rpc('sp_rematch', { p_table: ON.t }) } catch (e) { $('gmsg').textContent = e.message } }
+  $('tomenu').onclick = async () => { try { await rpc('sp_leave', { p_table: ON.t }) } catch {} ON.reset(); menu() }
+}
+ON.prompt = () => {
+  if (!ON.active || ON.busy || ON.q.length || ON.lobbyOpen) return
+  if (G.phase === 'bid' && G.turn === 0 && G.bids[0] === null && !ON.bidOpen) {
+    ON.bidOpen = true
+    askBid().then(async b => { if (!ON.bidOpen) return; ON.bidOpen = false; try { await rpc('sp_bid', { p_table: ON.t, p_bid: b }) } catch (e) { onErr(e); ON.catchUp().then(ON.prompt) } })
+  } else if (G.phase === 'play' && G.turn === 0 && !humanResolve) {
+    G.busy = false; layoutHand(); hint(G.trick.length ? 'Your turn' : 'Your lead')
+    humanResolve = async c => { humanResolve = null; hint(''); G.busy = true; layoutHand(); try { await rpc('sp_play', { p_table: ON.t, p_card: c.id }) } catch (e) { onErr(e); G.busy = false; ON.prompt() } }
+  }
+}
+async function dealAnim(dealer){
+  $('trick').innerHTML = ''; $('books').innerHTML = ''; $('hand').innerHTML = ''; hud()
+  SFX.shuffle(); await wait(450)
+  const T = $('trick'), temps = []
+  for (let i = 0; i < 20; i++) { const p = (dealer + 1 + i) % 4, e = cardEl(null, false); place(e, FELT.x, FELT.y, 0, 0.8, 55); T.appendChild(e); temps.push(e); const S = SEATS[p]; requestAnimationFrame(() => requestAnimationFrame(() => place(e, S.hand[0], S.hand[1], Math.random() * 40 - 20, 0.6, 30))); SFX.flick(); await wait(45) }
+  await wait(380); temps.forEach(e => { e.style.opacity = 0 }); setTimeout(() => temps.forEach(e => e.remove()), 400)
+  layoutHand(); await wait(400)
+}
+
 menu(); intro()
 </script>
