@@ -630,7 +630,7 @@ function optsHTML(){ return `
   <div class="opt"><span>Game speed</span>${seg('speed', [1, 2], ['Normal', 'Fast'])}</div>
   <div class="opt"><span>Sound</span>${seg('sound', [true, false], ['On', 'Off'])}</div>
   <div class="opt"><span>Music<small>Lounge beat while you play</small></span>${seg('music', [true, false], ['On', 'Off'])}</div>` }
-function wireOpts(root){ root.querySelectorAll('.seg').forEach(s => s.querySelectorAll('button').forEach(b => b.onclick = () => { audio(); const k = s.dataset.k, v = JSON.parse(b.dataset.v); OPT[k] = v; lset(k, v); if (k === 'sound') muted = !v; if (k === 'sound' || k === 'music') soundPrefs(); s.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); SFX.tick(); hud() })) }
+function wireOpts(root){ root.querySelectorAll('.seg').forEach(s => s.querySelectorAll('button').forEach(b => b.onclick = () => { audio(); const k = s.dataset.k, v = JSON.parse(b.dataset.v); OPT[k] = v; lset(k, v); if (k === 'sound') muted = !v; if (k === 'sound' || k === 'music') soundPrefs(); s.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); hud() })) }
 function roomsHTML(){ return `<div class="rlabel">PICK THE SPOT</div><div class="rooms">${ROOMS.map(r => `<button data-r="${r.id}" class="${OPT.room === r.id ? 'on' : ''}" style="background-image:url('${r.src}')" aria-label="${r.name}">${r.home && CAST.includes(r.home) ? '<i>AT THE TABLE</i>' : ''}<span>${r.name}${r.who ? `<br><small style="font:600 9px var(--body)">${r.who}'s place</small>` : ''}</span></button>`).join('')}</div>` }
 function wireRooms(root){ root.querySelectorAll('.rooms button').forEach(b => b.onclick = () => { audio(); OPT.room = b.dataset.r; lset('room', OPT.room); root.querySelectorAll('.rooms button').forEach(x => x.classList.toggle('on', x === b)); SFX.tick(); setRoom(OPT.room) }) }
 function menu(){
@@ -894,7 +894,7 @@ async function dealAnim(dealer){
 }
 
 /* ===== sound 2.0: lounge beat + full SFX. Any slot can be replaced by the owner's own file at art/sfx/<slot>.mp3 ===== */
-const SLOTS = ['music', 'intro', 'click', 'menu', 'deal', 'card', 'cut', 'broken', 'turn', 'tick', 'book', 'theirbook', 'nil', 'set', 'win', 'lose']
+const SLOTS = ['music', 'intro', 'click', 'toggle', 'menu', 'deal', 'card', 'cut', 'broken', 'turn', 'tick', 'book', 'theirbook', 'nil', 'set', 'win', 'lose']
 const FILES = {}, BUFS = {}
 for (const k of SLOTS) for (const ext of ['mp3', 'm4a', 'wav', 'ogg']) { const u = window.__ASSETS && window.__ASSETS[`art/sfx/${k}.${ext}`]; if (u) { FILES[k] = u; break } }
 function loadBuf(k){ if (BUFS[k] || !FILES[k] || !AC) return BUFS[k]; BUFS[k] = fetch(FILES[k]).then(r => r.arrayBuffer()).then(b => new Promise((ok, no) => AC.decodeAudioData(b, ok, no))).then(b => (BUFS[k] = b)).catch(() => (delete FILES[k], BUFS[k] = null)); return BUFS[k] }
@@ -913,6 +913,7 @@ audio = function(){
 }
 function sweep(f0, f1, dur, vol, when = 0){ if (!AC || muted) return; const s = AC.createBufferSource(); s.buffer = nbuf(); const fl = AC.createBiquadFilter(), g = AC.createGain(), t = AC.currentTime + when; fl.type = 'bandpass'; fl.Q.value = 1.2; fl.frequency.setValueAtTime(f0, t); fl.frequency.exponentialRampToValueAtTime(f1, t + dur); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + dur * 0.4); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); s.connect(fl); fl.connect(g); g.connect(master); s.start(t); s.stop(t + dur + 0.05) }
 Object.assign(SFX, {
+  toggle(){ snd('toggle', () => { tone(900, 1300, 0.06, 0.08, 'triangle'); tone(1500, 1500, 0.08, 0.05, 'sine', 0.05) }) },
   ui(){ snd('click', () => { tone(1700, 1300, 0.045, 0.06, 'triangle'); noise(0.02, 'highpass', 5000, 0.7, 0.05) }) },
   menu(){ snd('menu', () => { sweep(300, 2600, 0.28, 0.4); tone(660, 990, 0.18, 0.05, 'sine', 0.08) }) },
   turn(){ snd('turn', () => { tone(880, 880, 0.12, 0.13, 'triangle'); tone(1320, 1320, 0.2, 0.12, 'triangle', 0.1); tone(1760, 1760, 0.25, 0.05, 'sine', 0.1) }) },
@@ -966,7 +967,7 @@ function duck(level, ms){ if (!MUS.on || !MUS.g) return; const t = AC.currentTim
 function soundPrefs(){ if (muted || !OPT.music) musicStop(); else { audio(); musicStart() } }
 document.addEventListener('visibilitychange', () => { if (!AC) return; if (document.hidden) AC.suspend().catch(() => {}); else AC.resume().catch(() => {}) })
 // every tap: wake audio, soft click on buttons
-document.addEventListener('pointerdown', e => { audio(); if (e.target.closest && e.target.closest('button,.picks button,.rooms button')) SFX.ui() }, true)
+document.addEventListener('pointerdown', e => { audio(); if (!e.target.closest) return; if (e.target.closest('.seg button')) SFX.toggle(); else if (e.target.closest('button')) SFX.ui() }, true)
 // every menu that pops up gets a whoosh
 new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && (n.classList?.contains('ov') || n.querySelector?.('.ov'))))) SFX.menu() }).observe($('ovl'), { childList: true })
 // your turn ping + last-10-seconds tick (online)
