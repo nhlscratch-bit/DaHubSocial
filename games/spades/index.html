@@ -146,6 +146,14 @@ table.sum td:first-child,table.sum th:first-child{text-align:left}
 .ls img,.ls .empty{width:62px;height:62px;border-radius:50%;object-fit:cover;background:#000;border:2px solid #ffffff44}.ls .empty{display:grid;place-items:center;font:400 28px var(--display);color:#ffffff66;padding:0}
 .ls b{font:400 12px var(--display);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ls small{color:var(--dim);font-size:11px}
 .ls i{position:absolute;top:-9px;left:50%;transform:translateX(-50%);font:700 9px var(--body);font-style:normal;padding:1px 7px;border-radius:6px;background:var(--cyan);color:#001;white-space:nowrap}.ls.them i{background:var(--red);color:#fff}
+/* menus never taller than the table: compact, and scroll inside the box if needed */
+.ov{padding:12px 0}
+.box{max-height:696px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.box .mlogo{width:230px;margin:-10px auto -2px}
+.box .opt{padding:6px 0}
+.box .rooms{margin:6px 0 2px}.box .rooms button{aspect-ratio:16/8}
+.box .picks{margin:4px 0 2px}.box .picks button{width:86px;padding:4px 3px}.box .picks button img{width:48px;height:48px}
+.box .rlabel{margin-top:6px}
 .rlabel{font:400 13px var(--display);color:var(--gold2);letter-spacing:1px;text-align:left;margin-top:12px}
 #intro{position:absolute;inset:0;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(70% 70% at 50% 45%,#1d0b38,#05030b);cursor:pointer}
 #intro img{width:720px;opacity:0;filter:drop-shadow(0 12px 20px #000)}
