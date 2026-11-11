@@ -3,7 +3,9 @@ import { sb, SEL, upload, hiddenIds, friendly } from './supabase'
 import PostCard from './PostCard'
 import Avatar from './Avatar'
 import { FEATURES } from './features'
-import { RCAT } from './roomsEngine'
+import { RCAT, joinRoom, micSupported } from './roomsEngine'
+import { roomRow, meOf } from './Rooms'
+import Verified from './Verified'
 import I from './Icons'
 import moon from './mi-afterdark.png'
 const RICON = ['shield', 'people', 'block', 'lock', 'moon']
@@ -51,13 +53,32 @@ function Composer({ me, profile, creator, posted }) {
     {err && <p className="msg" role="alert">{err}</p>}
     <button className="gobtn sm" disabled={busy || (!text.trim() && !files.length)} onClick={go}>{busy ? 'Posting…' : 'Post After Dark'}</button></div>
 }
-export default function AfterDark({ me, profile, back, openPost, openProfile, openRoom, openEvent }) {
+function AdRooms({ me, profile, openRoom, newRoom }) {
+  const [d, setD] = useState(null), [err, setErr] = useState(''), [busy, setBusy] = useState('')
+  const load = async () => { const { data, error } = await sb.rpc('list_rooms', { p_ad: true }); if (error) return setErr(friendly(error)); setErr(''); setD(data) }
+  useEffect(() => { load(); const t = setInterval(load, 20000); return () => clearInterval(t) }, [])
+  const join = async r => { setBusy(r.id); try { await joinRoom(roomRow(r), meOf(me, profile)); openRoom(r.id) } catch (e) { setErr(e.message) } setBusy('') }
+  const card = (r, live) => <button key={r.id} className="adroom" onClick={() => live ? join(r) : null} disabled={busy === r.id}>
+    <span className="adrav"><Avatar p={r.host} size={52} /></span>
+    <span className="evi"><b>{r.title}</b><small>Hosted by {r.host.display_name || r.host.username}{r.host.is_verified && <Verified />}</small>
+      <small>{live ? <><i className="adlive"><u />LIVE</i> 🎧 {r.listeners}</> : new Date(r.scheduled_for).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })} · #{RCAT[r.category]}</small></span>
+    {live && <I n="chev" s={20} />}</button>
+  return <div className="adt2" style={{ paddingBottom: 140 }}>
+    <button className="gobtn adstart" onClick={newRoom} disabled={!micSupported()}><I n="live" s={22} /> Start an After Dark room</button>
+    <p className="pnote" style={{ margin: '0 14px' }}>18+ only. These rooms never show in the regular Live Rooms list or Pulse.</p>
+    {err && <p className="msg" role="alert">{err} <button className="link" onClick={load}>Retry</button></p>}
+    <h3><I n="live" s={20} />Live now</h3>
+    {!d ? <div className="skel"><i /></div> : d.live.length ? d.live.map(r => card(r, true)) : <div className="adempty"><img src={moon} alt="" /><b>No rooms live</b><span>Start one and the night comes to you.</span></div>}
+    {d?.scheduled?.length > 0 && <><h3><I n="cal2" s={20} />Coming up</h3>{d.scheduled.map(r => card(r, false))}</>}
+  </div>
+}
+export default function AfterDark({ me, profile, back, openPost, openProfile, openRoom, openEvent, newRoom }) {
   const [st, setSt] = useState(undefined), [tab, setTab] = useState('feed'), [posts, setPosts] = useState(null), [tn, setTn] = useState(null), [err, setErr] = useState(''), [menu, setMenu] = useState(false)
   const status = async () => { const { data, error } = await sb.rpc('ad_status'); if (error) return setErr(friendly(error)); setSt(data) }
   const load = async () => { setErr(''); const { data, error } = await sb.from('posts').select(SEL).eq('after_dark', true).order('created_at', { ascending: false }).limit(40); if (error) return setErr(friendly(error)); const hid = await hiddenIds(); setPosts((data || []).filter(p => !hid.has(p.author.id))) }
   const loadT = async () => {
     const until = new Date(Date.now() + 12 * 3600e3).toISOString()
-    const [r, e] = await Promise.all([sb.rpc('list_rooms'), sb.from('events').select('id,title,venue,neighborhood,starts_at').eq('cancelled', false).gte('starts_at', new Date(Date.now() - 3 * 3600e3).toISOString()).lte('starts_at', until).order('starts_at').limit(20)])
+    const [r, e] = await Promise.all([sb.rpc('list_rooms', { p_ad: true }), sb.from('events').select('id,title,venue,neighborhood,starts_at').eq('cancelled', false).gte('starts_at', new Date(Date.now() - 3 * 3600e3).toISOString()).lte('starts_at', until).order('starts_at').limit(20)])
     setTn({ rooms: r.data?.live || [], events: e.data || [] })
   }
   useEffect(() => { status(); document.body.classList.add('inad'); return () => document.body.classList.remove('inad') }, [])
@@ -73,11 +94,12 @@ export default function AfterDark({ me, profile, back, openPost, openProfile, op
       {err && <p className="msg" role="alert">{err} <button className="link" onClick={() => { status(); st?.ok && load() }}>Retry</button></p>}
       {st && !st.ok && <Gate st={st} done={status} />}
       {st?.ok && <>
-        <div className="adtabs">{[['feed', 'Feed', 'comment'], ['tonight', 'Tonight', 'cal2'], ['rules', 'Rules', 'shield']].map(([k, l, ic]) => <button key={k} aria-selected={tab === k} onClick={() => setTab(k)}><I n={ic} s={18} />{l}</button>)}</div>
+        <div className="adtabs">{[['feed', 'Feed', 'comment'], ['rooms', 'Rooms', 'live'], ['tonight', 'Tonight', 'cal2'], ['rules', 'Rules', 'shield']].map(([k, l, ic]) => <button key={k} aria-selected={tab === k} onClick={() => setTab(k)}><I n={ic} s={18} />{l}</button>)}</div>
         {tab === 'feed' && <><Composer me={me} profile={profile} creator={st.creator} posted={load} />
           {posts === null && <div className="skel"><i /><i /></div>}
           {posts?.length === 0 && <div className="adempty"><img src={moon} alt="" /><b>Quiet tonight</b><span>Be the first to post After Dark.</span></div>}
           <div style={{ paddingBottom: 140 }}>{posts?.map(p => <PostCard key={p.id} post={p} me={me} openPost={openPost} openProfile={openProfile} />)}</div></>}
+        {tab === 'rooms' && <AdRooms me={me} profile={profile} openRoom={openRoom} newRoom={newRoom} />}
         {tab === 'tonight' && <div className="adt2" style={{ paddingBottom: 140 }}>
           <h3><I n="live" s={20} />Live rooms now</h3>{!tn ? <div className="skel"><i /></div> : tn.rooms.length ? tn.rooms.map(r => <button key={r.id} className="gl prow" onClick={() => openRoom(r.id)}><Avatar p={r.host} size={44} /><span className="evi"><b>{r.title}</b><small>#{RCAT[r.category]} · 🎧 {r.listeners}</small></span></button>) : <p className="pnote">No live rooms right now.</p>}
           <h3><I n="cal2" s={20} />Next 12 hours</h3>{tn && (tn.events.length ? tn.events.map(e => <button key={e.id} className="gl prow" onClick={() => openEvent(e.id)}><span className="pth" style={{ width: 44, height: 44 }}>📅</span><span className="evi"><b>{e.title}</b><small>{new Date(e.starts_at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}{e.venue && ' · ' + e.venue}</small></span></button>) : <p className="pnote">No events coming up tonight.</p>)}

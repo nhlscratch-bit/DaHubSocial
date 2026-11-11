@@ -6,7 +6,7 @@ import wm from './wordmark.png'
 import { RCAT, joinRoom, useRoom, micSupported } from './roomsEngine'
 import Verified from './Verified'
 export const meOf = (me, profile) => ({ id: me.id, name: profile?.display_name || profile?.username || 'Member', avatar: profile?.avatar_url || null })
-export const roomRow = r => ({ id: r.id, host_id: r.host.id, title: r.title, category: r.category, audience: r.audience, status: r.status, started_at: r.started_at, peak_listeners: 0 })
+export const roomRow = r => ({ id: r.id, host_id: r.host.id, title: r.title, category: r.category, audience: r.audience, status: r.status, started_at: r.started_at, after_dark: !!r.after_dark, peak_listeners: 0 })
 const MicI = ({ s = 22 }) => <I n="mic" s={s} />
 export { MicI }
 export const CAT_ICON = { music: 'music', business: 'briefcase', community: 'people', sports: 'trophy', openmic: 'mic' }
@@ -58,7 +58,7 @@ export default function Rooms({ me, profile, back, create, open }) {
   </div></div>
 }
 
-export function NewRoom({ me, profile, back, created }) {
+export function NewRoom({ me, profile, back, created, afterDark }) {
   const [f, setF] = useState({ title: '', category: 'music', audience: 'everyone', allow: true, later: false, at: '' }), [busy, setBusy] = useState(false), [err, setErr] = useState('')
   const up = p => setF(x => ({ ...x, ...p }))
   async function go() {
@@ -68,15 +68,15 @@ export function NewRoom({ me, profile, back, created }) {
     let mic = null
     try {
       if (!f.later) mic = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const now = new Date().toISOString(), row = { host_id: me.id, title, category: f.category, audience: f.audience, allow_requests: f.allow, ...(f.later ? { status: 'scheduled', scheduled_for: new Date(f.at).toISOString() } : { status: 'live', started_at: now, last_beat: now }) }
+      const now = new Date().toISOString(), row = { host_id: me.id, title, category: f.category, audience: f.audience, allow_requests: f.allow, after_dark: !!afterDark, ...(f.later ? { status: 'scheduled', scheduled_for: new Date(f.at).toISOString() } : { status: 'live', started_at: now, last_beat: now }) }
       const { data, error } = await sb.from('rooms').insert(row).select().single(); if (error) throw error
       if (f.later) return created(null)
       await joinRoom(data, meOf(me, profile), mic); created(data.id)
     } catch (e) { mic?.getTracks().forEach(t => t.stop()); setErr(e.name === 'NotAllowedError' ? 'Microphone blocked. Allow it in your browser settings to host a room.' : friendly(e)); setBusy(false) }
   }
-  return <div className="sheet lrpage"><div className="sbody lrbody">
+  return <div className={'sheet lrpage' + (afterDark ? ' lrad' : '')}><div className="sbody lrbody">
     <LrTop back={back} />
-    <div className="lrcard lrstart"><span className="lrmicbig"><I n="mic" s={40} /></span><span><h1>Start a Room</h1><p>Go live and talk with the DAHUB community</p></span></div>
+    <div className="lrcard lrstart"><span className="lrmicbig"><I n="mic" s={40} /></span><span><h1>{afterDark ? 'After Dark Room' : 'Start a Room'}</h1><p>{afterDark ? '18+ only. Only After Dark members can find and join it.' : 'Go live and talk with the DAHUB community'}</p></span></div>
     <div className="lrcard lrf"><label htmlFor="rt"><I n="edit" s={26} />Room Title</label><input id="rt" value={f.title} maxLength={80} onChange={e => up({ title: e.target.value })} placeholder="What do you want to talk about?" /></div>
     <div className="lrcard lrf"><label><I n="tag" s={26} />Topic Category</label><div className="lropts">{Object.entries(RCAT).map(([k, l]) => <button key={k} aria-pressed={f.category === k} onClick={() => up({ category: k })}><I n={CAT_ICON[k]} s={20} />{l}</button>)}</div></div>
     <div className="lrcard lrf"><label><I n="shield" s={26} />Who Can Join?</label><div className="lropts two">{[['everyone', 'Everyone', 'globe'], ['followers', 'Followers Only', 'people']].map(([k, l, ic]) => <button key={k} aria-pressed={f.audience === k} onClick={() => up({ audience: k })}><I n={ic} s={20} />{l}</button>)}</div>{f.audience === 'followers' && <small>Only people who follow you can see and join this room.</small>}</div>

@@ -128,11 +128,11 @@ export default function App() {
     {top?.t === 'event' && <EventView key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} deleted={back} />}
     {top?.t === 'pulse' && <PulseChamber back={back} openRadar={() => push({ t: 'radar' })} open={openDest} />}
     {top?.t === 'radar' && <Radar back={back} open={openDest} />}
-    {top?.t === 'afterdark' && <AfterDark me={me} profile={profile} back={back} openPost={openPost} openProfile={openProfile} openRoom={id => push({ t: 'room', id })} openEvent={id => push({ t: 'event', id })} />}
+    {top?.t === 'afterdark' && <AfterDark me={me} profile={profile} back={back} openPost={openPost} openProfile={openProfile} openRoom={id => push({ t: 'room', id })} openEvent={id => push({ t: 'event', id })} newRoom={() => push({ t: 'newroom', ad: true })} />}
     {top?.t === 'arcade' && <Arcade back={back} play={id => push({ t: 'game', id })} />}
     {top?.t === 'game' && <GamePlayer key={top.id} id={top.id} code={top.code} back={back} />}
     {top?.t === 'rooms' && <Rooms me={me} profile={profile} back={back} create={() => push({ t: 'newroom' })} open={id => push({ t: 'room', id })} />}
-    {top?.t === 'newroom' && <NewRoom me={me} profile={profile} back={back} created={id => id ? setStack(s => [...s.slice(0, -1), { t: 'room', id }]) : back()} />}
+    {top?.t === 'newroom' && <NewRoom afterDark={!!top.ad} me={me} profile={profile} back={back} created={id => id ? setStack(s => [...s.slice(0, -1), { t: 'room', id }]) : back()} />}
     {top?.t === 'room' && <RoomGate key={top.id} id={top.id} me={me} profile={profile} back={back} openProfile={openProfile} />}
     {top?.t === 'communities' && <Communities me={me} back={back} open={id => push({ t: 'community', id })} create={() => push({ t: 'newcommunity' })} />}
     {top?.t === 'newcommunity' && <NewCommunity me={me} back={back} created={id => setStack(s => [...s.slice(0, -1), { t: 'community', id }])} />}
