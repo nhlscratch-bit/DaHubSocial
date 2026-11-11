@@ -94,7 +94,8 @@ label.btn{display:inline-flex;align-items:center}
       <div class="sec"><span class="lab">Reference pics <small>optional, up to 3</small></span>
         <div id="refs" class="refs"></div>
         <div class="actions"><label class="btn ghost small" for="f-ref" tabindex="0">+ Add reference pic</label><input id="f-ref" type="file" accept="image/*" multiple hidden><button class="btn small" id="aidesc" type="button" hidden>Fill the look from my pics</button></div>
-        <span class="note">Under each pic, say what to take from it. The prompts use them as a close style guide and keep the character’s face original.</span></div>
+        <label class="lab" for="f-refhow" style="margin-top:6px">How should it use your pics?</label><textarea id="f-refhow" maxlength="500" placeholder="e.g. Copy the ski mask and gold grill from pic 1 exactly. Use the jacket from pic 2 but make it navy. Make him heavier than the guy in the pics. Keep the cartoon style, not realistic."></textarea>
+        <span class="note">Write anything here: what to copy exactly, what to change, what to ignore. You can also add a short note under each pic. The face always stays original.</span></div>
       <div class="sec"><span class="lab">Look</span>
         <div class="row2"><input id="f-skin" type="text" maxlength="70" placeholder="Skin / build details"><input id="f-hair" type="text" maxlength="70" placeholder="Hair / head (twists, wig, fade…)"></div>
         <input id="f-outfit" type="text" maxlength="140" placeholder="Outfit (black tee, floral blouse, baggy jeans…)">
@@ -138,10 +139,10 @@ const OPTS = {
     pers: ['Trash talker','Cool & quiet','Hothead','Cocky','Funny','Petty','Wise','Hype','Cold']
 }
 const ART = 'Bold hand-drawn 2D cartoon illustration matching a luxury Spades lounge card game: thick clean black outlines, cel shading, rich saturated colors, warm dramatic lighting, natural adult proportions, full body including the whole chair, solid pure green background (#00FF00) with no shadows, props or text on the background'
-const blank = () => ({ name:'', title:'', type:'Human', species:'', build:'Average', pres:'Man', skin:'', hair:'', outfit:'', item:'', chair2:'', c1:'#9b4dff', c2:'#e3b04b', pers:[], win:'', lose:'', art:ART, refs:[], gen:null })
+const blank = () => ({ name:'', title:'', type:'Human', species:'', build:'Average', pres:'Man', skin:'', hair:'', outfit:'', item:'', chair2:'', c1:'#9b4dff', c2:'#e3b04b', pers:[], win:'', lose:'', art:ART, refhow:'', refs:[], gen:null })
 let F = blank(), editId = null, db = null, assets = null, sample = null, canImg = false, roster = []
 const $ = id => document.getElementById(id)
-const TXT = ['name','title','species','skin','hair','outfit','item','chair2','win','lose','art']
+const TXT = ['refhow','name','title','species','skin','hair','outfit','item','chair2','win','lose','art']
 const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
 function status(m, cls=''){ const s=$('status'); s.textContent=m; s.className='status '+cls }
 
@@ -165,7 +166,7 @@ function describe(){
   if (F.pers.length) p.push(F.pers.join(', ').toLowerCase() + ' personality')
   return p.join(', ')
 }
-function refLine(){ if (!F.refs.length) return ''; const n = F.refs.map(x => x.note.trim()).filter(Boolean); return ` Use the attached reference photo${F.refs.length > 1 ? 's' : ''} as a close guide${n.length ? ' for: ' + n.join('; ') : ''}, matching outfit, hair and vibe as closely as possible, with an original face.` }
+function refLine(){ if (!F.refs.length && !F.refhow.trim()) return ''; const n = F.refs.map((x, i) => x.note.trim() ? `pic ${i + 1}: ${x.note.trim()}` : '').filter(Boolean); const how = F.refhow.trim(); return F.refs.length ? ` Use the attached reference photo${F.refs.length > 1 ? 's' : ''} as a close guide${n.length ? ' (' + n.join('; ') + ')' : ''}${how ? '. Follow these instructions about the references exactly: ' + how : ', matching outfit, hair and vibe as closely as possible'}, with an original face.` : ` Design notes: ${how}.` }
 const KEYS = [['sheet','Character turnaround','Run first. Attach your reference pics.'],['portrait','Portrait','Square, for their seat badge'],['main','In their matching chair','Attach the lounge reference image too'],['idle','Holding cards','Their default seat pose'],['slap','Slapping a card','Plays when they put a card down'],['celebrate','Celebrating','Won the book or the other team got set'],['mad','Mad','Their team got set or cut']]
 function standard(){
   const a = (F.art || ART).trim(), d = describe(), ch = chairText(), same = `Same character, SAME ${ch}, same art style, same three-quarter angle toward the RIGHT side of the image, same size and framing as the image above.`
@@ -207,8 +208,8 @@ async function generate(){
   if (sample) {
     try {
       const images = canImg ? (await Promise.all(F.refs.map(refBlob))).filter(Boolean) : []
-      const info = { name:F.name, nickname:F.title, type:F.type, what:F.species, build:F.build, presents_as:F.pres, skin:F.skin, hair:F.hair, outfit:F.outfit, signature_item:F.item, chair_ideas:F.chair2.trim() || 'none: design it from the character', colors:[F.c1, F.c2], personality:F.pers, win_line:F.win, set_line:F.lose, reference_notes:F.refs.map(x => x.note).filter(Boolean) }
-      const out = await sample.json(`You write image-generation prompts (for ChatGPT image generation) for an original character seated at a 2D Spades card game table. ${images.length ? 'The attached images are the owner\'s reference pics; describe outfit, hair, build, colors and vibe from them precisely (style only, original face).' : ''}\nCharacter details:\n${JSON.stringify(info)}\n${RULES.replace('${ART}', (F.art || ART).trim())}\nReturn JSON only with keys sheet, portrait, main, idle, slap, celebrate, mad, each a full prompt string.`, { images, modelTier: 'complex' })
+      const info = { name:F.name, nickname:F.title, type:F.type, what:F.species, build:F.build, presents_as:F.pres, skin:F.skin, hair:F.hair, outfit:F.outfit, signature_item:F.item, chair_ideas:F.chair2.trim() || 'none: design it from the character', colors:[F.c1, F.c2], personality:F.pers, win_line:F.win, set_line:F.lose, reference_notes:F.refs.map((x, i) => x.note.trim() ? `pic ${i + 1}: ${x.note.trim()}` : '').filter(Boolean), how_to_use_references:F.refhow.trim() || 'match outfit, hair and vibe closely' }
+      const out = await sample.json(`You write image-generation prompts (for ChatGPT image generation) for an original character seated at a 2D Spades card game table. ${images.length ? 'The attached images are the owner\'s reference pics; describe outfit, hair, build, colors and vibe from them precisely (style only, original face). Follow the owner\'s how_to_use_references instructions exactly: copy what they say to copy, change what they say to change, ignore what they say to ignore.' : ''}\nCharacter details:\n${JSON.stringify(info)}\n${RULES.replace('${ART}', (F.art || ART).trim())}\nReturn JSON only with keys sheet, portrait, main, idle, slap, celebrate, mad, each a full prompt string.`, { images, modelTier: 'complex' })
       list = KEYS.map(([k, t, sub]) => [t, sub, String(out[k] || '').trim()]).filter(x => x[2])
       if (list.length < 7) { list = null; note = 'The AI answer was incomplete, so these are the standard prompts.' }
     } catch (e) { note = e.code === 'not_granted' ? 'AI help is off for this page, so these are the standard prompts.' : e.code === 'rate_limited' ? 'Too many AI requests right now, so these are the standard prompts.' : 'The AI couldn’t write them (' + (e.message || e.code) + '), so these are the standard prompts.' }
@@ -224,7 +225,7 @@ $('gen').onclick = generate
 function refsUI(){
   const R = $('refs'); R.innerHTML = ''
   F.refs.forEach((x, i) => { const c = document.createElement('div'); c.className = 'ref'
-    c.innerHTML = `<img alt="Reference ${i + 1}"><button class="x" type="button" aria-label="Remove reference ${i + 1}">✕</button><input type="text" maxlength="80" id="ref-note-${i}" placeholder="Take the… (outfit, hair, vibe)">`
+    c.innerHTML = `<img alt="Reference ${i + 1}"><button class="x" type="button" aria-label="Remove reference ${i + 1}">✕</button><input type="text" maxlength="80" id="ref-note-${i}" placeholder="Pic note: take the mask, the jacket…">`
     c.querySelector('img').src = x.preview || x.url; const n = c.querySelector('input'); n.value = x.note || ''
     n.oninput = () => { x.note = n.value }; c.querySelector('.x').onclick = () => { F.refs.splice(i, 1); refsUI() }
     R.appendChild(c) })
@@ -237,7 +238,7 @@ $('aidesc').onclick = async () => {
   const b = $('aidesc'); b.disabled = true; b.textContent = 'Looking at your pics…'
   try {
     const images = (await Promise.all(F.refs.map(refBlob))).filter(Boolean); if (!images.length) throw { message: 'Could not read the pics.' }
-    const notes = F.refs.map((x, i) => `Image ${i + 1}: ${x.note.trim() || 'use whatever fits'}`).join('\n')
+    const notes = F.refs.map((x, i) => `Image ${i + 1}: ${x.note.trim() || 'use whatever fits'}`).join('\n') + (F.refhow.trim() ? '\nOverall instructions from the owner: ' + F.refhow.trim() : '')
     const out = await sample.json(`You help design an ORIGINAL character for a cartoon Spades card game. Study the attached reference images. What to take from each:\n${notes}\nDescribe ONLY visual design: clothing, colors, hairstyle type, body type, accessories, vibe. Never identify or name any person; no brand names or logos. Short vivid values.\nReturn JSON only: {"skin":"","hair":"","outfit":"","item":"","c1":"#rrggbb","c2":"#rrggbb"}`, { images, modelTier: 'default' })
     ;['skin','hair','outfit','item'].forEach(k => { if (typeof out[k] === 'string' && out[k].trim()) F[k] = out[k].trim().slice(0, k === 'outfit' ? 140 : 80) })
     ;['c1','c2'].forEach(k => { if (/^#[0-9a-f]{6}$/i.test(out[k] || '')) F[k] = out[k] })
