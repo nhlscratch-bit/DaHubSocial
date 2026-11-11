@@ -11,9 +11,10 @@ import { tapsOn, setTaps } from './tapsound'
 import { warmIce, iceSource } from './ice'
 import { checkPassword } from './pwcheck'
 import { InviteSheet } from './Onboarding'
+import { FeedbackSheet, VerifySheet } from './Requests'
 
 export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) {
-  const [q, setQ] = useState(''), [inv, setInv] = useState(false), [edit, setEdit] = useState(false), [pw, setPw] = useState(false), [priv, setPriv] = useState(!!profile?.is_private), [err, setErr] = useState('')
+  const [q, setQ] = useState(''), [inv, setInv] = useState(false), [fb, setFb] = useState(false), [ver, setVer] = useState(false), [edit, setEdit] = useState(false), [pw, setPw] = useState(false), [priv, setPriv] = useState(!!profile?.is_private), [err, setErr] = useState('')
   const [pushOn, setPushOn] = useState(false), [glow, setGlowS] = useState(glowOn())
   const toggleGlow = () => { const v = !glow; setGlow(v); setGlowS(v) }
   const [relay, setRelay] = useState('')
@@ -34,6 +35,7 @@ export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) 
   const SECTIONS = [
     ['Your account', [
       ['user', 'Edit profile', 'Photo, name, @handle, bio, links', () => setEdit(true), 'photo name handle bio username'],
+      ['star', 'Get verified', profile?.is_verified ? 'You’re verified 👑' : 'Business, creator or media? Request the badge', () => setVer(true), 'verify badge check business creator media'],
       ['userplus', 'Invite friends', 'Share your link and see who joined', () => setInv(true), 'invite referral share link friends'],
       ['key', 'Password', 'Change your password', () => setPw(true), 'security login'],
       ['lock', 'Private account', priv ? 'On: people must request to follow you' : 'Off: anyone can follow you', togglePrivate, 'privacy follow requests', priv, true]]],
@@ -53,6 +55,7 @@ export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) 
       ['block', 'Blocked and muted', 'People you blocked or muted', () => go('safety'), 'block mute'],
       ['shield', 'Community guidelines', 'How DAHUB keeps it real', () => go('guidelines'), 'rules policy terms'],
       ...(isAdmin ? [['info', 'Admin', 'Review submissions and reports', () => go('admin'), 'moderation review'], ['shield', 'Call relay (admin)', RELAY[relay] || 'Tap to check', checkRelay, 'turn relay calls rooms voice metered']] : [])]],
+    ['Help', [['chat', 'Send feedback', 'Report a bug or share an idea with the team', () => setFb(true), 'feedback bug help report idea support']]],
     ['Log in', [['logout', 'Log out', null, () => confirm('Log out of DAHUB?') && sb.auth.signOut(), 'sign out']]]]
   const s = q.trim().toLowerCase()
   const shown = SECTIONS.map(([t, rows]) => [t, rows.filter(r => !s || (r[1] + ' ' + (r[2] || '') + ' ' + r[4]).toLowerCase().includes(s))]).filter(([, r]) => r.length)
@@ -69,7 +72,9 @@ export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) 
       <small className="bld inl" style={{ display: 'block', textAlign: 'center', margin: '16px 0 120px' }}>DAHUB {BUILD}</small></div>
     {edit && <EditProfile pr={profile} me={me} close={() => setEdit(false)} saved={() => onUpdated?.()} />}
     {pw && <PasswordSheet close={() => setPw(false)} />}
-    {inv && <InviteSheet profile={profile} close={() => setInv(false)} />}</div>
+    {inv && <InviteSheet profile={profile} close={() => setInv(false)} />}
+    {fb && <FeedbackSheet me={me} close={() => setFb(false)} />}
+    {ver && <VerifySheet me={me} profile={profile} close={() => setVer(false)} />}</div>
 }
 
 function PasswordSheet({ close }) {

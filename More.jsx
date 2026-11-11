@@ -29,6 +29,7 @@ export default function More({ go, openProfile, me, isAdmin, isStaff }) {
     [communities, 'Communities', () => go('communities')],
     ...(FEATURES.passport ? [[null, 'My Passport', () => go('passport')]] : []),
     [star, 'Get Featured', () => go('submit')],
+    [null, 'Send feedback', () => window.dispatchEvent(new Event('open-feedback'))],
     [person, 'My Profile', () => openProfile(me.id)],
     [shieldlock, 'Blocked & Muted', () => go('safety')],
     ...(isStaff ? [[crown, 'Team · Banner', () => go('team')]] : []),
