@@ -9,6 +9,7 @@ import { supported, current, enable, disable } from './push'
 import { glowOn, setGlow } from './glow'
 import { tapsOn, setTaps } from './tapsound'
 import { warmIce, iceSource } from './ice'
+import { checkPassword } from './pwcheck'
 
 export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) {
   const [q, setQ] = useState(''), [edit, setEdit] = useState(false), [pw, setPw] = useState(false), [priv, setPriv] = useState(!!profile?.is_private), [err, setErr] = useState('')
@@ -71,8 +72,9 @@ export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) 
 function PasswordSheet({ close }) {
   const [a, setA] = useState(''), [b, setB] = useState(''), [err, setErr] = useState(''), [ok, setOk] = useState(false), [busy, setBusy] = useState(false)
   async function save() {
-    setErr(''); if (a.length < 8) return setErr('Use at least 8 characters.'); if (a !== b) return setErr('Those passwords do not match.')
-    setBusy(true); const { error } = await sb.auth.updateUser({ password: a }); setBusy(false); error ? setErr(error.message) : setOk(true)
+    setErr(''); if (a !== b) return setErr('Those passwords do not match.')
+    setBusy(true); const bad = await checkPassword(a); if (bad) { setBusy(false); return setErr(bad) }
+    const { error } = await sb.auth.updateUser({ password: a }); setBusy(false); error ? setErr(error.message) : setOk(true)
   }
   return <div className="scrim" onClick={close}><div className="msheet" onClick={e => e.stopPropagation()}><h3 style={{ margin: 0 }}>Change password</h3>
     {ok ? <><p>Password updated.</p><button className="wb p" onClick={close}>Done</button></> : <>

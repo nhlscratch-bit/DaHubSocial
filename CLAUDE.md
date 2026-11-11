@@ -21,7 +21,7 @@ DAHUB ("ONE HUB. EVERY SIDE OF LIFE.") is a Baltimore-focused social / networkin
 - Env vars (set in Vercel, never commit values): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. Optional TURN for calls/rooms: `VITE_TURN_URL`, `VITE_TURN_USER`, `VITE_TURN_PASS`.
 - TURN relay (build 67): `ice.js` is the single source of ICE servers for calls (`Call.jsx`), Live Rooms (`roomsEngine.js`) and Spades voice (`tableVoice.js`). It fetches credentials from edge function `turn` (signed-in only; Supabase secrets `TURN_USERNAME` + `TURN_CREDENTIAL` from a Metered credential, which use Metered's global relay addresses unless `TURN_URLS` overrides; or `METERED_APP` + `METERED_API_KEY`), warmed at login and refreshed every 30 min; falls back to the `VITE_TURN_*` env vars, then the free Open Relay. Admins see the active relay in Settings > "Call relay (admin)".
 - `vite.config.js` emits `sw.js` (push) and the PWA manifest/icons.
-- Bump `BUILD` in `supabase.js` on each release (currently `build 67`); it shows in Settings so the owner can confirm a deploy landed.
+- Bump `BUILD` in `supabase.js` on each release (currently `build 68`); it shows in Settings so the owner can confirm a deploy landed.
 - Glow Mode (Settings > Look and feel, saved per device): `glow.js` cycles `--gx` on `<html>` through Glacier #19e0f0, Moonstone #7aa8ff, Frost Orchid #c79bff, Aurora Mint #5cf5c4 every 3s; `html.glow` CSS recolors `--rim`/`--rim2` and the glow on nav, cards, tiles and room screens with 2.8s transitions.
 - Tap sounds (build 65): `tapsound.js` plays the owner's `click.wav` on pointerdown over buttons/links/tiles and `toggle.wav` on switches/checkboxes/`aria-pressed` options app-wide (Web Audio, so it respects the phone's silent switch); toggle in Settings > Look and feel (`dahub.taps`). The same files are Spades' `art/sfx/click.wav` and `toggle.wav` (toggle plays on Spades' on/off settings).
 - `features.js` holds feature switches: `passport: false` (Clout Passport off for maintenance), `adNudity: true` (After Dark nudity kill switch).
@@ -45,7 +45,7 @@ DOB gate (`ad_confirm`), opt-in/out (`ad_set`), posts flagged `after_dark` never
 ## Pre-launch checklist (owner's list, still open)
 - Own TURN server (Metered): code is ready (build 67); Metered workspace `dahub` and a credential exist; owner adds `TURN_USERNAME` / `TURN_CREDENTIAL` secrets in Supabase, then confirms in Settings > Call relay (admin).
 - Confirm builds 44–50 on a real phone (shimmer, call fix, Pulse, Rooms, After Dark).
-- Turn on leaked-password protection in Supabase Auth (dashboard only). Restrict/rotate the YouTube API key (Google Cloud console). Sample spotlight already deleted.
+- Leaked-password protection in Supabase Auth needs the Pro plan (owner will turn it on later); until then `pwcheck.js` (build 68) checks new passwords at sign-up and password change: length, common/simple passwords, no username/email name, letters+numbers or 12+ chars, and Have I Been Pwned k-anonymity lookup (only 5 hash chars sent, fails open). Restrict/rotate the YouTube API key (Google Cloud console). Sample spotlight already deleted.
 
 ## Deferred features (owner said later)
 Full After Dark parity (its own Shorts/Rooms/Stories/DMs/etc.), bookings, Passport replacement, notification preferences, Collab Board.
