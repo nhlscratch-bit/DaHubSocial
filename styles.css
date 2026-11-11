@@ -818,3 +818,13 @@ html.glow .tile.ttile{box-shadow:0 0 0 1.5px var(--gx),0 0 16px var(--gxs),0 8px
 .bico{display:inline-grid;place-items:center;width:26px;height:26px;vertical-align:-7px;border-radius:7px;background:#fff;color:#0a7ad6;box-shadow:0 0 0 1px #c9d6db}
 .bnote{margin:4px 0 12px;font-weight:600;color:#34525c}.bnote.ok{color:#119c55;margin-top:12px}
 @media (prefers-reduced-motion:reduce){.boot2 *,.boot2:before{animation:none!important}.b2sides span.on{opacity:1}}
+/* Account-type badge: chrome glass pill + glowing icon coin (replaces the old flat .acct pills) */
+.acctb{--ac:#19c6d8;--ad:#0b6f7e;display:inline-flex;align-items:center;gap:6px;margin:5px 0 3px;padding:3px 12px 3px 3px;border-radius:999px;font-size:12.5px;font-weight:800;letter-spacing:.2px;color:#06202a;
+  background:linear-gradient(180deg,#ffffff,#e2eef1);border:1.5px solid #fff;box-shadow:0 0 0 1.5px var(--ac),0 0 12px color-mix(in srgb,var(--ac) 45%,transparent),0 3px 8px #0002,inset 0 1px 0 #fff;vertical-align:middle}
+.acctb i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#fff;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--ac) 60%,#fff),var(--ac) 55%,var(--ad));box-shadow:inset 0 1px 0 #ffffffaa,0 0 8px var(--ac)}
+.acctb i img{width:17px;height:17px;object-fit:contain;filter:drop-shadow(0 1px 1px #0005)}
+.acctb.official{--ac:#19e0f0;--ad:#0b6f7e}.acctb.official i{background:radial-gradient(circle at 35% 30%,#2a4c56,#06202a 70%)}
+.acctb.business{--ac:#4f9dff;--ad:#1b5fc0}
+.acctb.media{--ac:#a979ff;--ad:#6a3fd1}
+.acctb.creator{--ac:#2fd1a0;--ad:#0f8a66}
+html.glow .acctb.official{box-shadow:0 0 0 1.5px var(--gx),0 0 14px var(--gxs),0 3px 8px #0002,inset 0 1px 0 #fff}
