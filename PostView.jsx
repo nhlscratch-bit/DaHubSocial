@@ -23,7 +23,7 @@ export default function PostView({ id, focus, me, profile, back, openProfile }) 
   const loadC = async () => { const { data } = await sb.from('comments').select(CSEL).eq('post_id', id).order('created_at'); setCs(data || []) }
   useEffect(() => { loadP(); loadC() }, [id])
   useEffect(() => { if (focus && p) ref.current?.scrollIntoView() }, [focus, p])
-  const url = useMediaUrls(p ? p.post_media : []), [show, setShow] = useState(false)
+  const url = useMediaUrls(p ? p.post_media : []), [show, setShow] = useState(false), [rx, setRx] = useState(false)
   if (!p) return <div className="sheet"><div className="bar"><button onClick={back} aria-label="Back">←</button>Post</div>{err && <p className="msg">{err}</p>}</div>
   const mine = p.post_reactions.find(r => r.user_id === me.id), media = [...p.post_media].sort((a, b) => a.position - b.position)
   const tags = (p.body.match(/#\w+/g) || []), text = p.body.replace(/#\w+/g, '').trim()
@@ -60,8 +60,8 @@ export default function PostView({ id, focus, me, profile, back, openProfile }) 
       {media.length > 0 && p.sensitive && FEATURES.adNudity && !show && <button className="veilb solo" onClick={() => setShow(true)}><b>Sensitive content · 18+</b><small>Tap to view</small></button>}
       {media.length > 0 && (!p.sensitive || (FEATURES.adNudity && show)) && <div className="carw"><div className="car" onScroll={e => setSlide(Math.round(e.target.scrollLeft / e.target.clientWidth))}>{media.map(m => m.media_type === 'video' ? <AutoVideo key={m.storage_path} src={url(m)} /> : <img key={m.storage_path} src={url(m)} alt="" onClick={() => setLb(media.filter(x => x.media_type !== 'video').findIndex(x => x.storage_path === m.storage_path))} />)}</div>{media.length > 1 && <span className="cnt">{slide + 1}/{media.length}</span>}</div>}
       {lb !== null && <Lightbox urls={media.filter(x => x.media_type !== 'video').map(url)} start={lb} close={() => setLb(null)} />}
-      <div className="rstrip">{REACTIONS.map((r, i) => <button key={i} className={mine?.reaction_id === i ? 'sel' : ''} onClick={() => react(i)} aria-label={r[0]}><span>{r[1]}</span>{LBL[i]}</button>)}</div>
-      <div className="pills"><span className="pill">{mine ? REACTIONS[mine.reaction_id][1] : '🤍'} {fmt(p.post_reactions.length)}</span>
+      <div className="pills rxwrap">{rx && <><div className="rxscrim" onClick={() => setRx(false)} /><div className="rstrip pop" role="menu">{REACTIONS.map((r, i) => <button key={i} style={{ animationDelay: i * 28 + 'ms' }} className={mine?.reaction_id === i ? 'sel' : ''} onClick={() => { setRx(false); react(i) }} aria-label={r[0]}><span>{r[1]}</span>{LBL[i]}</button>)}</div></>}
+        <button className={'pill' + (mine ? ' on' : '')} onClick={() => setRx(!rx)} aria-label="React" aria-expanded={rx}>{mine ? REACTIONS[mine.reaction_id][1] : '🤍'} {fmt(p.post_reactions.length)}</button>
         <button className="pill" onClick={() => ref.current?.scrollIntoView({ behavior: 'smooth' })}>💬 {fmt(p.comments[0]?.count || 0)}</button>
         <button className={'pill' + (p.reposts.some(r => r.user_id === me.id) ? ' on' : '')} onClick={() => toggle('reposts', p.reposts.some(r => r.user_id === me.id))}>🔁 {fmt(p.reposts.length)}</button>
         <button className={'pill sq' + (p.bookmarks.length ? ' on' : '')} onClick={() => toggle('bookmarks', p.bookmarks.length > 0)} aria-label="Bookmark">{p.bookmarks.length ? '🔖' : '🏷️'}</button>
