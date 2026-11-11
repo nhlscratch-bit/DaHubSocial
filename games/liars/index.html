@@ -2,43 +2,269 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>DAHUB CAP or Not</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;600;700&family=Russo+One&family=Rajdhani:wght@600;700&family=Permanent+Marker&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Rajdhani:wght@500;600;700&family=Permanent+Marker&display=swap">
 <style>
-/* Layout: phone-first table. Three opponents across the top, the table (claim + pile) in the middle, your seat and hand at the bottom. */
-:root{--bg:#07050d;--neon:#19e0f0;--neon2:#c79bff;--red:#ff3b5c;--gold:#ffd77a;--ok:#3ddc84;--fg:#f4f1ff;--dim:#a9a3c4;--panel:#120d22e6;--line:#ffffff22;
-  --display:"Bungee","Impact","Arial Black",sans-serif;--body:"Chakra Petch","Segoe UI",system-ui,sans-serif}
+/* CAP or Not. Portrait phone game. One design system: Russo One for display, Rajdhani for UI, Permanent Marker for graffiti accents.
+   Palette: electric blue + violet on midnight, gold for CAP / danger, green for safe. */
+:root{--bg:#05061a;--fg:#f2f6ff;--dim:#9fb3d9;--blue:#2f8bff;--blue2:#7ff4ff;--vio:#a855f7;--gold:#ffc93d;--red:#ff3b5c;--ok:#3ddc84;
+  --panel:#0a1650;--panel2:#071040;--line:#4f8bff;--glow:0 0 10px #2f8bffcc,0 0 24px #2f6bff88;
+  --display:"Russo One","Impact","Arial Black",sans-serif;--ui:"Rajdhani","Segoe UI",system-ui,sans-serif;--tag:"Permanent Marker","Russo One",sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:var(--body);overflow:hidden;user-select:none;-webkit-user-select:none}
-button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
-#app{position:fixed;inset:0;max-width:560px;margin:0 auto;overflow:hidden}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:var(--ui);font-weight:600;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+img{-webkit-user-drag:none}
+#app{position:fixed;inset:0;max-width:560px;margin:0 auto;overflow:hidden;background:var(--bg)}
+svg.i{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:-.15em;flex:none}
 /* room */
-.room{position:absolute;inset:0;background:#0a0716 center/cover no-repeat;transition:filter .4s}
-.room.fallback{background:
-  radial-gradient(120% 60% at 50% 105%,#1b1030 0%,transparent 60%),
-  linear-gradient(180deg,#0b0818 0%,#120b26 55%,#07050d 100%)}
-.room.fallback::before{content:"";position:absolute;left:-10%;right:-10%;top:0;height:30%;opacity:.85;
-  background:
-   linear-gradient(60deg,transparent 47%,#7aa8ff 48%,#7aa8ff 50%,transparent 51%) 0 0/90px 52px,
-   linear-gradient(-60deg,transparent 47%,#7aa8ff 48%,#7aa8ff 50%,transparent 51%) 0 0/90px 52px,
-   linear-gradient(0deg,transparent 47%,#ff9a5a 48%,#ff9a5a 50%,transparent 51%) 45px 0/90px 52px;
-  -webkit-mask:linear-gradient(180deg,#000 10%,transparent);mask:linear-gradient(180deg,#000 10%,transparent);filter:drop-shadow(0 0 6px #7aa8ff)}
-.room.fallback::after{content:"CAP OR NOT";position:absolute;left:0;right:0;top:15%;text-align:center;font:400 clamp(22px,7vw,40px) var(--display);color:#fff;opacity:.16;letter-spacing:2px;text-shadow:0 0 18px var(--neon2)}
-.shade{position:absolute;inset:0;background:linear-gradient(180deg,#0000 0%,#0006 45%,#000a 100%);pointer-events:none}
+.room{position:absolute;inset:0;background:#0a0716 center/cover no-repeat;transition:filter .5s,transform .8s}
+.room.fallback{background:radial-gradient(120% 60% at 50% 105%,#1b1030 0%,transparent 60%),linear-gradient(180deg,#0b0818 0%,#120b26 55%,#07050d 100%)}
+.room.blur{filter:blur(6px) brightness(.55);transform:scale(1.06)}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,#0000 0%,#0005 45%,#000b 100%);pointer-events:none}
 /* screens */
-.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom));text-align:center;z-index:5}
-.logo{font:400 clamp(34px,11vw,58px)/.95 var(--display);margin:0;background:linear-gradient(180deg,#fff,#ffd0d8 40%,#ff3b5c 75%,#8a0f25);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #000) drop-shadow(0 0 22px #ff3b5c88);animation:slam .7s cubic-bezier(.2,1.6,.4,1) both}
-.logo .or{font-size:.5em;vertical-align:middle;-webkit-text-fill-color:#fff;color:#fff}
-.logo small{display:block;font-size:.36em;letter-spacing:4px;-webkit-text-fill-color:var(--neon);color:var(--neon);filter:drop-shadow(0 0 10px #19e0f0)}
-@keyframes slam{from{transform:scale(2.4);opacity:0}}
-.tag{color:var(--dim);margin:0;max-width:34ch}
-.btn{font:400 16px var(--display);letter-spacing:1px;padding:14px 22px;border-radius:14px;min-width:220px;color:#fff;
-  background:linear-gradient(180deg,#ff6b84,#c4183a);box-shadow:0 5px 0 #6d0a1c,0 0 22px #ff3b5c66,inset 0 1px 0 #fff6;position:relative;overflow:hidden}
-.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #6d0a1c}
-.btn.alt{background:linear-gradient(180deg,#3df0ff,#0e7f90);box-shadow:0 5px 0 #064651,0 0 22px #19e0f055,inset 0 1px 0 #fff8;color:#03141a}
-.btn.ghost{background:#ffffff14;box-shadow:inset 0 0 0 1px var(--line);font-size:13px}
-.btn:disabled{opacity:.4;pointer-events:none}
-.btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,#fff5,transparent);transform:skewX(-20deg);animation:shine 3.2s infinite}
-@keyframes shine{0%,70%{left:-60%}100%{left:140%}}
+.scr{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom))}
+.scr.in{animation:scrIn .38s cubic-bezier(.2,.9,.3,1) both}
+@keyframes scrIn{from{opacity:0;transform:translateY(14px) scale(.985)}}
+.wm{position:absolute;left:0;right:0;bottom:max(6px,env(safe-area-inset-bottom));text-align:center;font:600 10px var(--ui);letter-spacing:2px;color:#7f93b8;pointer-events:none}
+/* boot */
+#boot{z-index:50;align-items:center;justify-content:center;gap:18px;background:radial-gradient(80% 60% at 50% 40%,#13246e 0%,#05061a 70%)}
+#boot .big{position:relative;font:400 clamp(58px,20vw,110px)/.86 var(--display);text-align:center;letter-spacing:1px;opacity:0}
+#boot .big.go{animation:slam .55s cubic-bezier(.2,1.5,.4,1) both}
+#boot .big .a{display:block;background:linear-gradient(180deg,#fff 0%,#bfe8ff 35%,#2f8bff 70%,#1240c8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px #2f8bffcc) drop-shadow(0 4px 0 #06155a)}
+#boot .big .b{display:block;font-size:.5em;letter-spacing:4px;background:linear-gradient(180deg,#ffe3ff,#c084fc 50%,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 12px #a855f7cc) drop-shadow(0 3px 0 #2a0a55);margin-top:4px}
+#boot .crown{font-size:.42em;display:block;color:var(--gold);filter:drop-shadow(0 0 10px #ffc93d);margin-bottom:-6px}
+@keyframes slam{0%{transform:scale(2.6);opacity:0}60%{opacity:1}100%{transform:none;opacity:1}}
+.bar{width:min(70%,300px);height:8px;border-radius:999px;background:#ffffff14;border:1px solid #4f8bff55;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2f8bff,#7ff4ff);box-shadow:0 0 12px #2f8bff;transition:width .25s}
+.bootmsg{font:700 12px var(--ui);letter-spacing:3px;color:var(--dim)}
+.tap{font:400 15px var(--display);letter-spacing:3px;color:#fff;text-shadow:0 0 12px #2f8bff;animation:blink 1.1s ease-in-out infinite alternate}
+@keyframes blink{to{opacity:.35}}
+.sparks{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.sparks i{position:absolute;left:50%;top:42%;width:6px;height:6px;border-radius:50%;background:#ffe9a8;box-shadow:0 0 8px #ffc93d;animation:spark .9s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+/* menu */
+#menu{justify-content:flex-end;gap:10px;padding-bottom:max(30px,env(safe-area-inset-bottom))}
+.mpanel{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:22px;background:linear-gradient(180deg,#0a1650e8,#060c33f2);border:1.5px solid #4f8bff88;box-shadow:0 0 0 1px #000a,0 18px 40px #000c,var(--glow),inset 0 1px 0 #ffffff33}
+.mchip{display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;border-radius:999px;background:#ffffff0d;border:1px solid #4f8bff55;text-align:left}
+.mchip img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #7fc0ff;background:#0b1a5c;flex:none}
+.mchip b{display:block;font:400 13px var(--display);letter-spacing:.5px}
+.mchip small{display:block;font:600 11.5px var(--ui);color:var(--dim)}
+.mchip .i{margin-left:auto;font-size:18px;color:#7fc0ff}
+.pbtn{position:relative;overflow:hidden;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px;font:400 clamp(17px,5vw,21px) var(--display);letter-spacing:2px;color:#fff;background:linear-gradient(180deg,#4f9bff 0%,#2350e0 55%,#162fa0 100%);border:1.5px solid #9cc8ff;box-shadow:0 6px 0 #0b1f6e,0 0 22px #2f6bffaa,inset 0 1px 0 #ffffff88;text-shadow:0 2px 0 #0b1f6e;transition:transform .08s,box-shadow .08s}
+.pbtn:active{transform:translateY(5px);box-shadow:0 1px 0 #0b1f6e,0 0 22px #2f6bffaa}
+.pbtn::after{content:"";position:absolute;top:0;left:-70%;width:40%;height:100%;background:linear-gradient(90deg,transparent,#fff5,transparent);transform:skewX(-20deg);animation:shine 3.4s infinite}
+@keyframes shine{0%,70%{left:-70%}100%{left:150%}}
+.pbtn.gold{background:linear-gradient(180deg,#ffe08a 0%,#f0a51e 55%,#b06a00 100%);border-color:#fff1c4;box-shadow:0 6px 0 #5a3400,0 0 22px #ffb31a88,inset 0 1px 0 #ffffffaa;color:#2a1600;text-shadow:0 1px 0 #ffe9a8}
+.pbtn.gold:active{box-shadow:0 1px 0 #5a3400}
+.mrow{display:grid;grid-template-columns:1fr auto auto;gap:8px}
+.sbtn2{height:46px;padding:0 14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;font:400 13px var(--display);letter-spacing:1px;background:#ffffff0d;border:1.5px solid #4f8bff66;color:#dbe9ff}
+.sbtn2.ic{width:46px;padding:0;font-size:20px}
+.sbtn2[aria-pressed=false]{color:#6f82a8;border-color:#4f8bff33}
+.sbtn2:active{background:#2f6bff33}
+/* tutorial */
+#rules{justify-content:center;gap:12px}
+.tut{position:relative;border-radius:22px;padding:18px 16px 14px;background:linear-gradient(180deg,#0a1650f2,#060c33f6);border:1.5px solid #4f8bff88;box-shadow:0 18px 40px #000c,var(--glow);display:flex;flex-direction:column;gap:12px;min-height:58vh}
+.tut h2{margin:0;font:400 clamp(20px,6vw,26px) var(--display);letter-spacing:1px;text-align:center}
+.tut h2 small{display:block;font:700 11px var(--ui);letter-spacing:3px;color:var(--blue2);margin-bottom:4px}
+.tut .art{display:flex;justify-content:center;align-items:center;gap:8px;min-height:150px;flex:1}
+.tut .art .card{--cw:clamp(58px,18vw,84px)}
+.tut .art .card.tilt{transform:rotate(-8deg)}.tut .art .card.tilt2{transform:rotate(6deg) translateY(6px)}
+.tut p{margin:0;font:600 15.5px/1.45 var(--ui);color:#dbe9ff;text-align:center}
+.tut p b{color:#fff;font-weight:700}
+.tut p em{font-style:normal;color:var(--gold)}
+.dots{display:flex;justify-content:center;gap:6px}.dots i{width:7px;height:7px;border-radius:50%;background:#ffffff26}.dots i.on{background:var(--blue2);box-shadow:0 0 8px var(--blue2)}
+.tutbtns{display:flex;gap:10px}
+.tutbtns .pbtn{flex:1;height:52px;font-size:15px}
+.tutbtns .sbtn2{height:52px}
+.chamber{display:flex;gap:6px;justify-content:center}
+.chamber i{width:34px;height:44px;border-radius:8px 8px 10px 10px;background:linear-gradient(180deg,#1b2a78,#0a1650);border:1.5px solid #4f8bff;position:relative;overflow:hidden}
+.chamber i::after{content:"";position:absolute;left:3px;right:3px;bottom:3px;height:55%;border-radius:4px;background:linear-gradient(180deg,#ff6b84,#c4183a)}
+.chamber i.q::after{background:linear-gradient(180deg,#5a6fa8,#2a3a70)}
+.chamber i.q::before{content:"?";position:absolute;inset:0;display:grid;place-items:center;font:400 18px var(--display);color:#fff;z-index:1}
+/* ===== game ===== */
+#game{padding:max(6px,env(safe-area-inset-top)) 0 max(8px,env(safe-area-inset-bottom));z-index:4}
+#game::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#05061299 0%,#0000 22%,#0000 48%,#050612cc 72%,#050612f2 100%);pointer-events:none}
+#game > *:not(.meFx){position:relative}
+.hud{display:flex;justify-content:space-between;align-items:center;padding:0 10px;gap:8px;z-index:5}
+.pbadge{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 14px 4px 4px;border-radius:999px;background:linear-gradient(90deg,#0a1650ee,#0a165099);border:1.5px solid #4f8bff;box-shadow:var(--glow)}
+.pbadge img{width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #7fc0ff;background:#0b1a5c;flex:none}
+.pbadge b{display:block;font:400 12.5px var(--display);letter-spacing:.5px;white-space:nowrap}
+.pbadge small{display:block;font:700 11px var(--ui);color:#9fd0ff;white-space:nowrap}
+.round{font:400 12px var(--display);letter-spacing:2px;color:#cfe6ff;text-shadow:0 0 8px #2f8bff;text-align:center}
+.round b{display:block;font-size:18px;color:#fff}
+.gear{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;background:radial-gradient(#1a3cc8,#0a1650);border:2px solid #6fb4ff;box-shadow:var(--glow);font-size:22px;color:#dbe9ff}
+.stage{flex:1;min-height:0;position:relative}
+.opps2{position:absolute;left:0;right:0;top:4px;bottom:calc(var(--tblh) * .9);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0 2px}
+.seat2{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-width:0;min-height:0}
+.seat2 .fig{position:absolute;z-index:1;inset:0 -8% calc(var(--tblh) * -.32);display:flex;align-items:flex-end;justify-content:center}
+.seat2 .fig img{max-width:100%;max-height:100%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 6px 10px #000c);transition:filter .3s;animation:breathe 3.2s ease-in-out infinite alternate}
+@keyframes breathe{from{transform:translateY(0) scaleY(1)}to{transform:translateY(1px) scaleY(1.008)}}
+.seat2.flip .fig img{animation-name:breathef}
+@keyframes breathef{from{transform:scaleX(-1) translateY(0)}to{transform:scaleX(-1) translateY(1px) scaleY(1.008)}}
+.seat2.out .fig img{filter:grayscale(1) brightness(.5);animation:none}
+.fig img.pop{animation:pop .4s cubic-bezier(.2,1.6,.4,1) both!important}
+@keyframes pop{from{transform:scale(.88) translateY(8px)}}
+.seat2.flip .fig img.pop{animation:popf .4s cubic-bezier(.2,1.6,.4,1) both!important}
+@keyframes popf{from{transform:scaleX(-1) scale(.88) translateY(8px)}to{transform:scaleX(-1)}}
+.np{position:relative;z-index:3;margin-bottom:-2px;width:94%;padding:4px 6px 5px 34px;border-radius:12px;text-align:left;background:linear-gradient(180deg,#0d1d6bee,#071040ee);border:1.5px solid #4f8bff;box-shadow:var(--glow);transition:border-color .25s,box-shadow .25s}
+.np .av{position:absolute;left:-4px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #7fc0ff;background:#0b1a5c}
+.np b{display:block;font:400 clamp(9.5px,2.9vw,12px) var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.3px}
+.np .st{display:flex;align-items:center;gap:4px;font:700 clamp(9.5px,2.7vw,11px) var(--ui);letter-spacing:.5px;color:#4dff8f;white-space:nowrap}
+.np .st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;flex:none}
+.np .st .d{display:inline-flex;gap:2px}.np .st .d i{width:4px;height:4px;border-radius:50%;background:currentColor;animation:dots .9s infinite}
+.np .st .d i:nth-child(2){animation-delay:.15s}.np .st .d i:nth-child(3){animation-delay:.3s}
+@keyframes dots{0%,60%,100%{opacity:.25}30%{opacity:1}}
+.seat2.turn .np{border-color:#7ff4ff;box-shadow:0 0 14px #19e0f0,0 0 28px #19e0f088}
+.seat2.turn .np .st{color:#7ff4ff}
+.seat2.out .np{opacity:.75}.seat2.out .np .st{color:var(--red)}
+.np .pp{display:flex;gap:2px;margin-top:3px}
+.np .pp i{flex:1;height:4px;border-radius:2px;background:#ffffff22}.np .pp i.on{background:var(--red);box-shadow:0 0 5px var(--red)}
+.np .cc{position:absolute;right:4px;top:-9px;display:flex}
+.np .cc i{width:11px;height:15px;border-radius:2px;background:var(--cB) center/100% 100%;border:1px solid #cfe6ff88;margin-left:-5px;box-shadow:0 1px 2px #000}
+.np .cc i:first-child{margin-left:0}
+.bubble{position:absolute;top:-34px;left:50%;transform:translateX(-50%);background:#fff;color:#111;font:700 12px var(--ui);padding:5px 9px;border-radius:10px;white-space:nowrap;z-index:6;animation:pop .3s cubic-bezier(.2,1.6,.4,1);box-shadow:0 3px 0 #0008;max-width:160%;overflow:hidden;text-overflow:ellipsis}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:10px;background:#fff;transform:translateX(-50%) rotate(45deg);z-index:-1}
+.bubble.cap{background:var(--red);color:#fff;font:400 14px var(--display)}.bubble.cap::after{background:var(--red)}
+.bubble.taunt{background:#1b2a78;color:#fff;border:1px solid #7fc0ff}.bubble.taunt::after{background:#1b2a78}
+/* table */
+.tbl{position:absolute;left:50%;bottom:0;width:128%;transform:translateX(-50%);aspect-ratio:1672/609;z-index:2}
+.tbl > img.tb{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 0 18px #2f6bff88)}
+.felt2{position:absolute;left:14%;right:14%;top:8%;height:58%}
+.tchip{position:absolute;left:3%;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:1px;font:700 9.5px var(--ui);letter-spacing:1.5px;color:#9fd0ff}
+.tchip img{width:clamp(30px,9vw,44px);border-radius:4px;box-shadow:0 0 10px #ffd77a;animation:tglow 1.6s ease-in-out infinite alternate}
+@keyframes tglow{to{box-shadow:0 0 18px #ffd77a,0 0 4px #fff}}
+.tchip b{font:400 clamp(10px,3vw,13px) var(--display);color:var(--gold);text-shadow:0 0 10px #ffd77a}
+.pile2{position:absolute;right:4%;top:50%;transform:translateY(-50%);width:clamp(44px,13vw,64px);aspect-ratio:.68}
+.pile2 img{position:absolute;inset:0;width:100%;height:100%;border-radius:4px;box-shadow:0 2px 6px #000a}
+.pile2 em{position:absolute;bottom:-14px;left:0;right:0;text-align:center;font:400 10px var(--display);color:#cfe6ff;font-style:normal;white-space:nowrap}
+.turnTxt{position:absolute;left:17%;right:17%;top:40%;transform:translateY(-50%);text-align:center;pointer-events:none;background:radial-gradient(closest-side,#030820dd,#03082099 60%,transparent);padding:6px 0;transition:opacity .2s}
+.turnTxt b{display:block;font:400 clamp(22px,7.5vw,38px)/1 var(--tag);color:#cfe9ff;text-shadow:0 0 6px #fff,0 0 14px #2f8bff,0 0 30px #2f6bff;animation:tt 1.4s ease-in-out infinite alternate}
+.turnTxt small{display:block;font:400 clamp(11px,3.6vw,16px)/1.1 var(--tag);color:#bfe4ff;text-shadow:0 0 10px #2f8bff;margin-top:2px}
+.turnTxt.claim b{font-size:clamp(15px,5vw,24px);color:#fff;animation:none}
+.turnTxt.claim small{color:var(--gold)}
+@keyframes tt{to{text-shadow:0 0 8px #fff,0 0 22px #4fa8ff,0 0 44px #2f6bff}}
+.reveal2{position:absolute;left:0;right:0;top:44%;transform:translateY(-50%);display:flex;gap:6px;justify-content:center;z-index:3;perspective:600px}
+/* cards */
+.card{position:relative;flex:none;width:var(--cw,58px);aspect-ratio:.676;border-radius:7px;background:center/100% 100% no-repeat;transition:transform .16s,filter .16s;filter:drop-shadow(0 4px 6px #000b);transform-style:preserve-3d}
+.card.K{background-image:var(--cK)}.card.Q{background-image:var(--cQ)}.card.A{background-image:var(--cA)}.card.J{background-image:var(--cJ)}.card.back{background-image:var(--cB)}
+.card.good{filter:drop-shadow(0 0 4px var(--ok)) drop-shadow(0 0 12px var(--ok))}.card.bad{filter:drop-shadow(0 0 4px var(--red)) drop-shadow(0 0 14px var(--red))}
+.reveal2 .card{--cw:clamp(46px,14vw,70px)}
+.fc{position:absolute;z-index:30;pointer-events:none;transform-origin:center;transition:transform .5s cubic-bezier(.3,.9,.3,1),opacity .2s}
+.fc .f,.fc .b{position:absolute;inset:0;border-radius:7px;background:center/100% 100% no-repeat;backface-visibility:hidden;-webkit-backface-visibility:hidden;filter:drop-shadow(0 6px 8px #000b)}
+.fc .b{background-image:var(--cB)}.fc .f{transform:rotateY(180deg)}
+.fc.flip{animation:flip3 .55s ease both}
+@keyframes flip3{from{transform:rotateY(0) translateY(0)}50%{transform:rotateY(90deg) translateY(-14px) scale(1.08)}to{transform:rotateY(180deg) translateY(0)}}
+/* hand */
+.hand2{position:relative;z-index:4;display:flex;justify-content:center;align-items:flex-end;height:calc(var(--hw) * 1.48 + 20px);margin-top:calc(var(--hw) * -.7);padding:0 8px;--hw:clamp(56px,17.5vw,86px)}
+.hand2 .card{--cw:var(--hw);margin-left:calc(var(--hw) * -.24);cursor:pointer;transform:rotate(var(--r)) translateY(var(--y))}
+.hand2 .card:first-child{margin-left:0}
+.hand2 .card.sel{transform:rotate(var(--r)) translateY(calc(var(--y) - 20px));filter:drop-shadow(0 0 5px #7ff4ff) drop-shadow(0 0 14px #2f8bff)}
+.hand2.dim .card{filter:drop-shadow(0 4px 6px #000b) brightness(.8)}
+.hand2 .empty{font:700 13px var(--ui);color:#9fd0ff;align-self:center}
+.hand2 .card.in{animation:cardIn .4s cubic-bezier(.2,1.2,.4,1) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(40px) rotate(var(--r))}}
+/* dock */
+.dock{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;padding:2px 10px 6px;z-index:4}
+.sbtn{width:62px;height:58px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:linear-gradient(180deg,#132a88ee,#0a1650ee);border:1.5px solid #4f8bff;box-shadow:var(--glow);font:400 9px/1.05 var(--display);letter-spacing:.3px;text-align:center;color:#dbe9ff}
+.sbtn .i{font-size:20px}
+.sbtn:active{filter:brightness(1.2)}
+.you{display:flex;align-items:center;gap:8px;min-width:0;padding:5px 12px 5px 5px;border-radius:999px;background:linear-gradient(90deg,#0a1650f2,#0a1650aa);border:2px solid #4f8bff;box-shadow:var(--glow);position:relative;transition:border-color .25s,box-shadow .25s}
+.you .ring{position:relative;width:54px;height:54px;flex:none}
+.you .ring img{position:absolute;inset:3px;width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #7fc0ff;background:#0b1a5c}
+.you .ring svg{position:absolute;inset:0;width:54px;height:54px;transform:rotate(-90deg)}
+.you .ring circle{fill:none;stroke-width:3}
+.you .ring .t{stroke:#ffffff14}.you .ring .v{stroke:#7ff4ff;stroke-dasharray:160;stroke-dashoffset:160;transition:stroke-dashoffset 1s linear,stroke .3s}
+.you.hurry .ring .v{stroke:var(--red)}
+.you b{display:block;font:400 13px var(--display)}
+.you .pp{display:flex;gap:3px;margin:3px 0 2px;padding:2px;border-radius:5px;background:#00000066;border:1px solid #4f8bff66;width:max-content}
+.you .pp i{width:12px;height:8px;border-radius:2px;background:#ffffff22}.you .pp i.on{background:var(--red);box-shadow:0 0 6px var(--red)}
+.you small{display:block;font:700 11px var(--ui);color:#9fd0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.you.turn{border-color:#7ff4ff;box-shadow:0 0 14px #19e0f0,0 0 28px #19e0f088}
+.you.out .ring img{filter:grayscale(1)}
+.you .bubble{top:-32px;left:54px;transform:none}.you .bubble::after{left:16px}
+.acts2{display:flex;gap:10px;padding:0 10px;z-index:4}
+.abtn{flex:1;height:58px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;font:400 clamp(13px,4.2vw,18px)/1 var(--display);letter-spacing:.5px;color:#fff;background:linear-gradient(180deg,#0d1d6b,#071040);border:2px solid #4fa8ff;box-shadow:0 0 12px #2f8bff,0 0 26px #2f6bff88,inset 0 0 14px #2f6bff55;transition:transform .1s,opacity .2s,box-shadow .2s}
+.abtn .i{font-size:22px}
+.abtn.cap{color:#ffe9a8;border-color:#ffc93d;background:linear-gradient(180deg,#3a2400,#1a1000);box-shadow:0 0 12px #ffb31a,0 0 28px #ffb31a88,inset 0 0 14px #ffb31a55;text-shadow:0 0 10px #ffb31a}
+.abtn:active{transform:scale(.97)}
+.abtn:disabled{opacity:.38;pointer-events:none;box-shadow:none}
+.abtn.go:not(:disabled){animation:gobtn 1.1s ease-in-out infinite alternate}
+@keyframes gobtn{to{box-shadow:0 0 18px #4fd8ff,0 0 40px #2f6bff,inset 0 0 18px #2f6bff88}}
+.abtn.cap.go:not(:disabled){animation:gobtng 1.1s ease-in-out infinite alternate}
+@keyframes gobtng{to{box-shadow:0 0 18px #ffd77a,0 0 40px #ffb31a,inset 0 0 18px #ffb31a88}}
+.meFx{position:absolute;left:-6%;bottom:118px;width:58%;height:46%;z-index:6;pointer-events:none;display:flex;align-items:flex-end;opacity:0;transform:translateY(20px);transition:opacity .25s,transform .25s}
+.meFx.on{opacity:1;transform:none}
+.meFx img{max-width:100%;max-height:100%;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 0 14px #2f6bffaa) drop-shadow(0 10px 14px #000)}
+/* stamps + overlays */
+.stamp{position:absolute;left:0;right:0;top:36%;z-index:40;text-align:center;pointer-events:none}
+.stamp div{display:inline-block;max-width:92%;font:400 clamp(30px,11vw,62px)/1 var(--display);letter-spacing:2px;padding:12px 24px;border-radius:14px;color:#fff;background:#05061ae6;border:3px solid var(--c,#ff3b5c);box-shadow:0 0 0 3px #05061a,0 0 30px var(--c,#ff3b5c),inset 0 0 20px #0008;text-shadow:0 0 18px var(--c,#ff3b5c);transform:rotate(-6deg);animation:stampIn .4s cubic-bezier(.2,1.6,.4,1) both}
+.stamp div small{display:block;font:700 clamp(12px,3.8vw,16px) var(--ui);letter-spacing:1px;color:#dbe9ff;text-shadow:none;margin-top:6px;text-transform:none}
+.stamp.gold div{--c:#ffc93d}.stamp.ok div{--c:#3ddc84}.stamp.blue div{--c:#4fa8ff}
+.stamp.out{animation:stampOut .25s ease both}
+@keyframes stampIn{0%{transform:scale(3) rotate(-14deg);opacity:0}70%{transform:scale(.96) rotate(-6deg);opacity:1}100%{transform:scale(1) rotate(-6deg)}}
+@keyframes stampOut{to{opacity:0;transform:translateY(-10px)}}
+.flash{position:absolute;inset:0;pointer-events:none;z-index:38;background:#fff;opacity:0}
+.flash.go{animation:fl .4s ease}.flash.red{background:#ff3b5c}.flash.gold{background:#ffc93d}
+@keyframes fl{0%{opacity:.75}100%{opacity:0}}
+.shake{animation:sh .4s}@keyframes sh{20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-2px)}}
+.vig{position:absolute;inset:0;pointer-events:none;z-index:37;box-shadow:inset 0 0 120px 40px #ff3b5c00;transition:box-shadow .3s}
+.vig.on{box-shadow:inset 0 0 120px 40px #ff3b5ccc}
+/* penalty cinematic */
+.pen{position:absolute;inset:0;z-index:45;background:radial-gradient(80% 60% at 30% 70%,#2a0a3a 0%,#05061a 70%);display:grid;grid-template-rows:auto 1fr auto;padding:max(14px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));animation:scrIn .3s both}
+.pen h2{margin:0;text-align:center;font:400 clamp(20px,6.5vw,30px) var(--display);letter-spacing:2px;color:#fff;text-shadow:0 0 16px var(--red)}
+.pen h2 small{display:block;font:700 12px var(--ui);letter-spacing:3px;color:var(--dim);margin-bottom:4px}
+.pen .fig{position:relative;min-height:0;display:flex;align-items:flex-end;justify-content:center}
+.pen .fig img{max-height:100%;max-width:92%;object-fit:contain;filter:drop-shadow(0 0 20px #ff3b5c66) drop-shadow(0 12px 16px #000)}
+.pen .fig img.pop{animation:pop .4s cubic-bezier(.2,1.6,.4,1) both}
+.pen .fig .tag2{position:absolute;right:4%;bottom:10%;font:400 clamp(22px,7vw,34px) var(--tag);color:#fff;text-shadow:0 0 10px var(--red),0 3px 0 #000;transform:rotate(-8deg);background:#05061acc;padding:4px 12px;border:1.5px solid var(--red);border-radius:8px}
+.pen .box{display:flex;flex-direction:column;gap:10px;align-items:center;padding:14px;border-radius:18px;background:#0a1650cc;border:1.5px solid #4f8bff66}
+.pen .box p{margin:0;font:700 14px var(--ui);color:#dbe9ff;text-align:center}
+.ch{display:flex;gap:8px}
+.ch i{position:relative;width:40px;height:52px;border-radius:9px 9px 12px 12px;background:linear-gradient(180deg,#1b2a78,#0a1650);border:2px solid #4f8bff55;overflow:hidden;transition:transform .15s,border-color .15s,box-shadow .15s}
+.ch i::after{content:"";position:absolute;left:4px;right:4px;bottom:4px;height:50%;border-radius:4px;background:linear-gradient(180deg,#5a6fa8,#2a3a70)}
+.ch i.done::after{background:linear-gradient(180deg,#3ddc84,#1a8a4c)}.ch i.done{border-color:#3ddc8466}
+.ch i.cur{transform:scale(1.18);border-color:#fff;box-shadow:0 0 14px #fff}
+.ch i.ko{border-color:var(--red);box-shadow:0 0 18px var(--red)}.ch i.ko::after{background:linear-gradient(180deg,#ff6b84,#c4183a)}
+.ch i.safe{border-color:var(--ok);box-shadow:0 0 18px var(--ok)}.ch i.safe::after{background:linear-gradient(180deg,#3ddc84,#1a8a4c)}
+.pen .res{font:400 clamp(24px,8vw,40px) var(--display);letter-spacing:2px;min-height:1.2em;text-align:center}
+.pen .res.ko{color:var(--red);text-shadow:0 0 18px var(--red)}.pen .res.safe{color:var(--ok);text-shadow:0 0 18px var(--ok)}
+/* toast */
+.toast{position:absolute;left:50%;top:calc(max(6px,env(safe-area-inset-top)) + 56px);transform:translateX(-50%);z-index:36;padding:7px 14px;border-radius:999px;background:#05061ae6;border:1px solid #4f8bff88;font:700 13px var(--ui);color:#dbe9ff;white-space:nowrap;animation:toastIn .3s cubic-bezier(.2,1.4,.4,1) both;pointer-events:none}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}}
+/* sheets */
+.gsheet{position:absolute;inset:0;z-index:46;display:flex;align-items:flex-end;justify-content:center;background:#000a;animation:fadeIn .2s both}
+@keyframes fadeIn{from{opacity:0}}
+.gsheet > div{width:100%;max-width:520px;padding:16px 16px max(18px,env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:linear-gradient(180deg,#0d1d6b,#060c33);border-top:2px solid #4fa8ff;box-shadow:0 -10px 30px #2f6bff55;display:flex;flex-direction:column;gap:10px;animation:sheetUp .3s cubic-bezier(.2,.9,.3,1) both}
+@keyframes sheetUp{from{transform:translateY(40px)}}
+.gsheet h3{margin:0;font:400 16px var(--display);letter-spacing:1px;text-align:center}
+.emotes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.emotes button{padding:12px 6px;border-radius:12px;background:#0a1650;border:1.5px solid #4f8bff;font:700 14px var(--ui)}
+.emotes button i{display:block;font-size:26px;font-style:normal;margin-bottom:2px}
+.emotes button:active{background:#2f6bff55}
+.gsheet .row{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-radius:12px;background:#0a1650;border:1.5px solid #4f8bff55;font:700 15px var(--ui);text-align:left}
+.gsheet .row .i{font-size:18px;margin-right:10px;color:#7fc0ff}
+.gsheet .row span.v{color:var(--blue2)}
+.gsheet .row span.v.off{color:#6f82a8}
+.gsheet .pbtn{height:52px;font-size:15px}
+/* end */
+#end{justify-content:flex-end;gap:12px;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+.endfig{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:center;position:relative}
+.endfig img{max-height:100%;max-width:90%;object-fit:contain;filter:drop-shadow(0 0 24px #2f6bff99) drop-shadow(0 14px 18px #000);animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+.endfig .tag2{position:absolute;left:50%;bottom:4%;transform:translateX(-50%) rotate(-6deg);font:400 clamp(26px,9vw,44px) var(--tag);color:#fff;text-shadow:0 0 12px #2f8bff,0 3px 0 #000;background:#05061acc;padding:4px 14px;border:1.5px solid #4fa8ff;border-radius:8px;white-space:nowrap}
+.endttl{text-align:center;font:400 clamp(34px,12vw,60px)/1 var(--display);letter-spacing:3px;background:linear-gradient(180deg,#fff,#bfe8ff 35%,#2f8bff 70%,#1240c8);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px #2f8bffcc) drop-shadow(0 4px 0 #06155a);animation:slam .5s cubic-bezier(.2,1.5,.4,1) both}
+.endttl.lose{background:linear-gradient(180deg,#fff,#ffd0d8 40%,#ff3b5c 75%,#8a0f25);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 0 14px #ff3b5ccc) drop-shadow(0 4px 0 #3a0a14)}
+.endsub{text-align:center;margin:0;font:700 14px var(--ui);color:var(--dim)}
+.estats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.estats div{padding:8px 4px;border-radius:12px;background:#0a1650cc;border:1px solid #4f8bff55;text-align:center}
+.estats b{display:block;font:400 20px var(--display);color:var(--blue2)}
+.estats small{font:700 10px var(--ui);letter-spacing:1px;color:var(--dim)}
+.endbtns{display:flex;gap:8px}
+.endbtns .pbtn{flex:1;height:54px;font-size:14px;letter-spacing:1px}
+.endbtns .sbtn2{height:54px}
+.conf{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.conf i{position:absolute;top:-40px;width:26px;height:38px;border-radius:3px;background:var(--cB) center/100% 100%;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
 /* Character Room: electric-blue select screen. Portrait = hero on top, card strip, stats, buttons. Landscape = cards left, hero right (like the reference). */
 .cr{position:fixed;inset:0;z-index:6;overflow:hidden;color:#fff;font-family:"Rajdhani",var(--body);display:grid;
   grid-template-rows:auto auto minmax(0,1fr) auto auto;grid-template-areas:"top" "title" "hero" "cards" "bot";
@@ -142,139 +368,27 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   .cr-bot{grid-template-columns:auto minmax(0,1fr) auto auto;grid-template-areas:"ret stats id act"}
 }
 
-.sheet{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;max-width:420px;text-align:left;font-size:14.5px;line-height:1.45;max-height:70vh;overflow:auto}
-.sheet h3{font:400 16px var(--display);margin:0 0 6px;color:var(--gold)}.sheet p{margin:6px 0}.sheet b{color:#fff}
-/* ===== Game table (build 87): portrait take on the owner's mockup. HUD, 3 opponents seated behind the neon table, felt info, your hand, your panel + side buttons, LAY / CAP. ===== */
-#game{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;padding:max(6px,env(safe-area-inset-top)) 0 max(8px,env(safe-area-inset-bottom));overflow:hidden;--neonb:#2f8bff;--glowb:0 0 10px #2f8bffcc,0 0 22px #2f6bff88}
-#game::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#05061299 0%,#0000 22%,#0000 48%,#050612cc 72%,#050612f2 100%);pointer-events:none}
-#game > *:not(.meFx){position:relative}
-/* HUD */
-.hud{display:flex;justify-content:space-between;align-items:center;padding:0 10px;gap:8px;z-index:5}
-.pbadge{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 14px 4px 4px;border-radius:999px;background:linear-gradient(90deg,#0a1650ee,#0a165099);border:1.5px solid #4f8bff;box-shadow:var(--glowb)}
-.pbadge img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #7fc0ff;background:#0b1a5c;flex:none}
-.pbadge b{display:block;font:400 13px var(--display);letter-spacing:.5px;white-space:nowrap}
-.pbadge small{display:block;font:700 11.5px var(--body);color:#9fd0ff;white-space:nowrap}
-.gear{width:46px;height:46px;border-radius:50%;flex:none;display:grid;place-items:center;background:radial-gradient(#1a3cc8,#0a1650);border:2px solid #6fb4ff;box-shadow:var(--glowb);font-size:22px}
-/* stage: opponents behind the table */
-.stage{flex:1;min-height:0;position:relative}
-.opps2{position:absolute;left:0;right:0;top:4px;bottom:calc(var(--tblh) * .9);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0 2px}
-.seat2{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-width:0;min-height:0}
-.seat2 .fig{position:absolute;z-index:1;inset:0 -8% calc(var(--tblh) * -.32);display:flex;align-items:flex-end;justify-content:center}
-.seat2 .fig img{max-width:100%;max-height:100%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 6px 10px #000c);transition:filter .3s}
-.seat2.flip .fig img{transform:scaleX(-1)}
-.seat2.out .fig img{filter:grayscale(1) brightness(.5)}
-.fig img.pop{animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
-@keyframes pop{from{transform:scale(.9) translateY(6px)}}
-.seat2.flip .fig img.pop{animation:popf .35s cubic-bezier(.2,1.6,.4,1)}
-@keyframes popf{from{transform:scaleX(-1) scale(.9) translateY(6px)}}
-.np{position:relative;z-index:3;margin-bottom:-2px;min-width:86%;max-width:100%;padding:3px 8px 4px;border-radius:10px;text-align:center;background:linear-gradient(180deg,#0d1d6bee,#071040ee);border:1.5px solid #4f8bff;box-shadow:var(--glowb)}
-.np b{display:block;font:400 clamp(10px,3vw,13px) var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.np .st{display:flex;align-items:center;justify-content:center;gap:4px;font:700 clamp(10px,2.8vw,12px) var(--body);letter-spacing:.5px;color:#4dff8f}
-.np .st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
-.seat2.turn .np{border-color:#7ff4ff;box-shadow:0 0 14px #19e0f0,0 0 28px #19e0f088}
-.seat2.turn .np .st{color:#7ff4ff}.seat2.turn .np .st::before{animation:pulse .7s infinite alternate}
-.seat2.out .np .st{color:var(--red)}
-@keyframes pulse{to{opacity:.3}}
-.np .pp{display:flex;justify-content:center;gap:2px;margin-top:2px}
-.np .pp i{width:9px;height:4px;border-radius:2px;background:#ffffff26}.np .pp i.on{background:var(--red);box-shadow:0 0 5px var(--red)}
-.np .cc{position:absolute;right:-6px;top:-10px;min-width:22px;height:22px;padding:0 4px;border-radius:7px;display:grid;place-items:center;font:400 11px var(--display);background:url() center/cover,#0a1650;border:1.5px solid #7fc0ff}
-.bubble{position:absolute;top:2px;left:50%;transform:translateX(-50%);background:#fff;color:#111;font:400 11px var(--display);padding:5px 8px;border-radius:10px;white-space:nowrap;z-index:6;animation:pop .3s cubic-bezier(.2,1.6,.4,1);box-shadow:0 4px 0 #0006;max-width:150%;overflow:hidden;text-overflow:ellipsis}
-.bubble.cap{background:var(--red);color:#fff;font-size:15px}
-/* table */
-.tbl{position:absolute;left:50%;bottom:0;width:128%;transform:translateX(-50%);aspect-ratio:1672/609;z-index:2}
-.tbl > img.tb{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 0 18px #2f6bff88)}
-.felt2{position:absolute;left:14%;right:14%;top:8%;height:58%}
-.tchip{position:absolute;left:3%;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;font:700 10px var(--body);letter-spacing:1px;color:#9fd0ff}
-.tchip img{width:clamp(30px,9vw,44px);border-radius:4px;box-shadow:0 0 10px #ffd77a;animation:tglow 1.6s ease-in-out infinite alternate}
-@keyframes tglow{to{box-shadow:0 0 18px #ffd77a,0 0 4px #fff}}
-.tchip b{font:400 clamp(10px,3vw,13px) var(--display);color:var(--gold);text-shadow:0 0 10px #ffd77a}
-.pile2{position:absolute;right:4%;top:50%;transform:translateY(-50%);width:clamp(44px,13vw,64px);aspect-ratio:.68}
-.pile2 img{position:absolute;inset:0;width:100%;height:100%;border-radius:4px;box-shadow:0 2px 6px #000a}
-.pile2 em{position:absolute;bottom:-14px;left:0;right:0;text-align:center;font:400 10px var(--display);color:#cfe6ff;font-style:normal}
-.turnTxt{position:absolute;left:18%;right:18%;top:40%;transform:translateY(-50%);text-align:center;pointer-events:none;background:radial-gradient(closest-side,#030820dd,#03082099 60%,transparent);padding:6px 0}
-.turnTxt b{display:block;font:400 clamp(22px,7.5vw,38px)/1 "Permanent Marker",var(--display);color:#cfe9ff;text-shadow:0 0 6px #fff,0 0 14px #2f8bff,0 0 30px #2f6bff;animation:tt 1.4s ease-in-out infinite alternate}
-.turnTxt small{display:block;font:400 clamp(11px,3.6vw,16px)/1.1 "Permanent Marker",var(--display);color:#bfe4ff;text-shadow:0 0 10px #2f8bff;margin-top:2px}
-.turnTxt.claim b{font-size:clamp(15px,5vw,24px);color:#fff}
-@keyframes tt{to{text-shadow:0 0 8px #fff,0 0 22px #4fa8ff,0 0 44px #2f6bff}}
-.reveal2{position:absolute;left:0;right:0;top:44%;transform:translateY(-50%);display:flex;gap:6px;justify-content:center;z-index:3}
-/* cards (owner's art) */
-.card{position:relative;flex:none;width:var(--cw,58px);aspect-ratio:.676;border-radius:7px;background:center/100% 100% no-repeat;transition:transform .16s,filter .16s;filter:drop-shadow(0 4px 6px #000b)}
-.card.K{background-image:var(--cK)}.card.Q{background-image:var(--cQ)}.card.A{background-image:var(--cA)}.card.J{background-image:var(--cJ)}.card.back{background-image:var(--cB)}
-.card.flip{animation:flip .45s ease both}
-@keyframes flip{0%{transform:rotateY(90deg) scale(.9)}100%{transform:rotateY(0)}}
-.card.good{filter:drop-shadow(0 0 4px var(--ok)) drop-shadow(0 0 12px var(--ok))}.card.bad{filter:drop-shadow(0 0 4px var(--red)) drop-shadow(0 0 14px var(--red))}
-.reveal2 .card{--cw:clamp(46px,14vw,70px)}
-/* hand */
-.hand2{position:relative;z-index:4;display:flex;justify-content:center;align-items:flex-end;height:calc(var(--hw) * 1.48 + 18px);margin-top:calc(var(--hw) * -.7);padding:0 8px;--hw:clamp(56px,17.5vw,86px)}
-.hand2 .card{--cw:var(--hw);margin-left:calc(var(--hw) * -.22);cursor:pointer}
-.hand2 .card:first-child{margin-left:0}
-.hand2 .card.sel{transform:translateY(-18px);filter:drop-shadow(0 0 5px #7ff4ff) drop-shadow(0 0 14px #2f8bff)}
-.hand2.dim .card{filter:drop-shadow(0 4px 6px #000b) brightness(.82)}
-.hand2 .empty{font:700 13px var(--body);color:#9fd0ff;align-self:center}
-/* dock: side buttons + your panel */
-.dock{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;padding:2px 10px 6px;z-index:4}
-.sbtn{width:62px;height:58px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(180deg,#132a88ee,#0a1650ee);border:1.5px solid #4f8bff;box-shadow:var(--glowb);font:400 9.5px/1.05 var(--display);letter-spacing:.3px;text-align:center}
-.sbtn i{font-style:normal;font-size:20px;line-height:1}
-.you{display:flex;align-items:center;gap:8px;min-width:0;padding:5px 12px 5px 5px;border-radius:999px;background:linear-gradient(90deg,#0a1650f2,#0a1650aa);border:2px solid #4f8bff;box-shadow:var(--glowb);position:relative}
-.you > img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #7fc0ff;background:#0b1a5c;flex:none}
-.you b{display:block;font:400 13px var(--display)}
-.you .pp{display:flex;gap:3px;margin:3px 0 2px;padding:2px;border-radius:5px;background:#00000066;border:1px solid #4f8bff66;width:max-content}
-.you .pp i{width:12px;height:8px;border-radius:2px;background:#ffffff22}.you .pp i.on{background:var(--red);box-shadow:0 0 6px var(--red)}
-.you small{display:block;font:700 11px var(--body);color:#9fd0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.you.turn{border-color:#7ff4ff;box-shadow:0 0 14px #19e0f0,0 0 28px #19e0f088}
-.you.out > img{filter:grayscale(1)}
-.you .bubble{top:-30px;left:40px;transform:none}
-.np .bubble{top:-32px}
-/* actions */
-.acts2{display:flex;gap:10px;padding:0 10px;z-index:4}
-.abtn{flex:1;height:58px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;font:400 clamp(14px,4.4vw,19px)/1 var(--display);letter-spacing:.5px;color:#fff;background:linear-gradient(180deg,#0d1d6b,#071040);border:2px solid #4fa8ff;box-shadow:0 0 12px #2f8bff,0 0 26px #2f6bff88,inset 0 0 14px #2f6bff55;transition:transform .1s,opacity .2s}
-.abtn .ic{font-size:22px}
-.abtn.cap{color:#ffe9a8;border-color:#ffc93d;background:linear-gradient(180deg,#3a2400,#1a1000);box-shadow:0 0 12px #ffb31a,0 0 28px #ffb31a88,inset 0 0 14px #ffb31a55;text-shadow:0 0 10px #ffb31a}
-.abtn:active{transform:scale(.97)}
-.abtn:disabled{opacity:.38;pointer-events:none;box-shadow:none}
-.abtn.go:not(:disabled){animation:gobtn 1.1s ease-in-out infinite alternate}
-@keyframes gobtn{to{box-shadow:0 0 18px #4fd8ff,0 0 40px #2f6bff,inset 0 0 18px #2f6bff88}}
-/* your big reaction (you have no seat on screen) */
-.meFx{position:absolute;left:-6%;bottom:118px;width:58%;height:46%;z-index:6;pointer-events:none;display:flex;align-items:flex-end;opacity:0;transform:translateY(20px);transition:opacity .25s,transform .25s}
-.meFx.on{opacity:1;transform:none}
-.meFx img{max-width:100%;max-height:100%;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 0 14px #2f6bffaa) drop-shadow(0 10px 14px #000)}
-/* sheets */
-.gsheet{position:absolute;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:#000a}
-.gsheet > div{width:100%;max-width:520px;padding:16px 16px max(18px,env(safe-area-inset-bottom));border-radius:20px 20px 0 0;background:linear-gradient(180deg,#0d1d6b,#060c33);border-top:2px solid #4fa8ff;box-shadow:0 -10px 30px #2f6bff55;display:flex;flex-direction:column;gap:10px}
-.gsheet h3{margin:0;font:400 16px var(--display);text-align:center}
-.emotes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.emotes button{padding:12px 6px;border-radius:12px;background:#0a1650;border:1.5px solid #4f8bff;font:700 14px var(--body)}
-.emotes button i{display:block;font-size:24px;font-style:normal}
-.gsheet .row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;background:#0a1650;border:1.5px solid #4f8bff55;font:700 15px var(--body)}
 
-/* overlays */
-.flash{position:absolute;inset:0;pointer-events:none;z-index:8;background:#fff;opacity:0}
-.flash.go{animation:fl .4s ease}@keyframes fl{0%{opacity:.8}100%{opacity:0}}
-.shake{animation:sh .4s}@keyframes sh{20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-2px)}}
-.banner{position:absolute;left:0;right:0;top:40%;transform:translateY(-50%);z-index:9;text-align:center;pointer-events:none}
-.banner div{display:inline-block;font:400 clamp(28px,10vw,54px)/1 var(--display);padding:10px 22px;border-radius:16px;background:#000c;border:2px solid var(--red);color:#fff;text-shadow:0 0 18px var(--red);animation:slam .45s cubic-bezier(.2,1.6,.4,1) both}
-.banner div small{display:block;font:600 14px var(--body);color:var(--dim);margin-top:6px;text-shadow:none}
-.banner.ok div{border-color:var(--ok);text-shadow:0 0 18px var(--ok)}.banner.gold div{border-color:var(--gold);text-shadow:0 0 18px var(--gold)}
-.topbtns{position:absolute;top:max(6px,env(safe-area-inset-top));right:6px;z-index:6;display:flex;gap:6px}
-.topbtns button{width:34px;height:34px;border-radius:50%;background:#000a;border:1px solid var(--line);font-size:15px}
-.conf{position:absolute;inset:0;pointer-events:none;z-index:7;overflow:hidden}
-.conf i{position:absolute;top:-40px;width:26px;height:38px;border-radius:3px;background:var(--cB) center/100% 100%;animation:fall linear forwards}
-@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
-.hasroom #menu{justify-content:flex-end;padding-bottom:max(40px,env(safe-area-inset-bottom))}.hasroom #menu .logo{display:none}
-.hasroom #menu .tag{background:#000a;padding:8px 12px;border-radius:12px}
-[hidden]{display:none!important}
 </style>
 </head><body>
 <div id="app">
   <div id="room" class="room fallback"></div><div class="shade"></div>
 
-  <section id="menu" class="screen">
-    <h1 class="logo">CAP<br><span class="or">or</span> NOT<small>DAHUB · LIE OR GET CAUGHT</small></h1>
-    <p class="tag">Lay your cards face down and say what they are. Lie if you have to. Get caught and you pay.</p>
-    <button class="btn" id="bPlay">Play vs bots</button>
-    <button class="btn alt" id="bWho">Your player: <span id="whoName">Man Man</span></button>
-    <button class="btn ghost" id="bRules">How to play</button>
-    <button class="btn ghost" id="bSound">Sound: on</button>
+  <section id="boot" class="scr"><div class="sparks" id="sparks"></div>
+    <h1 class="big" id="bigLogo"><span class="crown">♛</span><span class="a">CAP</span><span class="b">OR NOT</span></h1>
+    <div class="bar"><i id="bootBar"></i></div>
+    <div class="bootmsg" id="bootMsg">LOADING THE ROOM</div>
+    <div class="tap" id="bootTap" hidden>TAP TO START</div>
+    <div class="wm">DAHUB ARCADE</div>
+  </section>
+
+  <section id="menu" class="scr" hidden>
+    <div class="mpanel">
+      <button class="mchip" id="bWho"><img id="menuImg" alt=""><div><b id="whoName">Man Man</b><small id="menuRec"></small></div><svg class="i"><use href="#i-chev"/></svg></button>
+      <button class="pbtn gold" id="bPlay"><svg class="i"><use href="#i-cards"/></svg>PLAY</button>
+      <div class="mrow"><button class="sbtn2" id="bRules"><svg class="i"><use href="#i-book"/></svg>HOW TO PLAY</button><button class="sbtn2 ic" id="bSound" aria-label="Sound"><svg class="i"><use href="#i-sound"/></svg></button><button class="sbtn2 ic" id="bMusic" aria-label="Music"><svg class="i"><use href="#i-music"/></svg></button></div>
+    </div>
+    <div class="wm">DAHUB ARCADE · CAP OR NOT</div>
   </section>
 
   <section id="pick" class="cr" hidden aria-label="Character room">
@@ -294,23 +408,16 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
     </footer>
   </section>
 
-  <section id="rules" class="screen" hidden>
-    <div class="sheet">
-      <h3>How to play</h3>
-      <p>The deck has <b>6 Kings, 6 Queens, 6 Aces and 2 Jokers</b>. Everyone gets 5 cards.</p>
-      <p>Each round the table calls a card: <b>Kings, Queens or Aces</b>. Jokers count as anything.</p>
-      <p>On your turn, lay <b>1 to 3 cards face down</b> and they count as the table card. Real or not, that’s on you.</p>
-      <p>Think the last player lied? Hit <b>CAP!</b> The cards flip. If any card isn’t the table card or a Joker, they pay. If they told the truth, <b>you</b> pay.</p>
-      <p>Paying means taking your penalty: hot sauce, a pie, whatever your player’s got. Everyone has <b>6 chances</b> and one of them knocks you out. You never know which. The more you pay, the closer you get.</p>
-      <p>Out of cards? You have to call CAP on the last play. Last one standing wins.</p>
-    </div>
-    <button class="btn" id="bRulesDone">Got it</button>
+  <section id="rules" class="scr" hidden>
+    <div class="tut" id="tut"></div>
+    <div class="tutbtns"><button class="sbtn2" id="tutPrev"><svg class="i"><use href="#i-chevl"/></svg></button><button class="pbtn" id="tutNext">NEXT</button></div>
   </section>
 
-  <div id="game" hidden>
+  <div id="game" class="scr" hidden>
     <div class="hud">
       <div class="pbadge"><img id="hudImg" alt=""><div><b id="hudName"></b><small id="hudRec"></small></div></div>
-      <button class="gear" id="bOpts" aria-label="Game options">⚙️</button>
+      <div class="round">ROUND<b id="roundN">1</b></div>
+      <button class="gear" id="bOpts" aria-label="Game options"><svg class="i"><use href="#i-gear"/></svg></button>
     </div>
     <div class="stage" id="stage">
       <div class="opps2" id="opps"></div>
@@ -325,96 +432,201 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
     </div>
     <div class="hand2" id="hand"></div>
     <div class="dock">
-      <button class="sbtn" id="bEmote"><i>😎</i>EMOTES</button>
-      <div class="you" id="you"><img id="youImg" alt=""><div style="min-width:0"><b>YOU 👑</b><div class="pp" id="youPP"></div><small id="youSub"></small></div></div>
-      <button class="sbtn" id="bOpts2"><i>🎛️</i>GAME<br>OPTIONS</button>
+      <button class="sbtn" id="bEmote"><svg class="i"><use href="#i-chat"/></svg>EMOTES</button>
+      <div class="you" id="you"><div class="ring"><svg viewBox="0 0 54 54"><circle class="t" cx="27" cy="27" r="25.5"/><circle class="v" id="ringV" cx="27" cy="27" r="25.5"/></svg><img id="youImg" alt=""></div><div style="min-width:0"><b>YOU</b><div class="pp" id="youPP"></div><small id="youSub"></small></div></div>
+      <button class="sbtn" id="bOpts2"><svg class="i"><use href="#i-sliders"/></svg>GAME<br>OPTIONS</button>
     </div>
-    <div class="acts2"><button class="abtn" id="bLay" disabled><span class="ic">🂠</span><span id="layTxt">PICK 1–3 CARDS</span></button><button class="abtn cap" id="bCap" disabled><span class="ic">💣</span>CAP!</button></div>
+    <div class="acts2"><button class="abtn" id="bLay" disabled><svg class="i"><use href="#i-cards"/></svg><span id="layTxt">PICK 1–3 CARDS</span></button><button class="abtn cap" id="bCap" disabled><svg class="i"><use href="#i-bomb"/></svg>CAP!</button></div>
     <div class="meFx" id="meFx"><img alt=""></div>
   </div>
-  <div class="gsheet" id="emoteSheet" hidden><div><h3>Say something</h3><div class="emotes" id="emotes"></div><button class="btn ghost" data-close>Close</button></div></div>
-  <div class="gsheet" id="optSheet" hidden><div><h3>Game options</h3>
-    <button class="row" id="oSound">Sound <span id="oSoundV">On</span></button>
-    <button class="row" id="oRules">How to play <span>›</span></button>
-    <button class="row" id="oQuit">Quit to menu <span>›</span></button>
-    <button class="btn" data-close>Back to the table</button></div></div>
+  <div class="gsheet" id="emoteSheet" hidden><div><h3>SAY SOMETHING</h3><div class="emotes" id="emotes"></div><button class="sbtn2" data-close>CLOSE</button></div></div>
+  <div class="gsheet" id="optSheet" hidden><div><h3>GAME OPTIONS</h3>
+    <button class="row" id="oSound"><span><svg class="i"><use href="#i-sound"/></svg>Sound effects</span><span class="v" id="oSoundV">On</span></button>
+    <button class="row" id="oMusic"><span><svg class="i"><use href="#i-music"/></svg>Music</span><span class="v" id="oMusicV">On</span></button>
+    <button class="row" id="oRules"><span><svg class="i"><use href="#i-book"/></svg>How to play</span><span>›</span></button>
+    <button class="row" id="oQuit"><span><svg class="i"><use href="#i-home"/></svg>Quit to menu</span><span>›</span></button>
+    <button class="pbtn" data-close>BACK TO THE TABLE</button></div></div>
 
-  <section id="end" class="screen" hidden>
-    <div id="endFig" style="height:38vh;display:flex;align-items:flex-end"></div>
-    <h2 class="logo" id="endTitle" style="font-size:clamp(26px,9vw,40px)">YOU WIN</h2>
-    <p class="tag" id="endSub"></p>
-    <button class="btn" id="bAgain">Run it back</button>
-    <button class="btn ghost" id="bMenu">Menu</button>
+  <section id="end" class="scr" hidden>
+    <div class="endfig" id="endFig"></div>
+    <h2 class="endttl" id="endTitle">YOU WIN</h2>
+    <p class="endsub" id="endSub"></p>
+    <div class="estats" id="estats"></div>
+    <div class="endbtns"><button class="pbtn gold" id="bAgain"><svg class="i"><use href="#i-replay"/></svg>RUN IT BACK</button><button class="sbtn2" id="bEndPick" aria-label="Character room"><svg class="i"><use href="#i-user"/></svg></button><button class="sbtn2" id="bMenu" aria-label="Menu"><svg class="i"><use href="#i-home"/></svg></button></div>
   </section>
 
-  <div class="topbtns" id="topbtns" hidden><button id="bQuit" aria-label="Quit to menu">✕</button></div>
+  <div class="pen" id="pen" hidden></div>
   <div class="conf" id="conf"></div>
-  <div class="banner" id="banner" hidden></div>
+  <div class="vig" id="vig"></div>
+  <div class="stamp" id="stamp" hidden></div>
   <div class="flash" id="flash"></div>
 </div>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.2-4.2A8 8 0 1 1 21 12z"/><path d="M8.5 13.5c1 1.2 2.2 1.7 3.5 1.7s2.5-.5 3.5-1.7"/><circle cx="9.5" cy="10" r=".6"/><circle cx="14.5" cy="10" r=".6"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8M4 12h14M20 12h0"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/><circle cx="18" cy="12" r="2"/></symbol>
+  <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="5" width="11" height="15" rx="2" transform="rotate(-8 8.5 12.5)"/><rect x="10" y="4" width="11" height="15" rx="2" transform="rotate(8 15.5 11.5)"/></symbol>
+  <symbol id="i-bomb" viewBox="0 0 24 24"><circle cx="10" cy="14" r="7"/><path d="M14.5 9.5l3-3M17.5 6.5l1.5-1.5M19 5l1-2M19 5l2 1"/></symbol>
+  <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5z"/><path d="M4 19a2 2 0 0 1 2-2h13v4H6a2 2 0 0 1-2-2z"/><path d="M9 7h7M9 11h7"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
+  <symbol id="i-replay" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-chevl" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+</svg>
 
 <script>
-// Assets: inside DAHUB the Arcade passes signed URLs in window.__ASSETS; standalone it falls back to relative paths.
+// ===== Assets: inside DAHUB the Arcade passes signed URLs in window.__ASSETS; standalone it falls back to relative paths.
 const A = p => (window.__ASSETS && window.__ASSETS[p]) || p
 const $ = id => document.getElementById(id)
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 const rnd = n => Math.floor(Math.random() * n)
+const pick = a => a[rnd(a.length)]
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]] } return a }
 const ls = { get: k => { try { return localStorage.getItem(k) } catch { return null } }, set: (k, v) => { try { localStorage.setItem(k, v) } catch {} } }
+const buzz = p => { try { navigator.vibrate && navigator.vibrate(p) } catch {} }
 
-// Characters. "full" = has every CAP or Not pose; the rest borrow their Spades seat poses.
+// ===== Characters. "full" = has every CAP or Not pose; the rest borrow their Spades seat poses.
+// Bot personality: call = how quick to call CAP, bluff = how often they lie, tempo = thinking time.
 const CHARS = {
-  mm: { name: 'Man Man', full: true, pen: 'Hot sauce shot', penE: '🔥', cap: 'CAP! Flip ’em!', caught: 'Aight… I lied.', win: 'Pay me!' },
-  sl: { name: 'Slugga', full: true, pen: 'Pie to the face', penE: '🥧', cap: 'That’s cap!', caught: 'My bad, my bad.', win: 'Too easy.' },
-  fp: { name: 'Fresh Prince', pen: 'Bucket of ice water', penE: '🧊', cap: 'Nah, flip it!', caught: 'Whoa whoa whoa!', win: 'Bel-Air baby!' },
-  kd: { name: 'KennDogg', pen: 'Hot sauce shot', penE: '🔥', cap: 'You lyin’!', caught: 'So what.', win: 'Run it.' },
-  mb: { name: 'Mabel', pen: 'Auntie takes your plate', penE: '🍽️', cap: 'Baby, that’s a lie.', caught: 'Hush.', win: 'Mm-hmm.' },
-  tc: { name: 'T’Challa', pen: 'Lose the chain', penE: '⛓️', cap: 'I see through it.', caught: '…Fine.', win: 'Forever.' }
+  mm: { name: 'Man Man', full: true, pen: 'Hot sauce shot', penE: '🔥', cap: 'CAP! Flip ’em!', caught: 'Aight… I lied.', win: 'Pay me!', call: .5, bluff: .5, tempo: 1, taunts: ['Y’all slow.', 'Count ’em up.', 'Easy money.', 'I don’t lie. Much.'] },
+  sl: { name: 'Slugga', full: true, pen: 'Pie to the face', penE: '🥧', cap: 'That’s cap!', caught: 'My bad, my bad.', win: 'Too easy.', call: .62, bluff: .35, tempo: .8, taunts: ['Who lyin’?', 'I see you sweatin’.', 'Nah. Nah nah.', 'Say it with your chest.'] },
+  fp: { name: 'Fresh Prince', pen: 'Bucket of ice water', penE: '🧊', cap: 'Nah, flip it!', caught: 'Whoa whoa whoa!', win: 'Bel-Air baby!', call: .42, bluff: .55, tempo: .9, taunts: ['Smooth.', 'Y’all not ready.', 'Trust me. Kinda.', 'West Philly rules.'] },
+  kd: { name: 'KennDogg', pen: 'Hot sauce shot', penE: '🔥', cap: 'You lyin’!', caught: 'So what.', win: 'Run it.', call: .7, bluff: .5, tempo: .7, taunts: ['Stop playin’.', 'Flip it then.', 'You scared?', 'That’s weak.'] },
+  mb: { name: 'Mabel', pen: 'Auntie takes your plate', penE: '🍽️', cap: 'Baby, that’s a lie.', caught: 'Hush.', win: 'Mm-hmm.', call: .5, bluff: .2, tempo: 1.2, taunts: ['Mm-hmm.', 'I raised liars, baby.', 'Lord, help him.', 'Don’t make me get up.'] },
+  tc: { name: 'T’Challa', pen: 'Lose the chain', penE: '⛓️', cap: 'I see through it.', caught: '…Fine.', win: 'Forever.', call: .55, bluff: .25, tempo: 1.1, taunts: ['Noted.', 'A bold claim.', 'Patience.', 'We shall see.'] }
 }
 const FALL = { lay: 'slap', cap: 'mad', caught: 'mad', clean: 'celebrate', penalty: 'mad', out: 'mad', win: 'celebrate', select: 'idle' }
 const pose = (c, p) => A(`art/${c}/${CHARS[c].full ? p : (FALL[p] || p)}.webp`)
-const RANKS = { K: 'KINGS', Q: 'QUEENS', A: 'ACES' }, SUIT = { K: '♠', Q: '♥', A: '♣', J: '★' }
+const RANKS = { K: 'KINGS', Q: 'QUEENS', A: 'ACES' }, ONE = { K: 'KING', Q: 'QUEEN', A: 'ACE', J: 'JOKER' }
+const plural = (n, r) => n === 1 ? ONE[r] : RANKS[r]
 
-// Sound: optional click/toggle files, everything else synthesized.
-let AC = null, soundOn = ls.get('lp.sound') !== '0'; const FILES = {}
-for (const k of ['click', 'toggle']) { const u = window.__ASSETS && window.__ASSETS[`art/sfx/${k}.wav`]; if (u) FILES[k] = u }
-function audio(){ if (AC) return; try { AC = new (window.AudioContext || window.webkitAudioContext)() } catch {} try { if (navigator.audioSession) navigator.audioSession.type = 'playback' } catch {} }
-function tone(f, d, type = 'sine', v = 0.2, t0 = 0, slide){ if (!AC || !soundOn) return; const t = AC.currentTime + t0, o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + d); o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + 0.02) }
-function noise(d, v = 0.2, t0 = 0, hp = 1000){ if (!AC || !soundOn) return; const b = AC.createBuffer(1, AC.sampleRate * d, AC.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); f.type = 'highpass'; f.frequency.value = hp; g.gain.value = v; s.buffer = b; s.connect(f).connect(g).connect(AC.destination); s.start(AC.currentTime + t0) }
+// ===== Audio: synthesized SFX + a generated beat. Optional click/toggle files from art/sfx.
+let AC = null, master = null, musicBus = null, soundOn = ls.get('lp.sound') !== '0', musicOn = ls.get('lp.music') !== '0'
+const FILES = {}; for (const k of ['click', 'toggle']) { const u = window.__ASSETS && window.__ASSETS[`art/sfx/${k}.wav`]; if (u) FILES[k] = u }
+function audio(){ if (AC) return; try { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = .9; master.connect(AC.destination); musicBus = AC.createGain(); musicBus.gain.value = 0; musicBus.connect(master) } catch {} try { if (navigator.audioSession) navigator.audioSession.type = 'playback' } catch {} }
+function tone(f, d, type = 'sine', v = .2, t0 = 0, slide){ if (!AC || !soundOn) return; const t = AC.currentTime + t0, o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d); o.connect(g).connect(master); o.start(t); o.stop(t + d + .02) }
+function noise(d, v = .2, t0 = 0, hp = 1000){ if (!AC || !soundOn) return; const b = AC.createBuffer(1, AC.sampleRate * d, AC.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length); const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); f.type = 'highpass'; f.frequency.value = hp; g.gain.value = v; s.buffer = b; s.connect(f).connect(g).connect(master); s.start(AC.currentTime + t0) }
 const fileCache = {}
 function playFile(k){ if (!soundOn || !FILES[k]) return false; try { const a = fileCache[k] || (fileCache[k] = new Audio(FILES[k])); a.currentTime = 0; a.play().catch(() => {}); return true } catch { return false } }
 const SFX = {
-  click: () => playFile('click') || tone(900, 0.05, 'square', 0.06),
-  card: () => noise(0.08, 0.25, 0, 2500),
-  deal: () => { for (let i = 0; i < 5; i++) noise(0.05, 0.18, i * 0.07, 3000) },
-  cap: () => { tone(90, 0.5, 'sawtooth', 0.35, 0, 40); noise(0.4, 0.3, 0, 200); tone(660, 0.15, 'square', 0.12, 0.02) },
-  flip: () => noise(0.12, 0.2, 0, 1800),
-  good: () => { tone(523, 0.12, 'triangle', 0.2); tone(784, 0.2, 'triangle', 0.2, 0.1) },
-  bad: () => { tone(220, 0.25, 'sawtooth', 0.18); tone(165, 0.35, 'sawtooth', 0.18, 0.15) },
-  sizzle: () => { noise(0.9, 0.22, 0, 3500); tone(400, 0.6, 'sine', 0.08, 0, 1200) },
-  safe: () => { tone(392, 0.1, 'square', 0.1); tone(523, 0.18, 'square', 0.1, 0.1) },
-  out: () => { tone(330, 0.9, 'sawtooth', 0.22, 0, 60); noise(0.6, 0.25, 0.1, 150) },
-  turn: () => { tone(880, 0.08, 'sine', 0.12); tone(1320, 0.12, 'sine', 0.1, 0.08) },
-  win: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.25, 'triangle', 0.2, i * 0.12)) }
+  click: () => playFile('click') || tone(900, .05, 'square', .06),
+  toggle: () => playFile('toggle') || tone(600, .08, 'square', .06),
+  card: () => noise(.08, .25, 0, 2500),
+  deal: () => noise(.05, .18, 0, 3000),
+  cap: () => { tone(90, .5, 'sawtooth', .35, 0, 40); noise(.4, .3, 0, 200); tone(660, .15, 'square', .12, .02) },
+  flip: () => { noise(.1, .2, 0, 1800); tone(1200, .06, 'triangle', .08) },
+  good: () => { tone(523, .12, 'triangle', .2); tone(784, .2, 'triangle', .2, .1); tone(1047, .3, 'triangle', .16, .2) },
+  bad: () => { tone(220, .25, 'sawtooth', .18); tone(165, .35, 'sawtooth', .18, .15); noise(.3, .15, 0, 300) },
+  sizzle: () => { noise(.9, .22, 0, 3500); tone(400, .6, 'sine', .08, 0, 1200) },
+  tick: () => tone(1400, .04, 'square', .07),
+  tickLow: () => tone(500, .06, 'square', .08),
+  safe: () => { tone(392, .1, 'square', .1); tone(523, .18, 'square', .1, .1); tone(659, .25, 'square', .1, .2) },
+  ko: () => { tone(330, .9, 'sawtooth', .25, 0, 50); noise(.7, .3, .05, 120); tone(55, .8, 'sine', .4, .05) },
+  turn: () => { tone(880, .08, 'sine', .12); tone(1320, .12, 'sine', .1, .08) },
+  hurry: () => tone(1800, .05, 'square', .08),
+  stamp: () => { noise(.12, .3, 0, 600); tone(120, .2, 'sine', .3, 0, 60) },
+  win: () => { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .3, 'triangle', .2, i * .11)); noise(.6, .12, .5, 4000) },
+  lose: () => { [440, 415, 392, 370].forEach((f, i) => tone(f, .35, 'sawtooth', .14, i * .22)) },
+  slam: () => { tone(60, .6, 'sine', .5, 0, 30); noise(.5, .35, 0, 150) }
 }
+// Generated beat: 88 bpm, 808 kick, snare, hats, dark minor pad. Ducks under big moments.
+let musicTimer = null, beatStep = 0
+function kick(t){ const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + .25); g.gain.setValueAtTime(.9, t); g.gain.exponentialRampToValueAtTime(.001, t + .5); o.connect(g).connect(musicBus); o.start(t); o.stop(t + .55) }
+function snare(t){ const b = AC.createBuffer(1, AC.sampleRate * .2, AC.sampleRate), c = b.getChannelData(0); for (let i = 0; i < c.length; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / c.length, 2); const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); f.type = 'bandpass'; f.frequency.value = 1800; g.gain.value = .5; s.buffer = b; s.connect(f).connect(g).connect(musicBus); s.start(t); const o = AC.createOscillator(), g2 = AC.createGain(); o.frequency.value = 190; g2.gain.setValueAtTime(.4, t); g2.gain.exponentialRampToValueAtTime(.001, t + .12); o.connect(g2).connect(musicBus); o.start(t); o.stop(t + .13) }
+function hat(t, v){ const b = AC.createBuffer(1, AC.sampleRate * .05, AC.sampleRate), c = b.getChannelData(0); for (let i = 0; i < c.length; i++) c[i] = (Math.random() * 2 - 1) * (1 - i / c.length); const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); f.type = 'highpass'; f.frequency.value = 7000; g.gain.value = v; s.buffer = b; s.connect(f).connect(g).connect(musicBus); s.start(t) }
+function pad(t, notes, d){ for (const n of notes) { const o = AC.createOscillator(), g = AC.createGain(), f = AC.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.value = n; f.type = 'lowpass'; f.frequency.value = 900; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.045, t + .4); g.gain.setValueAtTime(.045, t + d - .4); g.gain.linearRampToValueAtTime(0, t + d); o.connect(f).connect(g).connect(musicBus); o.start(t); o.stop(t + d + .05) } }
+const CHORDS = [[110, 130.8, 164.8, 196], [87.3, 103.8, 130.8, 155.6], [98, 116.5, 146.8, 174.6], [82.4, 98, 123.5, 146.8]]
+function musicLoop(){
+  if (!AC || !musicOn) return
+  const bpm = 88, step = 60 / bpm / 4, now = AC.currentTime, bar = 16 * step
+  const t0 = now + .05
+  pad(t0, CHORDS[(beatStep / 16 | 0) % 4], bar)
+  for (let i = 0; i < 16; i++) { const t = t0 + i * step
+    if (i === 0 || i === 7 || i === 10) kick(t)
+    if (i === 4 || i === 12) snare(t)
+    hat(t, i % 2 ? .08 : .16); if (i === 14) { hat(t + step / 2, .1); hat(t + step * .75, .08) } }
+  beatStep += 16
+  musicTimer = setTimeout(musicLoop, bar * 1000 - 60)
+}
+function music(on){ musicOn = on; ls.set('lp.music', on ? '1' : '0'); if (!AC) return; if (on) { if (!musicTimer) musicLoop(); musicBus.gain.setTargetAtTime(.55, AC.currentTime, .3) } else { musicBus.gain.setTargetAtTime(0, AC.currentTime, .2); clearTimeout(musicTimer); musicTimer = null } }
+function duck(x){ if (AC && musicOn) musicBus.gain.setTargetAtTime(x ? .18 : .55, AC.currentTime, .15) }
+document.addEventListener('pointerdown', () => { audio(); if (AC && AC.state === 'suspended') AC.resume(); if (musicOn && !musicTimer) music(true) }, true)
 
-// ---- state
+// ===== State
 let me = ls.get('lp.char'); if (!CHARS[me]) me = 'mm'
-let P = [], tableCard = 'K', turn = 0, last = null, pileN = 0, busy = false, gameId = 0, sel = new Set(), waitHuman = null
+let P = [], tableCard = 'K', turn = 0, last = null, pileN = 0, busy = false, gameId = 0, sel = new Set(), waitHuman = null, round = 0, claimTxt = ''
+let G = { caps: 0, miss: 0, caught: 0, survived: 0, lies: 0 } // this game's numbers
+const ST = () => { try { return JSON.parse(ls.get('lp.stats') || '{}') || {} } catch { return {} } }
+function bump(c, k){ const s = ST(); s[c] = s[c] || {}; s[c][k] = (s[c][k] || 0) + 1; ls.set('lp.stats', JSON.stringify(s)) }
 
-function show(id){ for (const s of ['menu', 'rules', 'end']) $(s).hidden = s !== id; $('pick').hidden = id !== 'pick'; $('game').hidden = id !== 'game'; $('topbtns').hidden = true; if (id === 'game') sizeStage() }
-function flash(){ const f = $('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); const a = $('app'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake') }
-async function banner(text, sub = '', kind = '', ms = 1300){ const b = $('banner'); b.className = 'banner ' + kind; b.innerHTML = `<div>${text}${sub ? `<small>${sub}</small>` : ''}</div>`; b.hidden = false; await sleep(ms); b.hidden = true }
-let claimTxt = ''
-const log = t => { if (t) { claimTxt = t; felt() } }
-function cardEl(c, cls = ''){ const d = document.createElement('div'); d.className = `card ${c} ${cls}`; d.setAttribute('role', 'img'); d.setAttribute('aria-label', c === 'J' ? 'Joker' : RANKS[c].slice(0, -1)); return d }
-const isTrue = c => c === tableCard || c === 'J'
+// ===== Screens
+const SCREENS = ['boot', 'menu', 'pick', 'rules', 'game', 'end']
+let cur = 'boot', rulesFrom = 'menu'
+function show(id){
+  cur = id; for (const s of SCREENS) { const el = $(s); const on = s === id; if (on && el.hidden) { el.classList.remove('in'); void el.offsetWidth; el.classList.add('in') } el.hidden = !on }
+  $('room').classList.toggle('blur', id === 'rules' || id === 'end')
+  if (id === 'game') sizeStage(); if (id === 'menu') menuUI()
+}
+function flash(kind = ''){ const f = $('flash'); f.className = 'flash ' + kind; void f.offsetWidth; f.classList.add('go'); const a = $('app'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake') }
+async function stamp(text, sub = '', kind = '', ms = 1300){ const s = $('stamp'); s.className = 'stamp ' + kind; s.innerHTML = `<div>${text}${sub ? `<small>${sub}</small>` : ''}</div>`; s.hidden = false; SFX.stamp(); duck(true); await sleep(ms); s.classList.add('out'); await sleep(220); s.hidden = true; duck(false) }
+function toast(t, ms = 1600){ document.querySelector('.toast')?.remove(); const e = document.createElement('div'); e.className = 'toast'; e.textContent = t; $('app').appendChild(e); setTimeout(() => e.remove(), ms) }
+function sparks(n = 26){ const box = $('sparks'); box.innerHTML = ''; for (let i = 0; i < n; i++) { const e = document.createElement('i'); const a = Math.random() * Math.PI * 2, d = 80 + Math.random() * 160; e.style.setProperty('--dx', Math.cos(a) * d + 'px'); e.style.setProperty('--dy', Math.sin(a) * d + 'px'); e.style.animationDelay = Math.random() * .15 + 's'; box.appendChild(e) } }
 
-// ---- seats (opponents sit behind the table; you are the panel at the bottom)
+// ===== Boot: preload everything the first screens need, then slam the logo in.
+const PRE = ['art/room.webp', 'art/table.webp', 'art/card_back.webp', 'art/card_K.webp', 'art/card_Q.webp', 'art/card_A.webp', 'art/card_J.webp', ...Object.keys(CHARS).flatMap(c => ['portrait', 'select', 'idle'].map(p => `art/${c}/${CHARS[c].full ? p : (FALL[p] || p)}.webp`))]
+;['K', 'Q', 'A', 'J'].forEach(c => $('app').style.setProperty('--c' + c, `url("${A(`art/card_${c}.webp`)}")`)); $('app').style.setProperty('--cB', `url("${A('art/card_back.webp')}")`)
+$('tblImg').src = A('art/table.webp')
+async function boot(){
+  let done = 0, roomOk = false
+  await Promise.all(PRE.map(p => new Promise(r => { const im = new Image(); im.onload = () => { if (p === 'art/room.webp') roomOk = true; done++; $('bootBar').style.width = (done / PRE.length * 100) + '%'; r() }; im.onerror = () => { done++; $('bootBar').style.width = (done / PRE.length * 100) + '%'; r() }; im.src = A(p) })))
+  if (roomOk) { const r = $('room'); r.classList.remove('fallback'); r.style.backgroundImage = `url("${A('art/room.webp')}")` }
+  $('bootMsg').textContent = 'READY'
+  await sleep(150); const L = $('bigLogo'); L.classList.add('go'); flash(); sparks(); SFX.slam(); buzz(30)
+  await sleep(700); $('bootTap').hidden = false
+  const go = () => { document.removeEventListener('pointerdown', go, true); SFX.click(); show('menu') }
+  document.addEventListener('pointerdown', go, true)
+}
+function menuUI(){
+  const c = CHARS[me], m = ST()[me] || {}
+  $('whoName').textContent = c.name; $('menuImg').src = A(`art/${me}/portrait.webp`)
+  $('menuRec').textContent = m.games ? `${m.wins || 0} W · ${m.games - (m.wins || 0)} L · ${c.penE} ${c.pen}` : `${c.penE} ${c.pen} · No games yet`
+  $('bSound').setAttribute('aria-pressed', soundOn); $('bMusic').setAttribute('aria-pressed', musicOn)
+}
+$('bPlay').onclick = () => { SFX.click(); buzz(12); newGame() }
+$('bWho').onclick = () => { SFX.click(); pickUI(); show('pick') }
+$('bPickDone').onclick = () => { SFX.click(); show('menu') }
+$('crBack').onclick = () => { SFX.click(); show('menu') }
+$('crRules').onclick = () => { SFX.click(); rulesFrom = 'pick'; openRules() }
+$('bRules').onclick = () => { SFX.click(); rulesFrom = 'menu'; openRules() }
+$('bSound').onclick = () => { soundOn = !soundOn; ls.set('lp.sound', soundOn ? '1' : '0'); menuUI(); SFX.toggle() }
+$('bMusic').onclick = () => { music(!musicOn); menuUI(); SFX.toggle() }
+
+// ===== Tutorial
+const TUT = [
+  { k: 'THE DECK', h: '20 cards. 3 faces. 2 wild.', art: () => `<div class="card K"></div><div class="card Q"></div><div class="card A"></div><div class="card J"></div>`, p: 'The deck is <b>6 Kings, 6 Queens, 6 Aces</b> and <b>2 Jokers</b>. Everyone gets 5. Each round the table calls one face: Kings, Queens or Aces. <em>Jokers count as anything.</em>' },
+  { k: 'YOUR TURN', h: 'Lay it face down. Say it’s the table card.', art: () => `<div class="card back tilt"></div><div class="card back"></div><div class="card back tilt2"></div>`, p: 'Pick <b>1 to 3 cards</b> and lay them face down. They count as the table card, <em>whether they are or not</em>. Nobody sees them unless somebody calls it.' },
+  { k: 'CALL IT', h: 'Think they lied? Hit CAP!', art: () => `<div class="card K good"></div><div class="card J good"></div><div class="card Q bad"></div>`, p: 'Call <b>CAP!</b> on the last play and the cards flip. One card that isn’t the table card or a Joker and <em>they pay</em>. If they told the truth, <em>you pay</em> for the bad call.' },
+  { k: 'THE PENALTY', h: 'Six chances. One knocks you out.', art: () => `<div class="chamber"><i></i><i></i><i class="q"></i><i></i><i></i><i></i></div>`, p: 'Paying means your player’s penalty: hot sauce, a pie, whatever they’ve got. You get <b>6 chances</b> and one of them is the knockout. <em>Nobody knows which.</em> Out of cards? You must call CAP. Last one standing wins.' }
+]
+let tutI = 0
+function openRules(){ tutI = 0; tutUI(); show('rules') }
+function tutUI(){
+  const t = TUT[tutI]
+  $('tut').innerHTML = `<h2><small>${t.k}</small>${t.h}</h2><div class="art">${t.art()}</div><p>${t.p}</p><div class="dots">${TUT.map((_, i) => `<i class="${i === tutI ? 'on' : ''}"></i>`).join('')}</div>`
+  $('tut').classList.remove('in'); void $('tut').offsetWidth; $('tut').classList.add('in')
+  $('tutPrev').style.visibility = tutI ? 'visible' : 'hidden'; $('tutNext').textContent = tutI === TUT.length - 1 ? 'GOT IT' : 'NEXT'
+}
+$('tutPrev').onclick = () => { SFX.click(); if (tutI > 0) { tutI--; tutUI() } }
+$('tutNext').onclick = () => { SFX.click(); if (tutI < TUT.length - 1) { tutI++; tutUI() } else show(rulesFrom) }
+
+// ===== Table: seats + HUD
 const pips = n => Array.from({ length: 6 }, (_, k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('')
 function seatHTML(p, i){
   return `<div class="seat2${i === 2 ? ' flip' : ''}" id="seat${p.idx}"><div class="fig"><img alt="${CHARS[p.c].name}" src="${pose(p.c, 'idle')}"></div>
-    <div class="np"><span class="cc"></span><b>${CHARS[p.c].name}</b><span class="st">READY</span><span class="pp"></span></div></div>`
+    <div class="np"><img class="av" alt="" src="${A(`art/${p.c}/portrait.webp`)}"><span class="cc"></span><b>${CHARS[p.c].name}</b><span class="st">READY</span><span class="pp"></span></div></div>`
 }
 function sizeStage(){ const st = $('stage'); if (!st) return; st.style.setProperty('--tblh', (st.clientWidth * 1.28 * 609 / 1672) + 'px') }
 addEventListener('resize', sizeStage)
@@ -423,7 +635,7 @@ function renderSeats(){
   const you = P[0], m = ST()[you.c] || {}
   $('youImg').src = $('hudImg').src = A(`art/${you.c}/portrait.webp`)
   $('hudName').textContent = CHARS[you.c].name.toUpperCase()
-  $('hudRec').textContent = m.games ? `${m.wins || 0} W · ${m.games - (m.wins || 0)} L` : 'First game'
+  $('hudRec').textContent = m.games ? `${m.wins || 0} W · ${m.games - (m.wins || 0)} L` : 'FIRST GAME'
   sizeStage(); update()
 }
 function felt(){
@@ -437,56 +649,80 @@ function update(){
     if (p.human) { const y = $('you'); y.classList.toggle('turn', on); y.classList.toggle('out', p.out); $('youPP').innerHTML = pips(p.shots); $('youSub').textContent = p.out ? 'Out this game' : `${CHARS[p.c].penE} ${CHARS[p.c].pen} · ${p.hand.length} card${p.hand.length === 1 ? '' : 's'}`; continue }
     const s = $('seat' + p.idx); if (!s) continue
     s.classList.toggle('out', p.out); s.classList.toggle('turn', on)
-    s.querySelector('.st').textContent = p.out ? 'OUT' : on ? 'THINKING' : 'READY'
+    s.querySelector('.st').innerHTML = p.out ? 'OUT' : on ? 'THINKING <span class="d"><i></i><i></i><i></i></span>' : 'READY'
     s.querySelector('.pp').innerHTML = pips(p.shots)
-    s.querySelector('.cc').textContent = p.out ? '–' : p.hand.length
+    s.querySelector('.cc').innerHTML = p.out ? '' : '<i></i>'.repeat(p.hand.length)
   }
-  $('tc').textContent = RANKS[tableCard]; $('tcImg').src = A(`art/card_${tableCard}.webp`)
+  $('tc').textContent = RANKS[tableCard]; $('tcImg').src = A(`art/card_${tableCard}.webp`); $('roundN').textContent = round
   const n = Math.min(pileN, 6)
-  $('pile').innerHTML = n ? Array.from({ length: n }, (_, k) => `<img alt="" src="${A('art/card_back.webp')}" style="transform:translate(${(k * 7) % 12 - 6}px,${-k * 2}px) rotate(${(k * 37) % 40 - 20}deg)">`).join('') + `<em>${pileN} down</em>` : ''
+  $('pile').innerHTML = n ? Array.from({ length: n }, (_, k) => `<img alt="" src="${A('art/card_back.webp')}" style="transform:translate(${(k * 7) % 12 - 6}px,${-k * 2}px) rotate(${(k * 37) % 40 - 20}deg)">`).join('') + `<em>${pileN} DOWN</em>` : ''
   renderHand()
 }
 let fxTok = 0
 function setPose(p, name, ms){
-  if (p.human) { // you have no seat on screen: flash your pose big from the corner
-    const fx = $('meFx'), tok = ++fxTok
+  if (p.human) { const fx = $('meFx'), tok = ++fxTok
     if (name === 'idle') { fx.classList.remove('on'); return }
     fx.querySelector('img').src = pose(p.c, name); fx.classList.add('on')
-    setTimeout(() => { if (fxTok === tok) fx.classList.remove('on') }, ms || (name === 'out' || name === 'win' ? 2200 : 1500)); return
-  }
+    setTimeout(() => { if (fxTok === tok) fx.classList.remove('on') }, ms || (name === 'out' || name === 'win' ? 2200 : 1500)); return }
   const img = $('seat' + p.idx)?.querySelector('.fig img'); if (!img) return
   const tok = p.poseTok = (p.poseTok || 0) + 1
   img.src = pose(p.c, name); img.classList.remove('pop'); void img.offsetWidth; img.classList.add('pop')
-  if (ms) setTimeout(() => { if (p.poseTok === tok && !p.out) img.src = pose(p.c, 'idle') }, ms)
+  if (ms) setTimeout(() => { if (p.poseTok === tok && !p.out) { img.src = pose(p.c, 'idle'); img.classList.remove('pop') } }, ms)
 }
 function bubble(p, text, cls = ''){
   const s = p.human ? $('you') : $('seat' + p.idx)?.querySelector('.np'); if (!s) return
-  s.querySelector('.bubble')?.remove(); const b = document.createElement('div'); b.className = 'bubble ' + cls; b.textContent = text; s.appendChild(b); setTimeout(() => b.remove(), 1700)
+  s.querySelector('.bubble')?.remove(); const b = document.createElement('div'); b.className = 'bubble ' + cls; b.textContent = text; s.appendChild(b); setTimeout(() => b.remove(), 1800)
 }
+// Flying cards: from one on-screen rect to another, optional flip to a face.
+const rectOf = el => { const r = el.getBoundingClientRect(), a = $('app').getBoundingClientRect(); return { x: r.left - a.left, y: r.top - a.top, w: r.width, h: r.height } }
+function flyCard(from, to, face, ms = 450, rot = 0){
+  const e = document.createElement('div'); e.className = 'fc'; e.innerHTML = `<div class="b"></div><div class="f" style="background-image:var(--c${face || 'B'})"></div>`
+  Object.assign(e.style, { left: from.x + 'px', top: from.y + 'px', width: from.w + 'px', height: from.h + 'px', transitionDuration: ms + 'ms' })
+  $('app').appendChild(e); void e.offsetWidth
+  const sx = to.w / from.w, sy = to.h / from.h
+  e.style.transform = `translate(${to.x - from.x + (to.w - from.w) / 2}px,${to.y - from.y + (to.h - from.h) / 2}px) scale(${sx},${sy}) rotate(${rot}deg)`
+  return new Promise(r => setTimeout(() => { e.remove(); r() }, ms))
+}
+const pileRect = () => rectOf($('pile'))
+function seatRect(p){ return p.human ? rectOf($('youImg')) : rectOf($('seat' + p.idx).querySelector('.av')) }
 
-// ---- your hand
+// ===== Your hand
 function renderHand(){
   const h = $('hand'), you = P[0]; if (!you) return; h.innerHTML = ''
-  const my = waitHuman && !you.out
+  const my = waitHuman && !you.out, n = you.hand.length
   if (you.out) h.innerHTML = '<span class="empty">You’re out. Watch it play out.</span>'
-  you.hand.forEach((c, i) => { const e = cardEl(c, sel.has(i) ? 'sel' : ''); e.setAttribute('aria-pressed', sel.has(i)); e.onclick = () => { if (!waitHuman) return; SFX.card(); sel.has(i) ? sel.delete(i) : sel.size < 3 && sel.add(i); renderHand() }; h.appendChild(e) })
+  you.hand.forEach((c, i) => { const e = document.createElement('div'); e.className = `card ${c}${sel.has(i) ? ' sel' : ''}`; const k = i - (n - 1) / 2; e.style.setProperty('--r', k * 4 + 'deg'); e.style.setProperty('--y', Math.abs(k) * 4 + 'px'); e.setAttribute('role', 'button'); e.setAttribute('aria-pressed', sel.has(i)); e.setAttribute('aria-label', ONE[c])
+    e.onclick = () => { if (!waitHuman) return; SFX.card(); buzz(8); if (sel.has(i)) sel.delete(i); else if (sel.size < 3) sel.add(i); else return toast('Max 3 cards'); renderHand() }; h.appendChild(e) })
   h.classList.toggle('dim', !my)
-  $('bLay').disabled = !my || !sel.size || !you.hand.length; $('layTxt').textContent = sel.size ? `LAY ${sel.size} AS ${RANKS[tableCard]}` : 'PICK 1–3 CARDS'
+  $('bLay').disabled = !my || !sel.size || !n; $('layTxt').textContent = sel.size ? `LAY ${sel.size} AS ${plural(sel.size, tableCard)}` : n ? 'PICK 1–3 CARDS' : 'NO CARDS'
   $('bLay').classList.toggle('go', !!sel.size)
-  $('bCap').disabled = !my || !last || last.p === you
+  $('bCap').disabled = !my || !last || last.p === you; $('bCap').classList.toggle('go', my && !n && last && last.p !== you)
   felt()
 }
-$('bLay').onclick = () => { if (!waitHuman || !sel.size) return; const idx = [...sel].sort((a, b) => b - a); sel = new Set(); const r = waitHuman; waitHuman = null; r({ play: idx }) }
-$('bCap').onclick = () => { if (!waitHuman || !last) return; const r = waitHuman; waitHuman = null; r({ call: true }) }
+$('bLay').onclick = () => { if (!waitHuman || !sel.size) return; SFX.click(); buzz(10); const idx = [...sel].sort((a, b) => b - a); sel = new Set(); const r = waitHuman; waitHuman = null; r({ play: idx }) }
+$('bCap').onclick = () => { if (!waitHuman || !last) return; buzz([20, 30, 40]); const r = waitHuman; waitHuman = null; r({ call: true }) }
 
+// Turn timer for you: 30s, ring on your portrait, auto-plays the safest move when it runs out.
+let tTimer = null
+function startTimer(id){
+  const you = P[0], ring = $('ringV'), T = 30; let left = T; $('you').classList.remove('hurry'); ring.style.transition = 'none'; ring.style.strokeDashoffset = 0; void ring.offsetWidth; ring.style.transition = ''
+  clearInterval(tTimer); tTimer = setInterval(() => {
+    if (id !== gameId || !waitHuman) return stopTimer()
+    left--; ring.style.strokeDashoffset = 160 * (1 - left / T)
+    if (left <= 5 && left > 0) { $('you').classList.add('hurry'); SFX.hurry(); buzz(15) }
+    if (left <= 0) { stopTimer(); const r = waitHuman; waitHuman = null; toast('Time’s up. Auto-play.'); if (you.hand.length) { const t = you.hand.findIndex(c => c === tableCard || c === 'J'); r({ play: [t >= 0 ? t : rnd(you.hand.length)] }) } else r({ call: true }) }
+  }, 1000)
+}
+function stopTimer(){ clearInterval(tTimer); tTimer = null; $('you').classList.remove('hurry'); $('ringV').style.strokeDashoffset = 160 }
 
-// ---- game flow
+// ===== Game flow
 const alive = () => P.filter(p => !p.out)
+const isTrue = c => c === tableCard || c === 'J'
 const nextAlive = i => { for (let k = 1; k <= P.length; k++) { const j = (i + k) % P.length; if (!P[j].out) return j } return i }
 function newGame(){
-  gameId++; const others = shuffle(Object.keys(CHARS).filter(k => k !== me)).sort((a, b) => (CHARS[b].full ? 1 : 0) - (CHARS[a].full ? 1 : 0)).slice(0, 3)
+  gameId++; stopTimer(); const others = shuffle(Object.keys(CHARS).filter(k => k !== me)).sort((a, b) => (CHARS[b].full ? 1 : 0) - (CHARS[a].full ? 1 : 0)).slice(0, 3)
   P = [me, ...shuffle(others)].map((c, idx) => ({ idx, c, human: idx === 0, hand: [], shots: 0, bad: 1 + rnd(6), out: false }))
-  sel = new Set(); last = null; pileN = 0; claimTxt = ''; $('reveal').innerHTML = ''
+  sel = new Set(); last = null; pileN = 0; round = 0; claimTxt = ''; G = { caps: 0, miss: 0, caught: 0, survived: 0, lies: 0 }; $('reveal').innerHTML = ''; $('meFx').classList.remove('on')
   show('game'); renderSeats(); run(gameId, rnd(4))
 }
 async function run(id, starter){
@@ -495,102 +731,145 @@ async function run(id, starter){
     await newRound(id); if (id !== gameId) return
     while (id === gameId) {
       const p = P[turn]; busy = false; update()
-      const move = p.human ? await humanMove() : await botMove(p)
+      const move = p.human ? await humanMove(id) : await botMove(p, id)
       if (id !== gameId) return
       busy = true; update()
       if (move.call) { const res = await resolveCall(p, id); if (id !== gameId) return; if (res.over) return endGame(id); turn = res.loser.out ? nextAlive(res.loser.idx) : res.loser.idx; break }
-      await doPlay(p, move.play); turn = nextAlive(turn)
+      await doPlay(p, move.play, id); turn = nextAlive(turn)
     }
   }
 }
 async function newRound(id){
-  const deck = shuffle([...'KKKKKKQQQQQQAAAAAA', 'J', 'J'])
+  round++; const deck = shuffle([...'KKKKKKQQQQQQAAAAAA', 'J', 'J'])
   for (const p of P) p.hand = p.out ? [] : deck.splice(0, 5).sort()
-  tableCard = 'KQA'[rnd(3)]; last = null; pileN = 0; sel = new Set(); $('reveal').innerHTML = ''
-  claimTxt = 'New round'; update(); SFX.deal()
+  tableCard = 'KQA'[rnd(3)]; last = null; pileN = 0; sel = new Set(); claimTxt = ''; $('reveal').innerHTML = ''
   for (const p of alive()) setPose(p, 'idle')
-  await banner(`${RANKS[tableCard]}`, 'This round’s table card. Jokers are wild.', 'gold', 1400)
-  log(`${P[turn].human ? 'You start' : CHARS[P[turn].c].name + ' starts'}.`)
+  const you = P[0]; const keep = you.hand; you.hand = []; update(); you.hand = keep
+  // deal: cards fly from the pile to each seat, then your hand fans in
+  const from = pileRect(); const flights = []
+  for (let k = 0; k < 5; k++) for (const p of alive()) { await sleep(28); SFX.deal(); const to = p.human ? rectOf($('hand')) : seatRect(p); flights.push(flyCard({ ...from, w: from.w * .9, h: from.h * .9 }, p.human ? { x: to.x + to.w / 2 - 30 + (k - 2) * 24, y: to.y + 10, w: 60, h: 88 } : { x: to.x + 4, y: to.y, w: 26, h: 38 }, null, 380, (k - 2) * 6)) }
+  await Promise.all(flights); if (id !== gameId) return
+  update(); $('hand').querySelectorAll('.card').forEach((e, i) => { e.classList.add('in'); e.style.animationDelay = i * 40 + 'ms' })
+  await stamp(RANKS[tableCard], 'This round’s table card · Jokers are wild', 'gold', 1500)
+  toast(`${P[turn].human ? 'You start' : CHARS[P[turn].c].name + ' starts'}`)
 }
-function humanMove(){ return new Promise(r => { waitHuman = r; SFX.turn(); renderHand() }) }
-async function doPlay(p, idxs){
-  const cards = idxs.map(i => p.hand[i]); idxs.sort((a, b) => b - a).forEach(i => p.hand.splice(i, 1))
-  last = { p, cards }; pileN += cards.length; SFX.card(); setTimeout(SFX.card, 120)
-  setPose(p, 'lay', 1100); bubble(p, `${cards.length} ${cards.length === 1 ? RANKS[tableCard].slice(0, -1) : RANKS[tableCard]}${p.hand.length ? '' : ' · last cards!'}`)
-  claimTxt = `${p.human ? 'You' : CHARS[p.c].name} laid ${cards.length}|says ${cards.length === 1 ? RANKS[tableCard].slice(0, -1) : RANKS[tableCard]}${p.hand.length ? '' : ' · out of cards'}`
-  update(); await sleep(p.human ? 500 : 900)
+function humanMove(id){ return new Promise(r => { waitHuman = r; SFX.turn(); buzz(12); renderHand(); startTimer(id) }) }
+async function doPlay(p, idxs, id){
+  stopTimer()
+  const cards = idxs.map(i => p.hand[i]); const lied = cards.some(c => !isTrue(c)); if (p.human && lied) G.lies++
+  // fly the cards to the pile
+  const to = pileRect(), flights = []
+  if (p.human) { const els = [...$('hand').querySelectorAll('.card')]; idxs.forEach((i, k) => { const el = els[i]; if (el) { const r = rectOf(el); el.style.visibility = 'hidden'; flights.push(flyCard(r, to, null, 420, (k - 1) * 12)) } }) }
+  else { const r = seatRect(p); cards.forEach((_, k) => flights.push(flyCard({ x: r.x, y: r.y, w: 30, h: 44 }, to, null, 420, (k - 1) * 12))) }
+  idxs.sort((a, b) => b - a).forEach(i => p.hand.splice(i, 1))
+  last = { p, cards }; SFX.card(); setTimeout(SFX.card, 120)
+  setPose(p, 'lay', 1100); bubble(p, `${cards.length} ${plural(cards.length, tableCard)}${p.hand.length ? '' : ' · LAST CARDS'}`)
+  claimTxt = `${p.human ? 'YOU' : CHARS[p.c].name.toUpperCase()} LAID ${cards.length}|says ${plural(cards.length, tableCard)}${p.hand.length ? '' : ' · out of cards'}`
+  await Promise.all(flights); pileN += cards.length; update()
+  if (!p.human && Math.random() < .3) { await sleep(500); if (id === gameId) bubble(p, pick(CHARS[p.c].taunts), 'taunt') }
+  await sleep(p.human ? 450 : 800)
 }
 async function resolveCall(caller, id){
-  const tgt = last.p, cards = last.cards
-  SFX.cap(); flash(); setPose(caller, 'cap'); bubble(caller, caller.human ? 'CAP!' : CHARS[caller.c].cap, 'cap')
-  await banner('CAP!', `${caller.human ? 'You call' : CHARS[caller.c].name + ' calls'} ${tgt.human ? 'you' : CHARS[tgt.c].name} a liar`, '', 1100)
+  stopTimer(); const tgt = last.p, cards = last.cards
+  SFX.cap(); flash('red'); buzz([30, 40, 60]); setPose(caller, 'cap'); bubble(caller, caller.human ? 'CAP!' : CHARS[caller.c].cap, 'cap'); $('vig').classList.add('on')
+  await stamp('CAP!', `${caller.human ? 'You call' : CHARS[caller.c].name + ' calls'} ${tgt.human ? 'you' : CHARS[tgt.c].name} a liar`, '', 1150)
   if (id !== gameId) return {}
-  const R = $('reveal'); R.innerHTML = ''; $('turnTxt').hidden = true
-  for (const c of cards) { const e = cardEl(c, 'flip'); R.appendChild(e); SFX.flip(); await sleep(260) }
-  const lied = cards.some(c => !isTrue(c)); await sleep(400)
-  R.querySelectorAll('.card').forEach((e, k) => e.classList.add(isTrue(cards[k]) ? 'good' : 'bad'))
-  if (caller.human) bump(caller.c, lied ? 'caps' : 'miss'); if (tgt.human && lied) bump(tgt.c, 'caught')
+  $('turnTxt').style.opacity = 0
+  // cards rise from the pile and flip one by one
+  const R = $('reveal'); R.innerHTML = ''; const els = []
+  for (const c of cards) { const e = document.createElement('div'); e.className = 'card back'; e.style.opacity = 0; R.appendChild(e); els.push(e) }
+  const pr = pileRect()
+  for (let k = 0; k < cards.length; k++) { const e = els[k], to = rectOf(e); await flyCard(pr, to, null, 300, 0); e.style.opacity = 1; SFX.deal() }
+  await sleep(250)
+  for (let k = 0; k < cards.length; k++) { const e = els[k]; await sleep(k ? 420 : 200); if (id !== gameId) return {}
+    const f = document.createElement('div'); f.className = 'fc flip'; const r = rectOf(e); Object.assign(f.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' }); f.innerHTML = `<div class="b"></div><div class="f" style="background-image:var(--c${cards[k]})"></div>`; $('app').appendChild(f); e.style.visibility = 'hidden'; SFX.flip(); buzz(10)
+    await sleep(560); e.className = `card ${cards[k]}`; e.style.visibility = ''; f.remove(); if (!isTrue(cards[k])) { e.classList.add('bad'); SFX.tickLow(); flash('red') } else { e.classList.add('good'); SFX.tick() } }
+  const lied = cards.some(c => !isTrue(c)); await sleep(450)
+  if (caller.human) { bump(caller.c, lied ? 'caps' : 'miss'); G[lied ? 'caps' : 'miss']++ } if (tgt.human && lied) { bump(tgt.c, 'caught'); G.caught++ }
   const loser = lied ? tgt : caller
   if (lied) { SFX.bad(); setPose(tgt, 'caught'); bubble(tgt, tgt.human ? 'Caught!' : CHARS[tgt.c].caught) } else { SFX.good(); setPose(tgt, 'clean'); bubble(tgt, 'Told you.') }
-  await banner(lied ? 'CAUGHT LYING' : 'NO CAP', lied ? (tgt.human ? 'You pay' : `${CHARS[tgt.c].name} pays`) : (caller.human ? 'You pay for that call' : `${CHARS[caller.c].name} pays for that call`), lied ? '' : 'ok', 1500)
-  if (id !== gameId) return {}
-  // penalty
-  loser.shots++; const ch = CHARS[loser.c]
-  setPose(loser, 'penalty'); SFX.sizzle(); bubble(loser, ch.penE + ' ' + ch.pen)
-  update(); await sleep(1300)
-  const left = 6 - loser.shots + 1
-  if (loser.shots >= loser.bad) {
-    loser.out = true; SFX.out(); flash(); setPose(loser, 'out')
-    await banner(`${loser.human ? 'YOU’RE' : ch.name.toUpperCase()} OUT`, `${ch.penE} ${ch.pen} got ${loser.human ? 'you' : 'em'}. Chance ${loser.shots} of 6.`, '', 1800)
-  } else {
-    SFX.safe(); await banner('SURVIVED', `${loser.human ? 'You' : ch.name} made it. That was ${left === 1 ? 'the last' : `a 1 in ${left}`} chance. ${6 - loser.shots} left.`, 'ok', 1500)
-    setPose(loser, 'idle')
-  }
-  $('reveal').innerHTML = ''; $('turnTxt').hidden = false; update()
+  await stamp(lied ? 'CAUGHT LYING' : 'NO CAP', lied ? (tgt.human ? 'You pay' : `${CHARS[tgt.c].name} pays`) : (caller.human ? 'You pay for that call' : `${CHARS[caller.c].name} pays for that call`), lied ? '' : 'ok', 1500)
+  $('vig').classList.remove('on'); if (id !== gameId) return {}
+  const ko = await penalty(loser, id); if (id !== gameId) return {}
+  $('reveal').innerHTML = ''; $('turnTxt').style.opacity = ''; update()
   return { loser, over: alive().length <= 1 }
 }
+// Penalty cinematic: the loser's penalty pose, the six chances, a sweep that lands on this chance, then SAFE or KNOCKED OUT.
+async function penalty(p, id){
+  p.shots++; const ch = CHARS[p.c], ko = p.shots >= p.bad, box = $('pen')
+  box.innerHTML = `<h2><small>${p.human ? 'YOU PAY' : ch.name.toUpperCase() + ' PAYS'}</small>${ch.penE} ${ch.pen.toUpperCase()}</h2>
+    <div class="fig"><img alt="" src="${pose(p.c, 'penalty')}" class="pop"><div class="tag2">CHANCE ${p.shots} OF 6</div></div>
+    <div class="box"><p>One of these six is the knockout. Nobody knows which.</p><div class="ch">${Array.from({ length: 6 }, (_, k) => `<i class="${k < p.shots - 1 ? 'done' : ''}"></i>`).join('')}</div><div class="res" id="penRes"></div></div>`
+  box.hidden = false; duck(true); SFX.sizzle(); buzz(20); if (!p.human) setPose(p, 'penalty')
+  await sleep(900); if (id !== gameId) return ko
+  const slots = [...box.querySelectorAll('.ch i')]; const target = p.shots - 1; let i = 0, steps = 14 + target
+  for (let s = 0; s < steps; s++) { slots.forEach(x => x.classList.remove('cur')); i = s % 6; if (s === steps - 1) i = target; slots[i].classList.add('cur'); SFX.tick(); buzz(6); await sleep(55 + s * s * 1.1); if (id !== gameId) return ko }
+  await sleep(350)
+  const res = $('penRes'); slots[target].classList.remove('cur'); slots[target].classList.add(ko ? 'ko' : 'safe')
+  if (ko) { p.out = true; res.className = 'res ko'; res.textContent = 'KNOCKED OUT'; SFX.ko(); flash('red'); buzz([60, 40, 120]); box.querySelector('.fig img').src = pose(p.c, 'out'); box.querySelector('.tag2').textContent = p.human ? 'YOU’RE OUT' : 'OUT'; if (!p.human) setPose(p, 'out') }
+  else { res.className = 'res safe'; res.textContent = 'SURVIVED'; SFX.safe(); flash('gold'); if (p.human) G.survived++; box.querySelector('.tag2').textContent = `${6 - p.shots} LEFT`; if (!p.human) setPose(p, 'idle') }
+  await sleep(ko ? 1900 : 1300); box.hidden = true; duck(false)
+  if (ko) toast(p.human ? 'You’re out. The bots play it out.' : `${ch.name} is out. ${alive().length} left.`)
+  return ko
+}
 
-// ---- bots
-async function botMove(p){
-  await sleep(700 + rnd(700))
+// ===== Bots: personality-weighted. 8 true cards exist (6 of the rank + 2 Jokers), so big claims plus what a bot holds can prove a lie.
+async function botMove(p, id){
+  const ch = CHARS[p.c]; await sleep((650 + rnd(700)) * ch.tempo); if (id !== gameId) return { play: [] }
   const n = last ? last.cards.length : 0, mine = p.hand.filter(isTrue).length
   if (!p.hand.length) return { call: true }
   if (last && last.p !== p) {
-    // 8 true cards exist in the deck (6 of the rank + 2 Jokers). If the claim can't fit, it's a lie.
-    const seenTrue = mine, prevEmpty = !last.p.hand.length
-    let pc = n + seenTrue > 8 ? 1 : 0.14 + 0.13 * (n - 1) + (prevEmpty ? 0.25 : 0) + (mine === 0 ? 0.12 : 0) + (last.p.human ? 0.05 : 0)
-    if (Math.random() < Math.min(pc, 0.85)) return { call: true }
+    const prevEmpty = !last.p.hand.length, heat = last.p.shots / 6
+    let ev = n + mine > 8 ? 1 : .12 + .14 * (n - 1) + (prevEmpty ? .28 : 0) + (mine === 0 ? .1 : 0) + (last.p.human ? .04 : 0) + heat * .08
+    const pc = Math.min(.9, ev * (.55 + ch.call * .9))
+    if (Math.random() < pc) { await sleep(300 * ch.tempo); return { call: true } }
   }
   const trueIdx = p.hand.map((c, i) => isTrue(c) ? i : -1).filter(i => i >= 0), fakeIdx = p.hand.map((c, i) => isTrue(c) ? -1 : i).filter(i => i >= 0)
   let play = []
-  if (trueIdx.length && (Math.random() < 0.8 || !fakeIdx.length)) {
+  if (trueIdx.length && (Math.random() > ch.bluff * .5 || !fakeIdx.length)) {
     const k = Math.min(trueIdx.length, 1 + rnd(Math.min(3, trueIdx.length))); play = shuffle(trueIdx).slice(0, k)
-    if (fakeIdx.length && play.length < 3 && Math.random() < 0.2) play.push(fakeIdx[rnd(fakeIdx.length)]) // sneak one in
-  } else play = shuffle(fakeIdx).slice(0, Math.random() < 0.75 ? 1 : Math.min(2, fakeIdx.length))
+    if (fakeIdx.length && play.length < 3 && Math.random() < ch.bluff * .4) play.push(fakeIdx[rnd(fakeIdx.length)])
+  } else play = shuffle(fakeIdx).slice(0, Math.random() < .7 ? 1 : Math.min(2, fakeIdx.length))
   return { play }
 }
 
-// ---- end
+// ===== End
 function endGame(id){
   if (id !== gameId) return
-  const w = alive()[0], youWon = w && w.human
-  if (w) { setPose(w, 'win') }
+  stopTimer(); const w = alive()[0], youWon = w && w.human
+  if (w) setPose(w, 'win')
   bump(P[0].c, 'games'); if (youWon) bump(P[0].c, 'wins')
-  youWon ? SFX.win() : SFX.out(); confetti()
+  youWon ? SFX.win() : SFX.lose(); confetti(youWon ? 40 : 14); buzz(youWon ? [40, 60, 40, 60, 120] : 80)
   setTimeout(() => {
     if (id !== gameId) return
-    $('endFig').innerHTML = w ? `<img alt="" src="${pose(w.c, 'win')}" style="max-height:38vh;max-width:90vw;filter:drop-shadow(0 10px 16px #000)">` : ''
-    $('endTitle').textContent = youWon ? 'YOU WIN' : 'GAME OVER'
-    $('endSub').textContent = w ? (youWon ? `Last one standing. “${CHARS[w.c].win}”` : `${CHARS[w.c].name} is the last one standing. “${CHARS[w.c].win}”`) : ''
+    $('endFig').innerHTML = w ? `<img alt="" src="${pose(w.c, 'win')}"><div class="tag2">“${CHARS[w.c].win}”</div>` : ''
+    $('endTitle').textContent = youWon ? 'YOU WIN' : 'GAME OVER'; $('endTitle').classList.toggle('lose', !youWon)
+    $('endSub').textContent = youWon ? `Last one standing after ${round} round${round === 1 ? '' : 's'}.` : `${CHARS[w.c].name} is the last one standing.`
+    $('estats').innerHTML = [[G.caps, 'GOOD CAPS'], [G.caught, 'CAUGHT'], [G.survived, 'SURVIVED']].map(([v, l]) => `<div><b>${v}</b><small>${l}</small></div>`).join('')
     show('end')
-  }, 1600)
+  }, 1500)
 }
-function confetti(){ const c = $('conf'); c.innerHTML = ''; for (let i = 0; i < 26; i++) { const e = document.createElement('i'); e.style.left = rnd(100) + '%'; e.style.animationDuration = 1.8 + Math.random() * 1.6 + 's'; e.style.animationDelay = Math.random() * 0.6 + 's'; c.appendChild(e) } setTimeout(() => c.innerHTML = '', 4200) }
+function confetti(n){ const c = $('conf'); c.innerHTML = ''; for (let i = 0; i < n; i++) { const e = document.createElement('i'); e.style.left = rnd(100) + '%'; e.style.animationDuration = 1.8 + Math.random() * 1.6 + 's'; e.style.animationDelay = Math.random() * .6 + 's'; c.appendChild(e) } setTimeout(() => c.innerHTML = '', 4200) }
+$('bAgain').onclick = () => { SFX.click(); buzz(12); newGame() }
+$('bMenu').onclick = () => { SFX.click(); gameId++; show('menu') }
+$('bEndPick').onclick = () => { SFX.click(); gameId++; pickUI(); show('pick') }
 
-// ---- menus
+// ===== In-game sheets: emotes + options
+const EMOTES = [['😂', 'LMAO'], ['🧢', 'That’s cap'], ['👀', 'I see you'], ['🔥', 'Too hot'], ['🤫', 'Shhh'], ['💯', 'No cap']]
+$('emotes').innerHTML = EMOTES.map(([e, t], i) => `<button data-i="${i}"><i>${e}</i>${t}</button>`).join('')
+$('emotes').onclick = e => { const b = e.target.closest('button'); if (!b || !P[0]) return; const [em, t] = EMOTES[+b.dataset.i]; SFX.click(); $('emoteSheet').hidden = true; bubble(P[0], `${em} ${t}`)
+  const bots = alive().filter(p => !p.human); if (bots.length && Math.random() < .55) { const bt = pick(bots); setTimeout(() => bubble(bt, pick(CHARS[bt.c].taunts), 'taunt'), 900 + rnd(700)) } }
+$('bEmote').onclick = () => { SFX.click(); $('emoteSheet').hidden = false }
+const optUI = () => { $('oSoundV').textContent = soundOn ? 'On' : 'Off'; $('oSoundV').classList.toggle('off', !soundOn); $('oMusicV').textContent = musicOn ? 'On' : 'Off'; $('oMusicV').classList.toggle('off', !musicOn) }
+const openOpts = () => { SFX.click(); optUI(); $('optSheet').hidden = false }
+$('bOpts').onclick = openOpts; $('bOpts2').onclick = openOpts
+$('oSound').onclick = () => { soundOn = !soundOn; ls.set('lp.sound', soundOn ? '1' : '0'); optUI(); SFX.toggle() }
+$('oMusic').onclick = () => { music(!musicOn); optUI(); SFX.toggle() }
+$('oRules').onclick = () => { SFX.click(); $('optSheet').hidden = true; rulesFrom = 'game'; openRules() }
+$('oQuit').onclick = () => { SFX.click(); $('optSheet').hidden = true; gameId++; waitHuman = null; stopTimer(); $('pen').hidden = true; $('stamp').hidden = true; $('vig').classList.remove('on'); show('menu') }
+document.querySelectorAll('.gsheet').forEach(sh => sh.addEventListener('click', e => { if (e.target === sh || e.target.closest('[data-close]')) { SFX.click(); sh.hidden = true } }))
+
 // Real per-device stats for the Character Room (no made-up numbers).
-const ST = () => { try { return JSON.parse(ls.get('lp.stats') || '{}') || {} } catch { return {} } }
-function bump(c, k){ const s = ST(); s[c] = s[c] || {}; s[c][k] = (s[c][k] || 0) + 1; ls.set('lp.stats', JSON.stringify(s)) }
 function shards(){
   const box = $('crShards'); if (box.childElementCount) return
   const shapes = ['polygon(50% 0,100% 60%,40% 100%,0 40%)', 'polygon(0 0,100% 30%,60% 100%)', 'polygon(30% 0,100% 20%,70% 100%,0 80%)', 'polygon(50% 0,100% 100%,0 70%)']
@@ -622,41 +901,7 @@ function pickUI(){
   crSelect(me, true)
   requestAnimationFrame(() => box.querySelector('[aria-pressed=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' }))
 }
-document.addEventListener('pointerdown', () => { audio(); if (AC && AC.state === 'suspended') AC.resume() }, true)
-$('bPlay').onclick = () => { SFX.click(); newGame() }
-$('bWho').onclick = () => { SFX.click(); pickUI(); show('pick') }
-$('bPickDone').onclick = () => { SFX.click(); show('menu') }
-$('crBack').onclick = () => { SFX.click(); show('menu') }
-$('crRules').onclick = () => { SFX.click(); show('rules') }
-$('bRules').onclick = () => { SFX.click(); show('rules') }
-$('bRulesDone').onclick = () => { SFX.click(); if (rulesFromGame) { rulesFromGame = false; show('game') } else show('menu') }
-$('bSound').onclick = () => { soundOn = !soundOn; ls.set('lp.sound', soundOn ? '1' : '0'); $('bSound').textContent = 'Sound: ' + (soundOn ? 'on' : 'off'); SFX.click() }
-$('bSound').textContent = 'Sound: ' + (soundOn ? 'on' : 'off')
-$('bAgain').onclick = () => { SFX.click(); newGame() }
-$('bMenu').onclick = () => { SFX.click(); gameId++; show('menu') }
-$('bQuit').onclick = () => { SFX.click(); gameId++; waitHuman = null; show('menu') }
-// Card + table art as CSS variables (signed URLs inside DAHUB)
-;['K', 'Q', 'A', 'J'].forEach(c => $('app').style.setProperty('--c' + c, `url("${A(`art/card_${c}.webp`)}")`))
-$('app').style.setProperty('--cB', `url("${A('art/card_back.webp')}")`)
-$('tblImg').src = A('art/table.webp')
-// Emotes: a bubble over your panel; sometimes a bot fires back.
-const EMOTES = [['😂', 'LMAO'], ['🧢', 'That’s cap'], ['👀', 'I see you'], ['🔥', 'Too hot'], ['🤫', 'Shhh'], ['💯', 'No cap']]
-const BACK = ['Stop playin’', 'Watch.', 'Run it then', 'Say less', 'You scared?', 'Keep talkin’']
-$('emotes').innerHTML = EMOTES.map(([e, t], i) => `<button data-i="${i}"><i>${e}</i>${t}</button>`).join('')
-$('emotes').onclick = e => { const b = e.target.closest('button'); if (!b || !P[0]) return; const [em, t] = EMOTES[+b.dataset.i]; SFX.click(); $('emoteSheet').hidden = true; bubble(P[0], `${em} ${t}`)
-  const bots = alive().filter(p => !p.human); if (bots.length && Math.random() < 0.5) setTimeout(() => bubble(bots[rnd(bots.length)], BACK[rnd(BACK.length)]), 900 + rnd(700)) }
-$('bEmote').onclick = () => { SFX.click(); $('emoteSheet').hidden = false }
-let rulesFromGame = false
-const openOpts = () => { SFX.click(); $('oSoundV').textContent = soundOn ? 'On' : 'Off'; $('optSheet').hidden = false }
-$('bOpts').onclick = openOpts; $('bOpts2').onclick = openOpts
-$('oSound').onclick = () => { soundOn = !soundOn; ls.set('lp.sound', soundOn ? '1' : '0'); $('oSoundV').textContent = soundOn ? 'On' : 'Off'; $('bSound').textContent = 'Sound: ' + (soundOn ? 'on' : 'off'); SFX.click() }
-$('oRules').onclick = () => { SFX.click(); $('optSheet').hidden = true; rulesFromGame = true; show('rules') }
-$('oQuit').onclick = () => { SFX.click(); $('optSheet').hidden = true; gameId++; waitHuman = null; show('menu') }
-document.querySelectorAll('.gsheet').forEach(sh => sh.addEventListener('click', e => { if (e.target === sh || e.target.closest('[data-close]')) { SFX.click(); sh.hidden = true } }))
 
-$('whoName').textContent = CHARS[me].name
-// Room art: use art/room.webp when it exists, otherwise the neon fallback.
-;(() => { const u = A('art/room.webp'), im = new Image(); im.onload = () => { const r = $('room'); r.classList.remove('fallback'); $('app').classList.add('hasroom'); r.style.backgroundImage = `url("${u}")` }; im.src = u })()
-show('menu')
+boot()
 </script>
 </body></html>
