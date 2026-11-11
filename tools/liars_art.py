@@ -13,7 +13,7 @@ def holes(im, MIN=60):
     a[...,3]=np.where(big,0,al); return Image.fromarray(a.astype(np.uint8),'RGBA')
 LIARS={'mm':('Man Man',True),'sl':('Slugga',False)}
 for cid,(name,tight) in LIARS.items():
-    src=f'games/characters/{name}/Liars Party/originals'; os.makedirs(f'{OUT}/{cid}',exist_ok=True)
+    src=f'games/characters/{name}/CAP or Not/originals'; os.makedirs(f'{OUT}/{cid}',exist_ok=True)
     for f in sorted(os.listdir(src)):
         pose=f.rsplit('.',1)[0]
         if pose=='turnaround': continue
