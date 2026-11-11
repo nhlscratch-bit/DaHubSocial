@@ -267,6 +267,22 @@ svg.i{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.2;stroke
 .conf{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
 .conf i{position:absolute;top:-40px;width:26px;height:38px;border-radius:3px;background:var(--cB) center/100% 100%;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+/* online + lobby */
+#online,#lobby{justify-content:flex-end;gap:10px;padding-bottom:max(30px,env(safe-area-inset-bottom))}
+.oh{margin:0;font:400 14px var(--display);letter-spacing:3px;text-align:center;color:#9fd0ff}
+.onote{margin:0;font:600 13.5px/1.35 var(--ui);color:var(--dim);text-align:center}
+.joinrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.joinrow input{height:52px;border-radius:14px;border:1.5px solid #4f8bff66;background:#ffffff0d;color:#fff;font:400 18px var(--display);letter-spacing:4px;text-align:center;text-transform:uppercase;padding:0 12px;min-width:0;outline:none}
+.joinrow input:focus{border-color:#7ff4ff}
+.joinrow .pbtn{height:52px;padding:0 20px;font-size:15px}
+.code{text-align:center;font:400 clamp(34px,12vw,52px)/1 var(--display);letter-spacing:8px;color:#fff;text-shadow:0 0 14px #2f8bff;padding:4px 0 2px}
+.lseats{display:flex;flex-direction:column;gap:6px}
+.lseat{display:flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;border-radius:14px;background:#ffffff08;border:1px solid #4f8bff33;opacity:.6}
+.lseat.on{opacity:1;border-color:#4f8bff88}
+.lseat img,.lempty{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #7fc0ff;background:#0b1a5c;flex:none;display:grid;place-items:center;font-size:20px;color:#7fc0ff}
+.lseat b{display:block;font:400 13px var(--display)}.lseat small{display:block;font:600 11.5px var(--ui);color:var(--dim)}
+.mrow2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seat2.talk .np,.you.talk{border-color:#3ddc84!important;box-shadow:0 0 14px #3ddc84,0 0 28px #3ddc8488!important}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
 /* Character Room: electric-blue select screen. Portrait = hero on top, card strip, stats, buttons. Landscape = cards left, hero right (like the reference). */
@@ -389,12 +405,20 @@ svg.i{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.2;stroke
   <section id="menu" class="scr" hidden>
     <div class="mpanel">
       <button class="mchip" id="bWho"><img id="menuImg" alt=""><div><b id="whoName">Man Man</b><small id="menuRec"></small></div><svg class="i"><use href="#i-chev"/></svg></button>
-      <button class="pbtn gold" id="bPlay"><svg class="i"><use href="#i-cards"/></svg>PLAY</button>
+      <button class="pbtn gold" id="bPlay"><svg class="i"><use href="#i-cards"/></svg>PLAY VS BOTS</button>
+      <button class="pbtn" id="bOnline"><svg class="i"><use href="#i-globe"/></svg>PLAY ONLINE</button>
       <div class="mrow"><button class="sbtn2" id="bRules"><svg class="i"><use href="#i-book"/></svg>HOW TO PLAY</button><button class="sbtn2 ic" id="bSound" aria-label="Sound"><svg class="i"><use href="#i-sound"/></svg></button><button class="sbtn2 ic" id="bMusic" aria-label="Music"><svg class="i"><use href="#i-music"/></svg></button></div>
     </div>
     <div class="wm">DAHUB ARCADE · CAP OR NOT</div>
   </section>
 
+  <section id="online" class="scr" hidden><div class="mpanel" id="onlBox"></div><div class="wm">DAHUB ARCADE · ONLINE</div></section>
+  <section id="lobby" class="scr" hidden>
+    <div class="mpanel"><h3 class="oh">TABLE CODE</h3><div class="code" id="lobbyCode"></div><p class="onote">Send the code or an invite link. Up to 4 players.</p>
+      <div class="lseats" id="lobbySeats"></div>
+      <button class="pbtn gold" id="lobbyDeal" hidden>DEAL</button><p class="onote" id="lobbyWait" hidden>Waiting on the host to deal…</p>
+      <div class="mrow2"><button class="sbtn2" id="lobbyInvite"><svg class="i"><use href="#i-share"/></svg>INVITE</button><button class="sbtn2" id="lobbyLeave">LEAVE</button></div></div>
+  </section>
   <section id="pick" class="cr" hidden aria-label="Character room">
     <div class="cr-bg"><i class="glow"></i><i class="rain"></i><i class="rain r2"></i><div id="crShards"></div></div>
     <header class="cr-top">
@@ -477,6 +501,8 @@ svg.i{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.2;stroke
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
   <symbol id="i-replay" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></symbol>
   <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6h14v-6"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
   <symbol id="i-chevl" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
 </svg>
@@ -502,6 +528,7 @@ const CHARS = {
   mb: { name: 'Mabel', pen: 'Auntie takes your plate', penE: '🍽️', cap: 'Baby, that’s a lie.', caught: 'Hush.', win: 'Mm-hmm.', call: .5, bluff: .2, tempo: 1.2, taunts: ['Mm-hmm.', 'I raised liars, baby.', 'Lord, help him.', 'Don’t make me get up.'] },
   tc: { name: 'T’Challa', pen: 'Lose the chain', penE: '⛓️', cap: 'I see through it.', caught: '…Fine.', win: 'Forever.', call: .55, bluff: .25, tempo: 1.1, taunts: ['Noted.', 'A bold claim.', 'Patience.', 'We shall see.'] }
 }
+const nameOf = p => p.human ? 'You' : (p.label || CHARS[p.c].name)
 const FALL = { lay: 'slap', cap: 'mad', caught: 'mad', clean: 'celebrate', penalty: 'mad', out: 'mad', win: 'celebrate', select: 'idle' }
 const pose = (c, p) => A(`art/${c}/${CHARS[c].full ? p : (FALL[p] || p)}.webp`)
 const RANKS = { K: 'KINGS', Q: 'QUEENS', A: 'ACES' }, ONE = { K: 'KING', Q: 'QUEEN', A: 'ACE', J: 'JOKER' }
@@ -567,7 +594,7 @@ const ST = () => { try { return JSON.parse(ls.get('lp.stats') || '{}') || {} } c
 function bump(c, k){ const s = ST(); s[c] = s[c] || {}; s[c][k] = (s[c][k] || 0) + 1; ls.set('lp.stats', JSON.stringify(s)) }
 
 // ===== Screens
-const SCREENS = ['boot', 'menu', 'pick', 'rules', 'game', 'end']
+const SCREENS = ['boot', 'menu', 'pick', 'rules', 'game', 'end', 'online', 'lobby']
 let cur = 'boot', rulesFrom = 'menu'
 function show(id){
   cur = id; for (const s of SCREENS) { const el = $(s); const on = s === id; if (on && el.hidden) { el.classList.remove('in'); void el.offsetWidth; el.classList.add('in') } el.hidden = !on }
@@ -589,7 +616,9 @@ async function boot(){
   if (roomOk) { const r = $('room'); r.classList.remove('fallback'); r.style.backgroundImage = `url("${A('art/room.webp')}")` }
   $('bootMsg').textContent = 'READY'
   await sleep(150); const L = $('bigLogo'); L.classList.add('go'); flash(); sparks(); SFX.slam(); buzz(30)
-  await sleep(700); $('bootTap').hidden = false
+  await sleep(700); bootDone = true
+  if (BR.ok && BR.join) return onHello()
+  $('bootTap').hidden = false
   const go = () => { document.removeEventListener('pointerdown', go, true); SFX.click(); show('menu') }
   document.addEventListener('pointerdown', go, true)
 }
@@ -629,8 +658,8 @@ $('tutNext').onclick = () => { SFX.click(); if (tutI < TUT.length - 1) { tutI++;
 // ===== Table: seats + HUD
 const pips = n => Array.from({ length: 6 }, (_, k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('')
 function seatHTML(p, i){
-  return `<div class="seat2${i === 2 ? ' flip' : ''}" id="seat${p.idx}"><div class="fig"><img alt="${CHARS[p.c].name}" src="${pose(p.c, 'idle')}"></div>
-    <div class="np"><img class="av" alt="" src="${A(`art/${p.c}/portrait.webp`)}"><span class="cc"></span><b>${CHARS[p.c].name}</b><span class="st">READY</span><span class="pp"></span></div></div>`
+  return `<div class="seat2${i === 2 ? ' flip' : ''}" id="seat${p.idx}"><div class="fig"><img alt="${nameOf(p)}" src="${pose(p.c, 'idle')}"></div>
+    <div class="np"><img class="av" alt="" src="${A(`art/${p.c}/portrait.webp`)}"><span class="cc"></span><b>${nameOf(p)}</b><span class="st">READY</span><span class="pp"></span></div></div>`
 }
 function sizeStage(){ const st = $('stage'); if (!st) return; st.style.setProperty('--tblh', (st.clientWidth * 1.28 * 609 / 1672) + 'px') }
 addEventListener('resize', sizeStage)
@@ -645,7 +674,7 @@ function renderSeats(){
 function felt(){
   const t = $('status'), you = P[0]; if (!t || !you) return
   if (waitHuman && !you.out) { t.className = 'status me'; t.innerHTML = `<b>YOUR TURN</b><small>${!you.hand.length ? 'No cards · call CAP' : last && last.p !== you ? 'Lay cards or call CAP' : 'Lay 1–3 cards'}</small>` }
-  else { const [a, b] = (claimTxt || '').split('|'); t.className = 'status claim'; t.innerHTML = a ? `<b>${a}</b>${b ? `<small>${b}</small>` : ''}` : `<b>ROUND ${round}</b><small>${P[turn]?.human ? 'Your move' : (CHARS[P[turn]?.c]?.name || '') + ' is thinking'}</small>` }
+  else { const [a, b] = (claimTxt || '').split('|'); t.className = 'status claim'; t.innerHTML = a ? `<b>${a}</b>${b ? `<small>${b}</small>` : ''}` : `<b>ROUND ${round}</b><small>${P[turn]?.human ? 'Your move' : (P[turn] ? nameOf(P[turn]) : '') + ' is thinking'}</small>` }
 }
 function update(){
   for (const p of P) {
@@ -708,12 +737,13 @@ $('bCap').onclick = () => { if (!waitHuman || !last) return; buzz([20, 30, 40]);
 
 // Turn timer for you: 30s, ring on your portrait, auto-plays the safest move when it runs out.
 let tTimer = null
-function startTimer(id){
-  const you = P[0], ring = $('ringV'), T = 30; let left = T; $('you').classList.remove('hurry'); ring.style.transition = 'none'; ring.style.strokeDashoffset = 0; void ring.offsetWidth; ring.style.transition = ''
+function startTimer(id, T = 30, onEnd){
+  const you = P[0], ring = $('ringV'); let left = T; $('you').classList.remove('hurry'); ring.style.transition = 'none'; ring.style.strokeDashoffset = 0; void ring.offsetWidth; ring.style.transition = ''
   clearInterval(tTimer); tTimer = setInterval(() => {
     if (id !== gameId || !waitHuman) return stopTimer()
     left--; ring.style.strokeDashoffset = 160 * (1 - left / T)
     if (left <= 5 && left > 0) { $('you').classList.add('hurry'); SFX.hurry(); buzz(15) }
+    if (left <= 0 && onEnd) { stopTimer(); onEnd(); return }
     if (left <= 0) { stopTimer(); const r = waitHuman; waitHuman = null; toast('Time’s up. Auto-play.'); if (you.hand.length) { const t = you.hand.findIndex(c => c === tableCard || c === 'J'); r({ play: [t >= 0 ? t : rnd(you.hand.length)] }) } else r({ call: true }) }
   }, 1000)
 }
@@ -748,6 +778,10 @@ async function newRound(id){
   for (const p of P) p.hand = p.out ? [] : deck.splice(0, 5).sort()
   tableCard = 'KQA'[rnd(3)]; last = null; pileN = 0; sel = new Set(); claimTxt = ''; $('reveal').innerHTML = ''
   for (const p of alive()) setPose(p, 'idle')
+  await dealAnim(id); if (id !== gameId) return
+  toast(`${P[turn].human ? 'You start' : nameOf(P[turn]) + ' starts'}`)
+}
+async function dealAnim(id){
   const you = P[0]; const keep = you.hand; you.hand = []; update(); you.hand = keep
   // deal: cards fly from the pile to each seat, then your hand fans in
   const from = pileRect(); const flights = []
@@ -755,7 +789,6 @@ async function newRound(id){
   await Promise.all(flights); if (id !== gameId) return
   update(); $('hand').querySelectorAll('.card').forEach((e, i) => { e.classList.add('in'); e.style.animationDelay = i * 40 + 'ms' })
   await stamp(RANKS[tableCard], 'This round’s table card · Jokers are wild', 'gold', 1500)
-  toast(`${P[turn].human ? 'You start' : CHARS[P[turn].c].name + ' starts'}`)
 }
 function humanMove(id){ return new Promise(r => { waitHuman = r; SFX.turn(); buzz(12); renderHand(); startTimer(id) }) }
 async function doPlay(p, idxs, id){
@@ -768,7 +801,7 @@ async function doPlay(p, idxs, id){
   idxs.sort((a, b) => b - a).forEach(i => p.hand.splice(i, 1))
   last = { p, cards }; SFX.card(); setTimeout(SFX.card, 120)
   setPose(p, 'lay', 1100); bubble(p, `${cards.length} ${plural(cards.length, tableCard)}${p.hand.length ? '' : ' · LAST CARDS'}`)
-  claimTxt = `${p.human ? 'YOU' : CHARS[p.c].name.toUpperCase()} LAID ${cards.length}|“${plural(cards.length, tableCard)}”${p.hand.length ? '' : ' · out of cards'}`
+  claimTxt = `${p.human ? 'YOU' : nameOf(p).toUpperCase()} LAID ${cards.length}|“${plural(cards.length, tableCard)}”${p.hand.length ? '' : ' · out of cards'}`
   await Promise.all(flights); pileN += cards.length; update()
   if (!p.human && Math.random() < .3) { await sleep(500); if (id === gameId) bubble(p, pick(CHARS[p.c].taunts), 'taunt') }
   await sleep(p.human ? 450 : 800)
@@ -776,7 +809,7 @@ async function doPlay(p, idxs, id){
 async function resolveCall(caller, id){
   stopTimer(); const tgt = last.p, cards = last.cards
   SFX.cap(); flash('red'); buzz([30, 40, 60]); setPose(caller, 'cap'); bubble(caller, caller.human ? 'CAP!' : CHARS[caller.c].cap, 'cap'); $('vig').classList.add('on')
-  await stamp('CAP!', `${caller.human ? 'You call' : CHARS[caller.c].name + ' calls'} ${tgt.human ? 'you' : CHARS[tgt.c].name} a liar`, '', 1150)
+  await stamp('CAP!', `${caller.human ? 'You call' : nameOf(caller) + ' calls'} ${tgt.human ? 'you' : nameOf(tgt)} a liar`, '', 1150)
   if (id !== gameId) return {}
   // cards rise from the pile and flip one by one
   const R = $('reveal'); R.innerHTML = ''; const els = []
@@ -791,7 +824,7 @@ async function resolveCall(caller, id){
   if (caller.human) { bump(caller.c, lied ? 'caps' : 'miss'); G[lied ? 'caps' : 'miss']++ } if (tgt.human && lied) { bump(tgt.c, 'caught'); G.caught++ }
   const loser = lied ? tgt : caller
   if (lied) { SFX.bad(); setPose(tgt, 'caught'); bubble(tgt, tgt.human ? 'Caught!' : CHARS[tgt.c].caught) } else { SFX.good(); setPose(tgt, 'clean'); bubble(tgt, 'Told you.') }
-  await stamp(lied ? 'CAUGHT LYING' : 'NO CAP', lied ? (tgt.human ? 'You pay' : `${CHARS[tgt.c].name} pays`) : (caller.human ? 'You pay for that call' : `${CHARS[caller.c].name} pays for that call`), lied ? '' : 'ok', 1500)
+  await stamp(lied ? 'CAUGHT LYING' : 'NO CAP', lied ? (tgt.human ? 'You pay' : `${nameOf(tgt)} pays`) : (caller.human ? 'You pay for that call' : `${nameOf(caller)} pays for that call`), lied ? '' : 'ok', 1500)
   $('vig').classList.remove('on'); if (id !== gameId) return {}
   const ko = await penalty(loser, id); if (id !== gameId) return {}
   $('reveal').innerHTML = ''; update()
@@ -800,7 +833,7 @@ async function resolveCall(caller, id){
 // Penalty cinematic: the loser's penalty pose, the six chances, a sweep that lands on this chance, then SAFE or KNOCKED OUT.
 async function penalty(p, id){
   p.shots++; const ch = CHARS[p.c], ko = p.shots >= p.bad, box = $('pen')
-  box.innerHTML = `<h2><small>${p.human ? 'YOU PAY' : ch.name.toUpperCase() + ' PAYS'}</small>${ch.penE} ${ch.pen.toUpperCase()}</h2>
+  box.innerHTML = `<h2><small>${p.human ? 'YOU PAY' : nameOf(p).toUpperCase() + ' PAYS'}</small>${ch.penE} ${ch.pen.toUpperCase()}</h2>
     <div class="fig"><img alt="" src="${pose(p.c, 'penalty')}" class="pop"><div class="tag2">CHANCE ${p.shots} OF 6</div></div>
     <div class="box"><p>One of these six is the knockout. Nobody knows which.</p><div class="ch">${Array.from({ length: 6 }, (_, k) => `<i class="${k < p.shots - 1 ? 'done' : ''}"></i>`).join('')}</div><div class="res" id="penRes"></div></div>`
   box.hidden = false; duck(true); SFX.sizzle(); buzz(20); if (!p.human) setPose(p, 'penalty')
@@ -812,7 +845,7 @@ async function penalty(p, id){
   if (ko) { p.out = true; res.className = 'res ko'; res.textContent = 'KNOCKED OUT'; SFX.ko(); flash('red'); buzz([60, 40, 120]); box.querySelector('.fig img').src = pose(p.c, 'out'); box.querySelector('.tag2').textContent = p.human ? 'YOU’RE OUT' : 'OUT'; if (!p.human) setPose(p, 'out') }
   else { res.className = 'res safe'; res.textContent = 'SURVIVED'; SFX.safe(); flash('gold'); if (p.human) G.survived++; box.querySelector('.tag2').textContent = `${6 - p.shots} LEFT`; if (!p.human) setPose(p, 'idle') }
   await sleep(ko ? 1900 : 1300); box.hidden = true; duck(false)
-  if (ko) toast(p.human ? 'You’re out. The bots play it out.' : `${ch.name} is out. ${alive().length} left.`)
+  if (ko) toast(p.human ? 'You’re out. Watch it play out.' : `${nameOf(p)} is out. ${alive().length} left.`)
   return ko
 }
 
@@ -837,9 +870,9 @@ async function botMove(p, id){
 }
 
 // ===== End
-function endGame(id){
+function endGame(id, winner){
   if (id !== gameId) return
-  stopTimer(); const w = alive()[0], youWon = w && w.human
+  stopTimer(); const w = winner || alive()[0], youWon = w && w.human
   if (w) setPose(w, 'win')
   bump(P[0].c, 'games'); if (youWon) bump(P[0].c, 'wins')
   youWon ? SFX.win() : SFX.lose(); confetti(youWon ? 40 : 14); buzz(youWon ? [40, 60, 40, 60, 120] : 80)
@@ -847,20 +880,21 @@ function endGame(id){
     if (id !== gameId) return
     $('endFig').innerHTML = w ? `<img alt="" src="${pose(w.c, 'win')}"><div class="tag2">“${CHARS[w.c].win}”</div>` : ''
     $('endTitle').textContent = youWon ? 'YOU WIN' : 'GAME OVER'; $('endTitle').classList.toggle('lose', !youWon)
-    $('endSub').textContent = youWon ? `Last one standing after ${round} round${round === 1 ? '' : 's'}.` : `${CHARS[w.c].name} is the last one standing.`
+    $('endSub').textContent = youWon ? `Last one standing after ${round} round${round === 1 ? '' : 's'}.` : `${nameOf(w)} is the last one standing.`
+    $('bAgain').innerHTML = `<svg class="i"><use href="#i-replay"/></svg>${ONL.active ? (ONL.snap?.table.host_id === BR.me?.id ? 'RUN IT BACK' : 'WAIT FOR HOST') : 'RUN IT BACK'}`
     $('estats').innerHTML = [[G.caps, 'GOOD CAPS'], [G.caught, 'CAUGHT'], [G.survived, 'SURVIVED']].map(([v, l]) => `<div><b>${v}</b><small>${l}</small></div>`).join('')
     show('end')
   }, 1500)
 }
 function confetti(n){ const c = $('conf'); c.innerHTML = ''; for (let i = 0; i < n; i++) { const e = document.createElement('i'); e.style.left = rnd(100) + '%'; e.style.animationDuration = 1.8 + Math.random() * 1.6 + 's'; e.style.animationDelay = Math.random() * .6 + 's'; c.appendChild(e) } setTimeout(() => c.innerHTML = '', 4200) }
-$('bAgain').onclick = () => { SFX.click(); buzz(12); newGame() }
-$('bMenu').onclick = () => { SFX.click(); gameId++; show('menu') }
-$('bEndPick').onclick = () => { SFX.click(); gameId++; pickUI(); show('pick') }
+$('bAgain').onclick = async () => { SFX.click(); buzz(12); if (!ONL.active) return newGame(); if (ONL.snap?.table.host_id !== BR.me?.id) return toast('Waiting on the host to run it back.'); try { await rpc('cap_rematch', { p_table: ONL.t }) } catch (e) { toast(e.message) } }
+$('bMenu').onclick = async () => { SFX.click(); if (ONL.active) { try { await rpc('cap_leave', { p_table: ONL.t }) } catch {} ONL.reset() } gameId++; show('menu') }
+$('bEndPick').onclick = async () => { SFX.click(); if (ONL.active) { try { await rpc('cap_leave', { p_table: ONL.t }) } catch {} ONL.reset() } gameId++; pickUI(); show('pick') }
 
 // ===== In-game sheets: emotes + options
 const EMOTES = [['😂', 'LMAO'], ['🧢', 'That’s cap'], ['👀', 'I see you'], ['🔥', 'Too hot'], ['🤫', 'Shhh'], ['💯', 'No cap']]
 $('emotes').innerHTML = EMOTES.map(([e, t], i) => `<button data-i="${i}"><i>${e}</i>${t}</button>`).join('')
-$('emotes').onclick = e => { const b = e.target.closest('button'); if (!b || !P[0]) return; const [em, t] = EMOTES[+b.dataset.i]; SFX.click(); $('emoteSheet').hidden = true; bubble(P[0], `${em} ${t}`)
+$('emotes').onclick = e => { const b = e.target.closest('button'); if (!b || !P[0]) return; const [em, t] = EMOTES[+b.dataset.i]; SFX.click(); $('emoteSheet').hidden = true; if (ONL.active) return rpc('cap_emote', { p_table: ONL.t, p_i: +b.dataset.i }).catch(() => {}); bubble(P[0], `${em} ${t}`)
   const bots = alive().filter(p => !p.human); if (bots.length && Math.random() < .55) { const bt = pick(bots); setTimeout(() => bubble(bt, pick(CHARS[bt.c].taunts), 'taunt'), 900 + rnd(700)) } }
 $('bEmote').onclick = () => { SFX.click(); $('emoteSheet').hidden = false }
 const optUI = () => { $('oSoundV').textContent = soundOn ? 'On' : 'Off'; $('oSoundV').classList.toggle('off', !soundOn); $('oMusicV').textContent = musicOn ? 'On' : 'Off'; $('oMusicV').classList.toggle('off', !musicOn) }
@@ -869,7 +903,7 @@ $('bOpts').onclick = openOpts; $('bOpts2').onclick = openOpts
 $('oSound').onclick = () => { soundOn = !soundOn; ls.set('lp.sound', soundOn ? '1' : '0'); optUI(); SFX.toggle() }
 $('oMusic').onclick = () => { music(!musicOn); optUI(); SFX.toggle() }
 $('oRules').onclick = () => { SFX.click(); $('optSheet').hidden = true; rulesFrom = 'game'; openRules() }
-$('oQuit').onclick = () => { SFX.click(); $('optSheet').hidden = true; gameId++; waitHuman = null; stopTimer(); $('pen').hidden = true; $('stamp').hidden = true; $('vig').classList.remove('on'); show('menu') }
+$('oQuit').onclick = async () => { SFX.click(); $('optSheet').hidden = true; if (ONL.active) { try { await rpc('cap_leave', { p_table: ONL.t }) } catch {} ONL.reset() } gameId++; waitHuman = null; stopTimer(); $('pen').hidden = true; $('stamp').hidden = true; $('vig').classList.remove('on'); show('menu') }
 document.querySelectorAll('.gsheet').forEach(sh => sh.addEventListener('click', e => { if (e.target === sh || e.target.closest('[data-close]')) { SFX.click(); sh.hidden = true } }))
 
 // Real per-device stats for the Character Room (no made-up numbers).
@@ -904,6 +938,164 @@ function pickUI(){
   crSelect(me, true)
   requestAnimationFrame(() => box.querySelector('[aria-pressed=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' }))
 }
+
+// ===== ONLINE: real players. The server (Supabase) holds the deck, every hand and the knockout chamber; this file animates its events.
+// Bridge to the DAHUB app (the game runs in a sandboxed frame with no login, so the app relays server calls + live events).
+const BR = { ok: false, me: null, join: null, n: 0, wait: new Map(), live: false }
+const bpost = m => { try { parent.postMessage({ dh: 1, ...m }, '*') } catch {} }
+function rpc(fn, args = {}){
+  return new Promise((res, rej) => {
+    if (!BR.ok) return rej(new Error('Online play works inside the DAHUB app (More → Arcade).'))
+    const id = ++BR.n; BR.wait.set(id, { res, rej }); bpost({ type: 'rpc', id, fn, args })
+    setTimeout(() => { if (BR.wait.has(id)) { BR.wait.delete(id); rej(new Error('The server took too long. Check your connection and try again.')) } }, 15000)
+  })
+}
+addEventListener('message', e => {
+  if (e.source !== parent || parent === window) return
+  const m = e.data; if (!m || m.dh !== 1) return
+  if (m.type === 'hello') { const first = !BR.ok; BR.ok = true; BR.me = m.me; BR.join = m.join; if (first && bootDone) onHello() }
+  else if (m.type === 'res') { const w = BR.wait.get(m.id); if (w) { BR.wait.delete(m.id); m.error ? w.rej(new Error(m.error)) : w.res(m.data) } }
+  else if (m.type === 'evt') ONL.onRow(m.row)
+  else if (m.type === 'seats') ONL.onSeats()
+  else if (m.type === 'live') BR.live = m.status === 'SUBSCRIBED'
+  else if (m.type === 'shared') ONL.onShared(m)
+  else if (m.type === 'voice') ONL.onVoice(m.state)
+})
+if (parent !== window) bpost({ type: 'hello' })
+let bootDone = false
+function onHello(){ if (BR.join) { const c = BR.join; BR.join = null; onlineJoin(c) } }
+
+const ONL = { active: false, t: null, snap: null, me: 0, seq: 0, q: [], busy: false, timer: null, lobby: false, gid: 0, skew: 0, speaking: [] }
+const L = seat => (seat - ONL.me + 4) % 4            // server seat → local index (you are always 0)
+const firstName = s => (s.name || s.username || 'Player').split(/\s+/)[0].slice(0, 14)
+
+// ---- online menu + lobby
+function onlineMenu(){
+  show('online')
+  const box = $('onlBox')
+  if (!BR.ok) { box.innerHTML = `<p class="onote">Online tables work inside the DAHUB app. Open DAHUB → More → Arcade → CAP or Not.</p><button class="sbtn2" id="onlBack">BACK</button>`; $('onlBack').onclick = () => { SFX.click(); show('menu') }; return }
+  box.innerHTML = `<div class="mchip"><img src="${A(`art/${me}/portrait.webp`)}" alt=""><div><b>${CHARS[me].name}</b><small>${CHARS[me].penE} ${CHARS[me].pen}</small></div></div>
+    <button class="pbtn gold" id="onlHost"><svg class="i"><use href="#i-cards"/></svg>START A TABLE</button>
+    <div class="joinrow"><input id="onlCode" maxlength="8" placeholder="TABLE CODE" autocomplete="off" autocapitalize="characters" aria-label="Table code"><button class="pbtn" id="onlJoin">JOIN</button></div>
+    <div id="onlRejoin"></div><p class="onote" id="onlMsg">Empty seats get bots, so you never wait on a 4th.</p>
+    <button class="sbtn2" id="onlBack">BACK</button>`
+  $('onlBack').onclick = () => { SFX.click(); show('menu') }
+  $('onlHost').onclick = async () => { SFX.click(); const b = $('onlHost'); b.disabled = true; b.textContent = 'SETTING UP…'; try { const r = await rpc('cap_create', { p_char: me }); await ONL.open(r.table_id) } catch (e) { $('onlMsg').textContent = e.message; b.disabled = false; b.innerHTML = '<svg class="i"><use href="#i-cards"/></svg>START A TABLE' } }
+  const doJoin = () => { const c = $('onlCode').value.trim(); if (c) onlineJoin(c) }
+  $('onlJoin').onclick = doJoin; $('onlCode').onkeydown = e => { if (e.key === 'Enter') doJoin() }
+  rpc('cap_my_tables').then(list => { const r = list && list[0]; if (!r || !$('onlRejoin')) return; $('onlRejoin').innerHTML = `<button class="sbtn2" id="onlRj">REJOIN TABLE ${r.code}${r.status === 'playing' ? ' · GAME ON' : ''}</button>`; $('onlRj').onclick = () => { SFX.click(); ONL.open(r.table_id) } }).catch(() => {})
+}
+async function onlineJoin(code){
+  show('online'); $('onlBox').innerHTML = `<h3 class="oh">JOINING ${String(code).toUpperCase()}</h3><p class="onote">Pulling up a chair…</p>`
+  try { const r = await rpc('cap_join', { p_code: code, p_char: me }); await ONL.open(r.table_id) }
+  catch (e) { $('onlBox').innerHTML = `<h3 class="oh">COULDN’T JOIN</h3><p class="onote">${e.message}</p><button class="pbtn" id="onlBack">BACK</button>`; $('onlBack').onclick = onlineMenu }
+}
+ONL.open = async tid => {
+  gameId++; stopTimer(); ONL.gid = gameId; ONL.t = tid; ONL.active = true; ONL.q = []; ONL.busy = false; ONL.lobby = false
+  bpost({ type: 'sub', table: tid }); bpost({ type: 'voice', table: tid, on: true })
+  try { await ONL.refresh(true) } catch (e) { toast(e.message); return ONL.reset() }
+  clearInterval(ONL.timer); ONL.timer = setInterval(ONL.heartbeat, 3000)
+}
+ONL.refresh = async full => {
+  const s = await rpc('cap_state', { p_table: ONL.t }); ONL.snap = s; ONL.me = s.me; ONL.skew = new Date(s.state.now).getTime() - Date.now()
+  if (s.table.status === 'closed') return ONL.closed()
+  if (s.table.status === 'lobby') { ONL.seq = s.state.seq; return ONL.lobbyUI() }
+  ONL.buildP(s)
+  if (full) { ONL.seq = s.state.seq; ONL.lobby = false; show('game'); renderSeats(); ONL.apply(s); if (s.table.status === 'done') ONL.finish(s.state.winner) }
+}
+ONL.buildP = s => {
+  P = s.seats.map(x => ({ idx: L(x.seat), seat: x.seat, c: x.character || 'mm', human: x.seat === s.me, bot: x.bot, label: x.seat === s.me ? null : (x.bot ? null : firstName(x)), uid: x.user_id, hand: [], shots: x.shots, out: x.out, bad: 99 })).sort((a, b) => a.idx - b.idx)
+}
+// authoritative snapshot → local P (hands as counts for others, my real cards for me)
+ONL.apply = s => {
+  ONL.snap = s; const st = s.state
+  for (const x of s.seats) { const p = P[L(x.seat)]; p.shots = x.shots; p.out = x.out; p.c = x.character || p.c; p.bot = x.bot; p.label = x.seat === s.me ? null : (x.bot ? null : firstName(x)); p.hand = x.seat === s.me ? [...(s.hand || [])] : Array(st.counts[x.seat] || 0).fill('X') }
+  tableCard = st.table_card || 'K'; round = st.round; pileN = st.pile; turn = L(st.turn)
+  last = st.last ? { p: P[L(st.last.seat)], cards: Array(st.last.n).fill('X') } : null
+  busy = false; sel = new Set()
+  const mine = s.table.status === 'playing' && st.turn === s.me && !P[0].out
+  if (mine) { waitHuman = ONL.act; const left = Math.max(1, Math.round((new Date(st.deadline).getTime() - (Date.now() + ONL.skew)) / 1000)); startTimer(gameId, Math.min(30, left), () => ONL.tick()); SFX.turn(); buzz(12) } else { waitHuman = null; stopTimer() }
+  update()
+}
+ONL.act = async mv => {
+  if (!ONL.active) return
+  waitHuman = null; stopTimer(); busy = true; ONL.pendingIdx = mv.play || null; renderHand()
+  try { if (mv.call) await rpc('cap_call', { p_table: ONL.t }); else await rpc('cap_lay', { p_table: ONL.t, p_idx: mv.play }) }
+  catch (e) { toast(e.message); busy = false; if (ONL.snap) ONL.apply(ONL.snap) }
+}
+ONL.tick = () => { if (ONL.active) rpc('cap_tick', { p_table: ONL.t }).catch(() => {}) }
+ONL.lobbyUI = () => {
+  const s = ONL.snap, host = s.table.host_id === BR.me?.id; ONL.lobby = true; show('lobby')
+  $('lobbyCode').textContent = s.table.code
+  $('lobbySeats').innerHTML = s.seats.map(x => `<div class="lseat${x.user_id ? ' on' : ''}">${x.user_id ? `<img src="${A(`art/${x.character || 'mm'}/portrait.webp`)}" alt="">` : '<span class="lempty"><svg class="i"><use href="#i-user"/></svg></span>'}<div><b>${x.user_id ? (x.seat === s.me ? 'YOU' : firstName(x)) : 'Open seat'}</b><small>${x.user_id ? (x.character ? CHARS[x.character].name : 'Picking…') + (x.user_id === s.table.host_id ? ' · HOST' : '') : 'A bot sits here if nobody joins'}</small></div></div>`).join('')
+  const n = s.seats.filter(x => x.user_id).length
+  $('lobbyDeal').hidden = !host; $('lobbyWait').hidden = host; $('lobbyDeal').disabled = false; $('lobbyDeal').innerHTML = `<svg class="i"><use href="#i-cards"/></svg>DEAL${n < 4 ? ` · ${4 - n} BOT${4 - n === 1 ? '' : 'S'} FILL IN` : ''}`
+}
+$('lobbyInvite').onclick = () => { SFX.click(); bpost({ type: 'share', code: ONL.snap?.table.code }) }
+$('lobbyLeave').onclick = async () => { SFX.click(); try { await rpc('cap_leave', { p_table: ONL.t }) } catch {} ONL.reset(); show('menu') }
+$('lobbyDeal').onclick = async () => { SFX.click(); const b = $('lobbyDeal'); b.disabled = true; b.textContent = 'DEALING…'; try { await rpc('cap_start', { p_table: ONL.t }) } catch (e) { toast(e.message); b.disabled = false; ONL.lobbyUI() } }
+ONL.onShared = m => toast(m.how === 'copied' ? 'Invite link copied. Send it to your people.' : m.how === 'failed' ? 'Code ' + (ONL.snap?.table.code || '') : 'Invite sent.')
+ONL.onSeats = () => { if (!ONL.active) return; if (ONL.lobby) ONL.refresh().catch(() => {}) }
+ONL.closed = () => { toast('The host closed the table.'); ONL.reset(); show('menu') }
+ONL.reset = () => { bpost({ type: 'voice', on: false }); ONL.onVoice({ active: false }); ONL.active = false; ONL.lobby = false; clearInterval(ONL.timer); bpost({ type: 'unsub' }); gameId++; waitHuman = null; stopTimer(); $('pen').hidden = true; $('stamp').hidden = true; $('vig').classList.remove('on') }
+ONL.heartbeat = () => {
+  if (!ONL.active) return
+  if (!BR.live || ONL.lobby) ONL.catchUp()
+  const st = ONL.snap?.state; if (!ONL.lobby && st?.deadline && !ONL.busy && !ONL.q.length && ONL.snap.table.status === 'playing' && Date.now() + ONL.skew > new Date(st.deadline).getTime() + 2500) ONL.tick()
+}
+ONL.catchUp = async () => { try { const evs = await rpc('cap_events_since', { p_table: ONL.t, p_seq: ONL.seq }); for (const e of evs) ONL.onRow(e) } catch {} }
+ONL.onRow = row => { if (!ONL.active || row.seq <= ONL.seq || ONL.q.some(x => x.seq === row.seq)) return; ONL.q.push(row); ONL.q.sort((a, b) => a.seq - b.seq); ONL.pump() }
+ONL.pump = async () => {
+  if (ONL.busy) return; ONL.busy = true
+  while (ONL.q.length && ONL.active) {
+    const ev = ONL.q.shift(); if (ev.seq <= ONL.seq) continue
+    if (ev.seq > ONL.seq + 1) { await ONL.catchUp(); if (ONL.q[0] && ONL.q[0].seq < ev.seq) { ONL.q.push(ev); ONL.q.sort((a, b) => a.seq - b.seq); continue } }
+    ONL.seq = ev.seq
+    try { await ONL.handle(ev) } catch (e) { console.warn(e) }
+  }
+  ONL.busy = false
+}
+ONL.handle = async ev => {
+  const d = ev.data || {}, gid = ONL.gid
+  if (ev.kind === 'start') { ONL.lobby = false; const s = await rpc('cap_state', { p_table: ONL.t }); ONL.buildP(s); show('game'); renderSeats(); ONL.apply({ ...s, state: { ...s.state, turn: -1 } }); return }
+  if (ev.kind === 'round') {
+    const s = await rpc('cap_state', { p_table: ONL.t }); ONL.buildP(s); if (gameId !== gid) return
+    for (const x of s.seats) { const p = P[L(x.seat)]; p.hand = x.seat === s.me ? [...(s.hand || [])] : Array(d.counts[x.seat] || 0).fill('X') }
+    tableCard = d.table_card; round = d.round; last = null; pileN = 0; sel = new Set(); turn = L(d.turn); waitHuman = null; busy = true; $('reveal').innerHTML = ''
+    for (const p of alive()) setPose(p, 'idle')
+    await dealAnim(gid); if (gameId !== gid) return
+    toast(`${P[turn].human ? 'You start' : nameOf(P[turn]) + ' starts'}`)
+    ONL.apply(s); return
+  }
+  if (ev.kind === 'lay') {
+    const p = P[L(d.seat)]; busy = true; waitHuman = null; stopTimer()
+    if (!p.human) p.hand = Array(d.left + d.n).fill('X')
+    const idxs = p.human ? (d.auto ? [0] : (ONL.pendingIdx && ONL.pendingIdx.length === d.n ? ONL.pendingIdx : Array.from({ length: d.n }, (_, k) => k))) : Array.from({ length: d.n }, (_, k) => k); ONL.pendingIdx = null
+    if (p.human && d.auto) toast('Time’s up. The table played for you.')
+    if (idxs) await doPlay(p, idxs, gid); else { pileN += d.n; last = { p, cards: Array(d.n).fill('X') } }
+    if (gameId !== gid) return
+    turn = L(d.turn); const s = await rpc('cap_state', { p_table: ONL.t }); if (gameId === gid) ONL.apply(s); return
+  }
+  if (ev.kind === 'call') {
+    const caller = P[L(d.caller)], tgt = P[L(d.target)], loser = P[L(d.loser)]
+    last = { p: tgt, cards: d.cards }; loser.shots = d.shots - 1; loser.bad = d.ko ? d.shots : 99; busy = true; waitHuman = null; stopTimer()
+    await resolveCall(caller, gid); if (gameId !== gid) return
+    loser.bad = 99; if (d.over) return
+    const s = await rpc('cap_state', { p_table: ONL.t }); if (gameId === gid && !ONL.q.length) ONL.apply(s); return
+  }
+  if (ev.kind === 'done') { ONL.finish(d.winner); return }
+  if (ev.kind === 'left') { const p = P[L(d.seat)]; if (p) { toast(`${nameOf(p)} left. A bot takes the seat.`); p.bot = true; p.label = null; update() } return }
+  if (ev.kind === 'closed') return ONL.closed()
+  if (ev.kind === 'emote') { const p = P[L(d.seat)], [em, t] = EMOTES[d.i] || EMOTES[0]; if (p) bubble(p, `${em} ${t}`); return }
+}
+ONL.finish = w => { const p = P[L(w)]; if (!p) return; endGame(gameId, p) }
+ONL.onVoice = v => {
+  ONL.speaking = v.active ? (v.speaking || []) : []
+  const anyOther = ONL.speaking.some(u => u !== BR.me?.id)
+  for (const p of P) { const el = p.human ? $('you') : $('seat' + p.idx); el?.classList.toggle('talk', !!p.uid && ONL.speaking.includes(p.uid)) }
+  if (AC && musicOn) musicBus.gain.setTargetAtTime(anyOther ? .12 : .55, AC.currentTime, .2)
+}
+$('bOnline').onclick = () => { SFX.click(); onlineMenu() }
 
 boot()
 </script>

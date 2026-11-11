@@ -84,10 +84,14 @@ export default function Arcade({ back, play }) {
 // Loads a game's files from the private bucket and runs it in a sandboxed frame.
 // Online play bridge: games run in a sandboxed frame with no login, so they ask the app to call
 // whitelisted server functions and to forward live table updates.
-const SP_RPC = new Set(['sp_create', 'sp_join', 'sp_set_char', 'sp_start', 'sp_bid', 'sp_play', 'sp_tick', 'sp_leave', 'sp_rematch', 'sp_state', 'sp_events_since', 'sp_my_hand', 'sp_my_tables'])
-function useGameBridge(frameRef, code) {
+// Online games: which server calls each game may make, its tables for live updates, its voice channel and invite link.
+const NET = {
+  spades: { rpc: new Set(['sp_create', 'sp_join', 'sp_set_char', 'sp_start', 'sp_bid', 'sp_play', 'sp_tick', 'sp_leave', 'sp_rematch', 'sp_state', 'sp_events_since', 'sp_my_hand', 'sp_my_tables']), events: 'spades_events', seats: 'spades_seats', tables: 'spades_tables', voice: 'spv', link: 'spades', title: 'DAHUB Spades', text: 'Pull up to my Spades table. Code ' },
+  liars: { rpc: new Set(['cap_create', 'cap_join', 'cap_set_char', 'cap_start', 'cap_lay', 'cap_call', 'cap_tick', 'cap_emote', 'cap_leave', 'cap_rematch', 'cap_state', 'cap_events_since', 'cap_my_tables']), events: 'cap_events', seats: 'cap_seats', tables: 'cap_tables', voice: 'cpv', link: 'capornot', title: 'CAP or Not', text: 'Pull up to my CAP or Not table. Code ' }
+}
+function useGameBridge(frameRef, code, gameId) {
   useEffect(() => {
-    let ch = null, me = null
+    const N = NET[gameId]; let ch = null, me = null
     const post = m => frameRef.current?.contentWindow?.postMessage(m, '*')
     const unsub = () => { if (ch) { sb.removeChannel(ch); ch = null } }
     const onMsg = async e => {
@@ -98,34 +102,34 @@ function useGameBridge(frameRef, code) {
         return post({ dh: 1, type: 'hello', me, join: code || null, origin: location.origin })
       }
       if (m.type === 'rpc') {
-        if (!SP_RPC.has(m.fn)) return post({ dh: 1, type: 'res', id: m.id, error: 'not allowed' })
+        if (!N || !N.rpc.has(m.fn)) return post({ dh: 1, type: 'res', id: m.id, error: 'not allowed' })
         const { data, error } = await sb.rpc(m.fn, m.args || {})
         return post({ dh: 1, type: 'res', id: m.id, data, error: error ? friendly(error) : null })
       }
-      if (m.type === 'sub' && typeof m.table === 'string' && /^[0-9a-f-]{36}$/.test(m.table)) {
+      if (m.type === 'sub' && N && typeof m.table === 'string' && /^[0-9a-f-]{36}$/.test(m.table)) {
         unsub()
-        ch = sb.channel('sp-' + m.table)
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'spades_events', filter: 'table_id=eq.' + m.table }, p => post({ dh: 1, type: 'evt', row: p.new }))
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'spades_seats', filter: 'table_id=eq.' + m.table }, () => post({ dh: 1, type: 'seats' }))
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'spades_tables', filter: 'id=eq.' + m.table }, () => post({ dh: 1, type: 'seats' }))
+        ch = sb.channel(N.voice + '-' + m.table)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: N.events, filter: 'table_id=eq.' + m.table }, p => post({ dh: 1, type: 'evt', row: p.new }))
+          .on('postgres_changes', { event: '*', schema: 'public', table: N.seats, filter: 'table_id=eq.' + m.table }, () => post({ dh: 1, type: 'seats' }))
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: N.tables, filter: 'id=eq.' + m.table }, () => post({ dh: 1, type: 'seats' }))
           .subscribe(s => post({ dh: 1, type: 'live', status: s }))
         return
       }
       if (m.type === 'unsub') return unsub()
       if (m.type === 'voice') {
-        if (m.on && typeof m.table === 'string' && /^[0-9a-f-]{36}$/.test(m.table) && me?.id) joinTableVoice(m.table, me.id, v => post({ dh: 1, type: 'voice', state: v }))
+        if (m.on && N && typeof m.table === 'string' && /^[0-9a-f-]{36}$/.test(m.table) && me?.id) joinTableVoice(m.table, me.id, v => post({ dh: 1, type: 'voice', state: v }), N.voice)
         else if (!m.on) leaveTableVoice()
         return
       }
-      if (m.type === 'share' && typeof m.code === 'string') {
-        const url = location.origin + '/?spades=' + encodeURIComponent(m.code)
-        try { if (navigator.share) { await navigator.share({ title: 'DAHUB Spades', text: 'Pull up to my Spades table. Code ' + m.code, url }); return post({ dh: 1, type: 'shared', how: 'share' }) } } catch (x) { if (x?.name === 'AbortError') return }
+      if (m.type === 'share' && N && typeof m.code === 'string') {
+        const url = location.origin + '/?' + N.link + '=' + encodeURIComponent(m.code)
+        try { if (navigator.share) { await navigator.share({ title: N.title, text: N.text + m.code, url }); return post({ dh: 1, type: 'shared', how: 'share' }) } } catch (x) { if (x?.name === 'AbortError') return }
         try { await navigator.clipboard.writeText(url); post({ dh: 1, type: 'shared', how: 'copied' }) } catch { post({ dh: 1, type: 'shared', how: 'failed', url }) }
       }
     }
     addEventListener('message', onMsg)
     return () => { removeEventListener('message', onMsg); unsub(); leaveTableVoice() }
-  }, [code])
+  }, [code, gameId])
 }
 
 // Table voice controls in the game's top bar (only while you're at an online table)
@@ -143,7 +147,7 @@ function VoiceBar() {
 
 export function GamePlayer({ id, back, code }) {
   const game = GAMES.find(g => g.id === id), [src, setSrc] = useState(''), [err, setErr] = useState(''), [tick, setTick] = useState(0), urlRef = useRef(''), frameRef = useRef(null)
-  useGameBridge(frameRef, code)
+  useGameBridge(frameRef, code, id)
   useEffect(() => {
     document.body.classList.add('hidenav'); return () => document.body.classList.remove('hidenav')
   }, [])
