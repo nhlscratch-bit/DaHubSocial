@@ -21,7 +21,10 @@ for cid,(name,tight) in LIARS.items():
         if pose=='portrait':
             bb=im.getchannel('A').point(lambda v:255 if v>30 else 0).getbbox(); im=im.crop(bb); im.thumbnail((760,760))
         else:
-            im=im.resize((512,int(512*im.height/im.width)),Image.LANCZOS)
+            W=900 if pose=='select' else 512
+            im=im.resize((W,int(W*im.height/im.width)),Image.LANCZOS)
+            if pose=='select':
+                bb=im.getchannel('A').point(lambda v:255 if v>30 else 0).getbbox(); im=im.crop(bb)
         im.save(f'{OUT}/{cid}/{pose}.webp',quality=82,method=6)
 for cid in ['fp','kd','mb','tc']:
     os.makedirs(f'{OUT}/{cid}',exist_ok=True)

@@ -114,6 +114,22 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .cr-btn.act{grid-area:act;padding-left:14px}
 .cr-btn.act .city{font-size:18px;font-style:normal}
 /* landscape: cards left, hero right, like the reference */
+/* portrait (how the game is played): same composition as landscape, cards grid left, full-body player right */
+@media (max-aspect-ratio: 6/5){
+  .cr{grid-template-columns:minmax(0,46%) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"top top" "title title" "cards hero" "bot bot";column-gap:4px}
+  .cr-title{font-size:clamp(26px,9vw,44px);margin-bottom:6px}
+  .cr-cards{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;align-content:center;gap:12px 10px;overflow:visible;margin:0;padding:4px 2px 4px 6px}
+  .crc{width:auto}
+  .crc .nm{font-size:clamp(10px,3vw,13px);padding:4px 3px;letter-spacing:.5px}
+  .crc[aria-pressed=true]{transform:scale(1.07);z-index:2}
+  .cr-hero{margin:0 -12px 0 0;align-items:flex-end;justify-content:center}
+  .cr-hero .frame{left:6%;right:-4%;width:auto;top:4%;bottom:6%}
+  .cr-hero img{height:100%;max-width:118%;object-position:center bottom;-webkit-mask:linear-gradient(180deg,#000 82%,transparent 100%);mask:linear-gradient(180deg,#000 82%,transparent 100%)}
+  .cr-hero img.seat{height:auto;width:150%;max-width:none;margin:0 -20% 26% 0;-webkit-mask:linear-gradient(180deg,#000 70%,transparent 98%);mask:linear-gradient(180deg,#000 70%,transparent 98%)}
+  .cr-name{right:6px;left:-8px;bottom:4%}
+  .cr-name b{font-size:clamp(26px,8.8vw,46px)}
+  .cr-name span{font-size:clamp(13px,3.8vw,18px)}
+}
 @media (min-aspect-ratio: 6/5){
   .cr{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"top top" "title hero" "cards hero" "bot bot"}
   .cr-hero{margin:0;align-items:flex-end}
@@ -493,7 +509,8 @@ function shards(){
 function crSelect(k, anim){
   me = k; ls.set('lp.char', k); const c = CHARS[k], s = ST(), m = s[k] || {}
   document.querySelectorAll('.crc').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k))
-  const hero = $('crHeroImg'); hero.src = A(`art/${k}/portrait.webp`); hero.alt = c.name
+  const hero = $('crHeroImg'), port = !matchMedia('(min-aspect-ratio: 6/5)').matches
+  hero.src = A(`art/${k}/${port ? (c.full ? 'select' : 'portrait') : 'portrait'}.webp`); hero.alt = c.name; hero.classList.toggle('seat', port && !c.full)
   if (anim) { hero.classList.remove('in'); void hero.offsetWidth; hero.classList.add('in') }
   $('crName').textContent = c.name.toUpperCase(); $('crPen').textContent = `${c.penE} ${c.pen}`
   $('crBadgeImg').src = $('crIdImg').src = A(`art/${k}/portrait.webp`); $('crBadgeName').textContent = c.name
@@ -503,6 +520,7 @@ function crSelect(k, anim){
   let tw = 0, tg = 0; for (const v of Object.values(s)) { tw += v.wins || 0; tg += v.games || 0 } $('crWins').textContent = tw; $('crGames').textContent = tg
   $('whoName').textContent = c.name
 }
+matchMedia('(min-aspect-ratio: 6/5)').addEventListener?.('change', () => { if (!$('pick').hidden) crSelect(me) })
 function pickUI(){
   shards(); const box = $('crCards'); box.innerHTML = ''
   for (const [k, c] of Object.entries(CHARS)) { const b = document.createElement('button'); b.className = 'crc'; b.dataset.k = k; b.setAttribute('role', 'option'); b.setAttribute('aria-label', `${c.name}, ${c.pen}`)
