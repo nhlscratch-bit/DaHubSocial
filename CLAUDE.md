@@ -48,6 +48,9 @@ DOB gate (`ad_confirm`), opt-in/out (`ad_set`), posts flagged `after_dark` never
 - Confirm builds 44–50 on a real phone (shimmer, call fix, Pulse, Rooms, After Dark).
 - Leaked-password protection in Supabase Auth needs the Pro plan (owner will turn it on later); until then `pwcheck.js` (build 68) checks new passwords at sign-up and password change: length, common/simple passwords, no username/email name, letters+numbers or 12+ chars, and Have I Been Pwned k-anonymity lookup (only 5 hash chars sent, fails open). Restrict/rotate the YouTube API key (Google Cloud console). Sample spotlight already deleted.
 
+## Official pages (Nov 11)
+Owner-run official accounts (account_type `official`, verified), to be handed to trusted operators later: @dahubofficial (DAHUB Official), @dafoodhub (Da Food Hub), @danighthub (Night Hub), @daflowzone (Da Flow Zone), each with bio + 2 honest starter posts. Still to create: @letsgetpaid (Let's Get Paid: jobs/gigs/business) and @culturehubbmore (Culture Hub Bmore: barbers/braiders/fashion); logos for those two not generated yet. Brand kit (transparent wide logos + square avatars) in `brand/pages/`.
+
 ## Deferred features (owner said later)
 Full After Dark parity (its own Shorts/Rooms/Stories/DMs/etc.), bookings, Passport replacement, notification preferences, Collab Board.
 
