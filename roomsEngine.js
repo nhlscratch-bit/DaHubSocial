@@ -105,7 +105,8 @@ export async function joinRoom(room, me, mic) {
   S.canSpeak = S.speakers.has(me.id)
   loadProfiles([...S.speakers])
   if (S.canSpeak && !S.mic && room.host_id !== me.id) S.invited = true
-  const ch = sb.channel('room:' + room.id, { config: { presence: { key: me.id }, broadcast: { self: false } } }); S.ch = ch
+  // After Dark rooms signal on a private channel only After Dark members can join
+  const ch = sb.channel((room.after_dark ? 'adroom:' : 'room:') + room.id, { config: { private: !!room.after_dark, presence: { key: me.id }, broadcast: { self: false } } }); S.ch = ch
   ch.on('presence', { event: 'sync' }, () => {
     if (S !== ses) return
     const st = ch.presenceState(), mm = new Map()

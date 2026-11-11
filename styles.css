@@ -871,3 +871,11 @@ html.glow .acctb.official{box-shadow:0 0 0 1.5px var(--gx),0 0 14px var(--gxs),0
 .adempty img{width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 0 12px #9fd8ff);margin-bottom:6px}.adempty b{font-size:18px}.adempty span{color:#9fb8d8}
 @media (prefers-reduced-motion:reduce){.adsky i,.admoon2,.admoon2 .glow{animation:none}}
 body.inad::after{display:none}
+
+/* After Dark rooms */
+.adroom{display:flex;align-items:center;gap:12px;width:calc(100% - 24px);margin:8px 12px;padding:12px;border-radius:20px;text-align:left;color:#e8f4ff;background:linear-gradient(160deg,#141f48,#0a1028);border:1px solid #7af7ff2e;box-shadow:0 0 16px #6a4cff1f}
+.adroom .evi{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.adroom b{font-size:16px;color:#fff}.adroom small{color:#9fb8d8;display:flex;align-items:center;gap:5px}
+.adrav{line-height:0;border-radius:50%;padding:3px;background:radial-gradient(circle,#2a1a9a,#070b1c);box-shadow:0 0 0 2px #8f7bff,0 0 14px #6a4cff}
+.adlive{display:inline-flex;align-items:center;gap:4px;font-style:normal;font-weight:900;font-size:11px;color:#fff;padding:1px 7px;border-radius:999px;background:#c4163a;box-shadow:0 0 8px #ff3b5c}.adlive u{width:6px;height:6px;border-radius:50%;background:#fff;animation:ldp 1.4s infinite}
+.adstart{width:calc(100% - 24px);margin:6px 12px 8px}
+.lrpage.lrad{background:radial-gradient(120% 70% at 50% -10%,#1c2a5a 0%,#0b1230 45%,#03050f 100%)}.lrpage.lrad .lrcard{background:linear-gradient(160deg,#141f48f0,#0a1028f0);border-color:#7af7ff33;color:#e8f4ff}.lrpage.lrad h1,.lrpage.lrad b,.lrpage.lrad label{color:#fff}.lrpage.lrad p,.lrpage.lrad small{color:#bcd2ea}
