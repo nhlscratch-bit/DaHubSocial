@@ -55,7 +55,7 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
     } catch (e) { setErr(friendly(e)) } finally { setBusy(false) }
   }
   return <div>
-    <Banner go={go} />
+    <Banner go={go} profile={profile} />
     <Stories me={me} profile={profile} />
     <QotdCard openPost={openPost} />
     <div className="comp"><div className="crow"><Avatar p={profile} size={46} /><span className="cgap" />
