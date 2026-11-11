@@ -510,7 +510,7 @@ function crSelect(k, anim){
   me = k; ls.set('lp.char', k); const c = CHARS[k], s = ST(), m = s[k] || {}
   document.querySelectorAll('.crc').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k))
   const hero = $('crHeroImg'), port = !matchMedia('(min-aspect-ratio: 6/5)').matches
-  hero.src = A(`art/${k}/${port ? (c.full ? 'select' : 'portrait') : 'portrait'}.webp`); hero.alt = c.name; hero.classList.toggle('seat', port && !c.full)
+  hero.src = A(`art/${k}/${port ? 'select' : 'portrait'}.webp`); hero.alt = c.name; hero.classList.remove('seat')
   if (anim) { hero.classList.remove('in'); void hero.offsetWidth; hero.classList.add('in') }
   $('crName').textContent = c.name.toUpperCase(); $('crPen').textContent = `${c.penE} ${c.pen}`
   $('crBadgeImg').src = $('crIdImg').src = A(`art/${k}/portrait.webp`); $('crBadgeName').textContent = c.name

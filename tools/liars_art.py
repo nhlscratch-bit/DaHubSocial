@@ -33,4 +33,10 @@ for cid in ['fp','kd','mb','tc']:
         if p!='portrait': im=im.resize((512,int(512*im.height/im.width)),Image.LANCZOS)
         else: im.thumbnail((760,760))
         im.save(f'{OUT}/{cid}/{p}.webp',quality=82,method=6)
+
+# Full-body select art cut from turnaround sheets (tools/front_from_sheet.py) for the Spades cast.
+for cid,name in [('fp','Fresh Prince'),('kd','KennDogg'),('mb','Mabel'),('tc','TChalla')]:
+    p=f'games/characters/{name}/CAP or Not/select.png'
+    if os.path.exists(p):
+        im=Image.open(p).convert('RGBA'); im.thumbnail((900,1320),Image.LANCZOS); im.save(f'{OUT}/{cid}/select.webp',quality=82,method=6)
 print('ok')
