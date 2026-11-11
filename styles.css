@@ -614,6 +614,7 @@ body.inshorts::after{display:none}
 /* Arcade (testing placeholder look until the owner's redesign) */
 .arc{padding:14px 14px 120px;display:flex;flex-direction:column;gap:12px}.arc-tag{margin:0;font-size:12.5px;color:#0e7f90;font-weight:700;text-align:center}
 .arc-card{display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:20px;border:1.5px solid #fff;background:linear-gradient(180deg,#ffffffe6,#e6f8f9d9);box-shadow:0 8px 20px #43515b22,inset 0 1px 0 #fff}
+.arc-card:disabled{opacity:.55}
 .arc-card>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:3px}.arc-card b{font-size:17px}.arc-card small{color:#5b6b75;font-size:13px}
 .arc-emo{width:54px;height:54px;flex:none;display:grid;place-items:center;font-size:30px;border-radius:16px;background:radial-gradient(circle at 30% 25%,#fff,#bdeff3);box-shadow:0 0 0 2px #19e0f055}
 .arc-lock{padding:40px 22px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}.arc-lock h2{margin:4px 0 0}.arc-lock p{margin:0;color:#5b6b75}
