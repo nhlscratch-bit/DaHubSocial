@@ -2,7 +2,7 @@ import wm from './wordmark.png'
 import { useEffect, useRef, useState } from 'react'
 import { sb, startDM, BUILD } from './supabase'
 import Boot from './Boot'
-import Auth from './Auth'
+import Auth, { NewPassword } from './Auth'
 import Feed from './Feed'
 import PostView from './PostView'
 import Profile from './Profile'
@@ -49,7 +49,7 @@ export default function App() {
   const [stack, setStack] = useState([]), [tab, setTab] = useState('home'), [fk, setFk] = useState(0), [online, setOnline] = useState(new Set()), [badge, setBadge] = useState(0), [nb, setNb] = useState(0)
   useEffect(() => {
     sb.auth.getSession().then(({ data }) => setSession(data.session))
-    const { data } = sb.auth.onAuthStateChange((_e, s) => { setSession(s); if (!s) { setStack([]); setTab('home') } })
+    const { data } = sb.auth.onAuthStateChange((_e, s) => { setSession(s); if (_e === 'PASSWORD_RECOVERY') setRecovery(true); if (!s) { setStack([]); setTab('home') } })
     return () => data.subscription.unsubscribe()
   }, [])
   const uid = session?.user?.id
@@ -76,7 +76,7 @@ export default function App() {
     window.addEventListener('notif-read', refresh); return () => { sb.removeChannel(ch); window.removeEventListener('notif-read', refresh) }
   }, [uid])
   useEffect(() => { document.body.classList.toggle('inshorts', tab === 'shorts' && !stack.length); return () => document.body.classList.remove('inshorts') }, [tab, stack.length])
-  const [playV, setPlayV] = useState(null)
+  const [playV, setPlayV] = useState(null), [recovery, setRecovery] = useState(false)
   useEffect(() => { if (uid) registerSW() }, [uid])
   const [isAdmin, setIsAdmin] = useState(false), sy = useRef(0), prevLen = useRef(0)
   useEffect(() => { if (stack.length === 0 && prevLen.current > 0) requestAnimationFrame(() => window.scrollTo(0, sy.current)); prevLen.current = stack.length }, [stack.length])
@@ -101,7 +101,7 @@ export default function App() {
   const openPost = (id, focus) => push({ t: 'post', id, focus }), openProfile = id => push({ t: 'profile', id }), openChat = id => push({ t: 'chat', id })
   const openDM = async other => { try { const cid = await startDM(me.id, other); setStack(s => s[s.length - 1]?.t === 'chat' ? s : [...s.filter(x => x.t !== 'newdm'), { t: 'chat', id: cid }]) } catch (e) { alert('Could not open the conversation: ' + e.message) } }
   const go = k => { sy.current = 0; setStack([]); if (k === 'create') { setTab('home'); setFk(x => x + 1) } else setTab(k) }
-  return <div className="app">
+  return <div className="app">{recovery && <NewPassword done={() => setRecovery(false)} />}
     <header className="hdr"><img className="wm" src={wm} alt="DAHUB" />
       <div className="hbar"><button className="ib" onClick={() => go('discover')} aria-label="Search"><I n="search" s={22} /></button>
         <button className="ib" onClick={() => push({ t: 'notifs' })} aria-label="Notifications"><I n="bell" s={22} />{nb > 0 && <span className="badge">{nb > 99 ? '99+' : nb}</span>}</button>

@@ -78,7 +78,7 @@ function Viewer({ groups, start, seen, me, close, refresh, markSeen }) {
   useEffect(() => { document.body.classList.add('hidenav'); document.body.style.overflow = 'hidden'; return () => { document.body.classList.remove('hidenav'); document.body.style.overflow = '' } }, [])
   useEffect(() => {
     if (!s) return; setP(0); setSheet(false); setNote(''); setReply(''); setViews([])
-    if (!own) sb.from('story_views').insert({ story_id: s.id }).then(() => markSeen(s.id))
+    if (!own) sb.from('story_views').upsert({ story_id: s.id, viewer_id: me.id }, { onConflict: 'story_id,viewer_id', ignoreDuplicates: true }).then(() => markSeen(s.id))
     else sb.from('story_views').select('created_at,viewer:profiles!story_views_viewer_id_fkey(id,username,display_name,avatar_url)').eq('story_id', s.id).order('created_at', { ascending: false }).then(({ data }) => setViews(data || []))
     const nx = g.items[si + 1]; if (nx && nx.media_type === 'image') new Image().src = storyUrl(nx.media_path)
     if (s.media_type === 'video') return
