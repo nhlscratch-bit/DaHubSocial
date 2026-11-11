@@ -954,3 +954,7 @@ html.glow .hbanner:not(.k-night){box-shadow:0 0 0 1.5px var(--gx),0 0 18px var(-
 .nrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8)}
 .nrow span{flex:1;display:flex;flex-direction:column;min-width:0}.nrow small{opacity:.7;font-size:12px}
 .nrow.strong{background:rgba(25,224,240,.12);border-color:rgba(14,127,144,.35)}.nrow.dim{opacity:.5}
+.rxwrap{position:relative}.rxscrim{position:fixed;inset:0;z-index:30}
+.rstrip.pop{position:absolute;left:10px;right:10px;bottom:calc(100% - 4px);margin:0;z-index:31;transform-origin:20% 100%;animation:rxpop .22s cubic-bezier(.2,1.4,.4,1) both}
+.rstrip.pop button{animation:rxin .3s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes rxpop{from{opacity:0;transform:translateY(10px) scale(.85)}}@keyframes rxin{from{opacity:0;transform:translateY(12px) scale(.6)}}
