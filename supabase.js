@@ -13,10 +13,11 @@ export const upload = async (bucket, uid, file) => {
 export const ago = t => { const s = (Date.now() - new Date(t)) / 1000; return s < 60 ? 'now' : s < 3600 ? Math.floor(s/60)+'m' : s < 86400 ? Math.floor(s/3600)+'h' : Math.floor(s/86400)+'d' }
 // ---- Direct messages (uses existing conversations / conversation_members / messages tables) ----
 export const dmKey = (a, b) => [a, b].sort().join(':')
-export async function startDM(me, other) {
-  const key = dmKey(me, other), find = () => sb.from('conversations').select('id').eq('dm_key', key).maybeSingle()
+// ad = After Dark DM: a separate 18+ conversation (its own key), only shown inside After Dark
+export async function startDM(me, other, ad = false) {
+  const key = (ad ? 'ad:' : '') + dmKey(me, other), find = () => sb.from('conversations').select('id').eq('dm_key', key).maybeSingle()
   const { data: c } = await find(); if (c) return c.id
-  const { data, error } = await sb.from('conversations').insert({ created_by: me, dm_key: key, is_group: false }).select('id').single()
+  const { data, error } = await sb.from('conversations').insert({ created_by: me, dm_key: key, is_group: false, after_dark: !!ad }).select('id').single()
   if (error) { const { data: c2 } = await find(); if (c2) return c2.id; throw error }
   const { error: e2 } = await sb.from('conversation_members').insert([{ conversation_id: data.id, user_id: me }, { conversation_id: data.id, user_id: other }])
   if (e2) throw e2
@@ -30,7 +31,7 @@ export async function signed(path) {
   return data?.signedUrl
 }
 
-export const BUILD = 'build 74'
+export const BUILD = 'build 75'
 
 // People hidden from me: blocked, blocked-me (direction not revealed) and muted.
 export async function hiddenIds() { const { data } = await sb.rpc('hidden_ids'); return new Set((data || []).map(x => (typeof x === 'string' ? x : Object.values(x)[0]))) }
