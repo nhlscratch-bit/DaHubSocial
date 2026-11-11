@@ -16,7 +16,7 @@ import rooms from './mi-rooms.png'
 import pulse from './mi-pulse.png'
 import events from './mi-events.png'
 import communities from './mi-communities.png'
-export default function More({ go, openProfile, me, isAdmin }) {
+export default function More({ go, openProfile, me, isAdmin, isStaff }) {
   const T = [
     [gear, 'Settings & Activity', () => go('settings')],
     [trophy, 'Opportunity Board', () => go('opps')],
@@ -31,6 +31,7 @@ export default function More({ go, openProfile, me, isAdmin }) {
     [star, 'Get Featured', () => go('submit')],
     [person, 'My Profile', () => openProfile(me.id)],
     [shieldlock, 'Blocked & Muted', () => go('safety')],
+    ...(isStaff ? [[crown, 'Team · Banner', () => go('team')]] : []),
     ...(isAdmin ? [[shieldx, 'Admin', () => go('admin')]] : []),
     [door, 'Sign Out', () => confirm('Sign out of DAHUB?') && sb.auth.signOut()]]
   return <div className="more">
