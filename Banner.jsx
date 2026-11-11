@@ -3,6 +3,8 @@ import { sb, friendly, ago } from './supabase'
 import I from './Icons'
 import Avatar from './Avatar'
 import moon from './mi-afterdark.png'
+import { InviteSheet } from './Onboarding'
+import { createPortal } from 'react-dom'
 
 // Live banner across Home: team announcements + a late-night nudge toward After Dark (11pm–4am, dismissible per night).
 const KIND = { update: ['UPDATE', 'info'], live: ['LIVE', 'live'], message: ['MESSAGE', 'chat'], event: ['EVENT', 'cal2'], drop: ['NEW DROP', 'star'] }
@@ -11,8 +13,8 @@ const lateNight = (d = new Date()) => d.getHours() >= 23 || d.getHours() < 4
 const nightKey = () => { const d = new Date(); if (d.getHours() < 12) d.setDate(d.getDate() - 1); return 'dahub.adnudge.' + d.toISOString().slice(0, 10) }
 const ls = { get: k => { try { return localStorage.getItem(k) } catch { return null } }, set: (k, v) => { try { localStorage.setItem(k, v) } catch {} } }
 
-export default function Banner({ go }) {
-  const [items, setItems] = useState([]), [i, setI] = useState(0), [ad, setAd] = useState(null), [, tick] = useState(0)
+export default function Banner({ go, profile }) {
+  const [inv, setInv] = useState(false), [items, setItems] = useState([]), [i, setI] = useState(0), [ad, setAd] = useState(null), [, tick] = useState(0)
   const load = async () => { const { data } = await sb.from('announcements').select('id,body,kind,link,created_at').eq('active', true).gt('ends_at', new Date().toISOString()).order('created_at', { ascending: false }).limit(8); setItems(data || []) }
   useEffect(() => {
     load(); sb.rpc('ad_status').then(({ data }) => setAd(data || {}))
@@ -22,11 +24,11 @@ export default function Banner({ go }) {
   }, [])
   const nudge = lateNight() && ad && !ls.get(nightKey()) && (ad.ok ? null : { id: 'ad', kind: 'night', body: ad.confirmed ? 'After Dark is open. Turn it back on and slide through 🌙' : '18+? After Dark is open late. Tap in if you’re grown 🌙', link: 'afterdark' })
   const openAd = lateNight() && ad?.ok ? { id: 'adopen', kind: 'night', body: 'After Dark is open 🌙 See who’s up tonight', link: 'afterdark' } : null
-  const list = [...items, ...(nudge ? [nudge] : openAd && !ls.get(nightKey()) ? [openAd] : [])]
+  const night = nudge ? [nudge] : openAd && !ls.get(nightKey()) ? [openAd] : []
+  const list = items.length || night.length ? [...items, ...night] : [{ id: 'welcome', kind: 'message', body: 'Welcome to DAHUB 👑 Bring your people. Tap to share your invite link', link: 'invite' }]
   useEffect(() => { if (list.length < 2) return; const t = setInterval(() => setI(x => (x + 1) % list.length), 5500); return () => clearInterval(t) }, [list.length])
-  if (!list.length) return null
   const cur = list[i % list.length], k = cur.kind === 'night' ? ['AFTER DARK', null] : KIND[cur.kind] || KIND.update
-  const tap = () => { if (!cur.link) return; if (/^https?:\/\//.test(cur.link)) window.open(cur.link, '_blank', 'noopener'); else go(cur.link) }
+  const tap = () => { if (!cur.link) return; if (cur.link === 'invite') return setInv(true); if (/^https?:\/\//.test(cur.link)) window.open(cur.link, '_blank', 'noopener'); else go(cur.link) }
   const dismissNight = e => { e.stopPropagation(); ls.set(nightKey(), '1'); setI(0); tick(x => x + 1) }
   return <div className={'hbanner k-' + cur.kind} role="status" aria-live="polite">
     <button className="hbmain" onClick={tap} key={cur.id}>
@@ -36,6 +38,7 @@ export default function Banner({ go }) {
     </button>
     {cur.kind === 'night' ? <button className="hbx" onClick={dismissNight} aria-label="Hide for tonight"><I n="x" s={16} /></button>
       : list.length > 1 && <span className="hbdots">{list.map((_, j) => <i key={j} className={j === i % list.length ? 'on' : ''} />)}</span>}
+    {inv && createPortal(<InviteSheet profile={profile} close={() => setInv(false)} />, document.body)}
   </div>
 }
 
