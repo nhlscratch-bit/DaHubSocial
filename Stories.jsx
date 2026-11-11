@@ -101,7 +101,7 @@ function Viewer({ groups, start, seen, me, close, refresh, markSeen, ad }) {
   }
   async function dm(text) {
     if (!text.trim()) return
-    try { const cid = await startDM(me.id, g.author.id); const { error } = await sb.from('messages').insert({ conversation_id: cid, sender_id: me.id, body: text, kind: 'text' }); if (error) throw error; setNote('Sent ✓'); setReply('') }
+    try { const cid = await startDM(me.id, g.author.id, !!ad); const { error } = await sb.from('messages').insert({ conversation_id: cid, sender_id: me.id, body: text, kind: 'text' }); if (error) throw error; setNote('Sent ✓'); setReply('') }
     catch (e) { setNote('Could not send.') }
   }
   async function del() {

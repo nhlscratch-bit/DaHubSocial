@@ -64,8 +64,8 @@ export default function App() {
   useEffect(() => {
     if (!uid) return
     const refresh = async () => {
-      const { data } = await sb.from('conversation_members').select('last_read_at,status,conversation:conversations(last_message_at,last_sender_id)').eq('user_id', uid)
-      setBadge((data || []).filter(m => m.status === 'request' || (m.conversation && m.conversation.last_sender_id && m.conversation.last_sender_id !== uid && new Date(m.conversation.last_message_at) > new Date(m.last_read_at))).length)
+      const { data } = await sb.from('conversation_members').select('last_read_at,status,conversation:conversations(last_message_at,last_sender_id,after_dark)').eq('user_id', uid)
+      setBadge((data || []).filter(m => !m.conversation?.after_dark).filter(m => m.status === 'request' || (m.conversation && m.conversation.last_sender_id && m.conversation.last_sender_id !== uid && new Date(m.conversation.last_message_at) > new Date(m.last_read_at))).length)
     }
     refresh(); const ch = sb.channel('unread-' + uid).on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, refresh).subscribe()
     window.addEventListener('dm-read', refresh); return () => { sb.removeChannel(ch); window.removeEventListener('dm-read', refresh) }
@@ -129,7 +129,7 @@ export default function App() {
     {top?.t === 'event' && <EventView key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} deleted={back} />}
     {top?.t === 'pulse' && <PulseChamber back={back} openRadar={() => push({ t: 'radar' })} open={openDest} />}
     {top?.t === 'radar' && <Radar back={back} open={openDest} />}
-    {top?.t === 'afterdark' && <AfterDark me={me} profile={profile} back={back} openPost={openPost} openProfile={openProfile} openRoom={id => push({ t: 'room', id })} openEvent={id => push({ t: 'event', id })} newRoom={() => push({ t: 'newroom', ad: true })} openShorts={() => push({ t: 'adshorts' })} />}
+    {top?.t === 'afterdark' && <AfterDark me={me} profile={profile} back={back} openPost={openPost} openProfile={openProfile} openRoom={id => push({ t: 'room', id })} openEvent={id => push({ t: 'event', id })} newRoom={() => push({ t: 'newroom', ad: true })} openShorts={() => push({ t: 'adshorts' })} openChat={openChat} />}
     {top?.t === 'adshorts' && <AdShorts me={me} back={back} openPost={openPost} openProfile={openProfile} />}
     {top?.t === 'arcade' && <Arcade back={back} play={id => push({ t: 'game', id })} />}
     {top?.t === 'game' && <GamePlayer key={top.id} id={top.id} code={top.code} back={back} />}

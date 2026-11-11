@@ -6,9 +6,9 @@ import Verified from './Verified'
 export default function Inbox({ me, online, back, openChat, openDM }) {
   const [rows, setRows] = useState(null), [tab, setTab] = useState('all'), [q, setQ] = useState(''), [uo, setUo] = useState(false), [fol, setFol] = useState(new Set()), [nd, setNd] = useState(false), [err, setErr] = useState('')
   const load = useCallback(async () => {
-    const { data, error } = await sb.from('conversation_members').select('status,last_read_at,conversation:conversations(id,is_group,title,last_message_at,last_message_preview,last_sender_id,members:conversation_members(user_id,profile:profiles(id,username,display_name,avatar_url,is_verified)))').eq('user_id', me.id)
+    const { data, error } = await sb.from('conversation_members').select('status,last_read_at,conversation:conversations(id,is_group,title,after_dark,last_message_at,last_message_preview,last_sender_id,members:conversation_members(user_id,profile:profiles(id,username,display_name,avatar_url,is_verified)))').eq('user_id', me.id)
     if (error) return setErr(error.message)
-    setRows((data || []).filter(r => r.conversation).map(r => { const c = r.conversation, other = c.members.find(m => m.user_id !== me.id)?.profile
+    setRows((data || []).filter(r => r.conversation && !r.conversation.after_dark).map(r => { const c = r.conversation, other = c.members.find(m => m.user_id !== me.id)?.profile
       return { status: r.status, c, other, title: c.is_group ? c.title : other?.display_name || 'Unknown', unread: !!c.last_sender_id && c.last_sender_id !== me.id && new Date(c.last_message_at) > new Date(r.last_read_at) } })
       .sort((a, b) => new Date(b.c.last_message_at) - new Date(a.c.last_message_at)))
   }, [me.id])

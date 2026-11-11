@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { sb, SEL, upload, hiddenIds, friendly } from './supabase'
+import { sb, SEL, upload, hiddenIds, friendly, startDM, ago } from './supabase'
 import PostCard from './PostCard'
 import Avatar from './Avatar'
 import { FEATURES } from './features'
@@ -73,7 +73,32 @@ function AdRooms({ me, profile, openRoom, newRoom }) {
     {d?.scheduled?.length > 0 && <><h3><I n="cal2" s={20} />Coming up</h3>{d.scheduled.map(r => card(r, false))}</>}
   </div>
 }
-export default function AfterDark({ me, profile, back, openPost, openProfile, openRoom, openEvent, newRoom, openShorts }) {
+function AdInbox({ me, openChat }) {
+  const [rows, setRows] = useState(null), [err, setErr] = useState(''), [pick, setPick] = useState(false), [q, setQ] = useState(''), [people, setPeople] = useState(null), [busy, setBusy] = useState('')
+  const load = async () => {
+    const { data, error } = await sb.from('conversation_members').select('last_read_at,conversation:conversations(id,after_dark,last_message_at,last_message_preview,last_sender_id,members:conversation_members(user_id,profile:profiles(id,username,display_name,avatar_url,is_verified)))').eq('user_id', me.id)
+    if (error) return setErr(friendly(error)); setErr('')
+    const hid = await hiddenIds()
+    setRows((data || []).filter(r => r.conversation?.after_dark).map(r => { const c = r.conversation, o = c.members.find(m => m.user_id !== me.id)?.profile
+      return { c, o, unread: !!c.last_sender_id && c.last_sender_id !== me.id && new Date(c.last_message_at) > new Date(r.last_read_at) } }).filter(r => !r.o || !hid.has(r.o.id)).sort((a, b) => new Date(b.c.last_message_at || 0) - new Date(a.c.last_message_at || 0)))
+  }
+  useEffect(() => { load(); const ch = sb.channel('adinbox-' + me.id).on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, load).subscribe(); return () => { sb.removeChannel(ch) } }, [])
+  useEffect(() => { if (!pick) return; const t = setTimeout(async () => { const { data, error } = await sb.rpc('ad_people', { p_q: q }); if (error) return setErr(friendly(error)); setPeople(data || []) }, 250); return () => clearTimeout(t) }, [q, pick])
+  const start = async p => { setBusy(p.id); try { const id = await startDM(me.id, p.id, true); openChat(id) } catch (e) { setErr(friendly(e)) } setBusy('') }
+  return <div className="adt2" style={{ paddingBottom: 140 }}>
+    <button className="gobtn adstart" onClick={() => setPick(!pick)}><I n={pick ? 'x' : 'edit'} s={20} /> {pick ? 'Close' : 'New After Dark message'}</button>
+    <p className="pnote" style={{ margin: '0 14px' }}>Private 18+ chats. They never show in your regular inbox, and notifications won’t show the message.</p>
+    {err && <p className="msg" role="alert">{err}</p>}
+    {pick && <div className="adpick"><input value={q} onChange={e => setQ(e.target.value)} placeholder="Search After Dark members" autoFocus />
+      {people === null ? <div className="skel"><i /></div> : people.length ? people.map(p => <button key={p.id} className="adroom" onClick={() => start(p)} disabled={busy === p.id}><Avatar p={p} size={44} /><span className="evi"><b>{p.display_name}{p.is_verified && <Verified />}</b><small>@{p.username}</small></span><I n="chat" s={20} /></button>) : <p className="pnote">No After Dark members match.</p>}</div>}
+    <h3><I n="chat" s={20} />Messages</h3>
+    {rows === null ? <div className="skel"><i /><i /></div> : rows.length ? rows.map(r => <button key={r.c.id} className={'adroom' + (r.unread ? ' unread' : '')} onClick={() => openChat(r.c.id)}>
+      <Avatar p={r.o} size={50} /><span className="evi"><b>{r.o?.display_name || 'Member'}</b><small>{r.c.last_message_preview || 'Say hi 👋'}</small></span>
+      <small className="adwhen">{r.c.last_message_at ? ago(r.c.last_message_at) : ''}{r.unread && <u />}</small></button>)
+      : <div className="adempty"><img src={moon} alt="" /><b>No After Dark messages</b><span>Start one with the button above.</span></div>}
+  </div>
+}
+export default function AfterDark({ me, profile, back, openPost, openProfile, openRoom, openEvent, newRoom, openShorts, openChat }) {
   const [st, setSt] = useState(undefined), [tab, setTab] = useState('feed'), [posts, setPosts] = useState(null), [tn, setTn] = useState(null), [err, setErr] = useState(''), [menu, setMenu] = useState(false)
   const status = async () => { const { data, error } = await sb.rpc('ad_status'); if (error) return setErr(friendly(error)); setSt(data) }
   const load = async () => { setErr(''); const { data, error } = await sb.from('posts').select(SEL).eq('after_dark', true).order('created_at', { ascending: false }).limit(40); if (error) return setErr(friendly(error)); const hid = await hiddenIds(); setPosts((data || []).filter(p => !hid.has(p.author.id))) }
@@ -95,12 +120,13 @@ export default function AfterDark({ me, profile, back, openPost, openProfile, op
       {err && <p className="msg" role="alert">{err} <button className="link" onClick={() => { status(); st?.ok && load() }}>Retry</button></p>}
       {st && !st.ok && <Gate st={st} done={status} />}
       {st?.ok && <>
-        <div className="adtabs">{[['feed', 'Feed', 'comment'], ['shorts', 'Shorts', 'play'], ['rooms', 'Rooms', 'live'], ['tonight', 'Tonight', 'cal2'], ['rules', 'Rules', 'shield']].map(([k, l, ic]) => <button key={k} aria-selected={tab === k} onClick={() => k === 'shorts' ? openShorts() : setTab(k)}><I n={ic} s={18} />{l}</button>)}</div>
+        <div className="adtabs">{[['feed', 'Feed', 'comment'], ['shorts', 'Shorts', 'play'], ['rooms', 'Rooms', 'live'], ['dms', 'DMs', 'chat'], ['tonight', 'Tonight', 'cal2'], ['rules', 'Rules', 'shield']].map(([k, l, ic]) => <button key={k} aria-selected={tab === k} onClick={() => k === 'shorts' ? openShorts() : setTab(k)}><I n={ic} s={18} />{l}</button>)}</div>
         {tab === 'feed' && <><Stories ad me={me} profile={profile} /><Composer me={me} profile={profile} creator={st.creator} posted={load} />
           {posts === null && <div className="skel"><i /><i /></div>}
           {posts?.length === 0 && <div className="adempty"><img src={moon} alt="" /><b>Quiet tonight</b><span>Be the first to post After Dark.</span></div>}
           <div style={{ paddingBottom: 140 }}>{posts?.map(p => <PostCard key={p.id} post={p} me={me} openPost={openPost} openProfile={openProfile} />)}</div></>}
         {tab === 'rooms' && <AdRooms me={me} profile={profile} openRoom={openRoom} newRoom={newRoom} />}
+        {tab === 'dms' && <AdInbox me={me} openChat={openChat} />}
         {tab === 'tonight' && <div className="adt2" style={{ paddingBottom: 140 }}>
           <h3><I n="live" s={20} />Live rooms now</h3>{!tn ? <div className="skel"><i /></div> : tn.rooms.length ? tn.rooms.map(r => <button key={r.id} className="gl prow" onClick={() => openRoom(r.id)}><Avatar p={r.host} size={44} /><span className="evi"><b>{r.title}</b><small>#{RCAT[r.category]} · 🎧 {r.listeners}</small></span></button>) : <p className="pnote">No live rooms right now.</p>}
           <h3><I n="cal2" s={20} />Next 12 hours</h3>{tn && (tn.events.length ? tn.events.map(e => <button key={e.id} className="gl prow" onClick={() => openEvent(e.id)}><span className="pth" style={{ width: 44, height: 44 }}>📅</span><span className="evi"><b>{e.title}</b><small>{new Date(e.starts_at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}{e.venue && ' · ' + e.venue}</small></span></button>) : <p className="pnote">No events coming up tonight.</p>)}
