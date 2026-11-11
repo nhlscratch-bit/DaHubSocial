@@ -76,8 +76,8 @@ export default function Arcade({ back, play }) {
   if (!st.access) return sheet('Arcade', back, <Unlock st={st} done={load} />)
   return sheet('Arcade', back, <div className="arc">
     <p className="arc-tag">Testing build · only the owner and testers can play</p>
-    {upd && <p className="arc-upd" role="status">{upd === 'checking' ? 'Checking for game updates…' : upd === 'updated' ? 'Games updated to the newest version.' : 'Some game files didn’t update. Try again in a minute.'}</p>}
-    {GAMES.map(g => <button key={g.id} className="arc-card" onClick={() => play(g.id)}><span className="arc-emo">{g.emoji}</span><span><b>{g.name}</b><small>{g.blurb}</small></span><I n="chev" s={20} /></button>)}
+    {upd && <p className="arc-upd" role="status">{upd === 'checking' ? 'Checking for game updates… games open in a moment.' : upd === 'updated' ? 'Games updated to the newest version.' : 'Some game files didn’t update. Try again in a minute.'}</p>}
+    {GAMES.map(g => <button key={g.id} className="arc-card" disabled={upd === 'checking'} onClick={() => play(g.id)}><span className="arc-emo">{g.emoji}</span><span><b>{g.name}</b><small>{g.blurb}</small></span><I n="chev" s={20} /></button>)}
     {st.admin && <OwnerPanel />}</div>)
 }
 
@@ -152,7 +152,10 @@ export function GamePlayer({ id, back, code }) {
     ;(async () => {
       try {
         if (!game) throw new Error('That game doesn’t exist.')
-        const { data: blob, error } = await sb.storage.from('arcade').download(`${id}/index.html`)
+        // Always fetch the newest index.html (no browser cache), so a fresh update shows right away.
+        const { data: su, error: ue } = await sb.storage.from('arcade').createSignedUrl(`${id}/index.html`, 60)
+        const r = su?.signedUrl ? await fetch(su.signedUrl + '&v=' + Date.now(), { cache: 'no-store' }).catch(() => null) : null
+        const blob = r?.ok ? await r.blob() : null, error = ue || (r && !r.ok ? { message: r.status === 400 || r.status === 404 ? 'not found' : 'denied' } : null)
         if (error || !blob) throw new Error(error?.message?.match(/not.?found|object/i) ? 'Game files aren’t ready yet. Open the Arcade once so it can update the games.' : 'You don’t have access to this game yet. Go back and unlock the Arcade, or try again.')
         let html = await blob.text()
         // Collect every asset under the game folder (up to 3 levels of subfolders) and sign them for this session.
