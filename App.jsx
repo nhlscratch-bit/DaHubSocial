@@ -15,6 +15,7 @@ import Radar from './Radar'
 import Rooms, { NewRoom } from './Rooms'
 import ShortsView from './Shorts'
 import { TeamPanel } from './Banner'
+import Onboarding from './Onboarding'
 import AfterDark from './AfterDark'
 import Arcade, { GamePlayer } from './Arcade'
 import { RoomGate, MiniPlayer } from './RoomView'
@@ -103,7 +104,7 @@ export default function App() {
   const openPost = (id, focus) => push({ t: 'post', id, focus }), openProfile = id => push({ t: 'profile', id }), openChat = id => push({ t: 'chat', id })
   const openDM = async other => { try { const cid = await startDM(me.id, other); setStack(s => s[s.length - 1]?.t === 'chat' ? s : [...s.filter(x => x.t !== 'newdm'), { t: 'chat', id: cid }]) } catch (e) { alert('Could not open the conversation: ' + e.message) } }
   const go = k => { sy.current = 0; setStack([]); if (k === 'create') { setTab('home'); setFk(x => x + 1) } else setTab(k) }
-  return <div className="app">{recovery && <NewPassword done={() => setRecovery(false)} />}
+  return <div className="app">{profile && profile.onboarded === false && <Onboarding me={me} profile={profile} done={refreshProfile} />}{recovery && <NewPassword done={() => setRecovery(false)} />}
     <header className="hdr"><img className="wm" src={wm} alt="DAHUB" />
       <div className="hbar"><button className="ib" onClick={() => go('discover')} aria-label="Search"><I n="search" s={22} /></button>
         <button className="ib" onClick={() => push({ t: 'notifs' })} aria-label="Notifications"><I n="bell" s={22} />{nb > 0 && <span className="badge">{nb > 99 ? '99+' : nb}</span>}</button>
