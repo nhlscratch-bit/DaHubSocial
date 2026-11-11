@@ -14,6 +14,7 @@ import PulseChamber from './PulseChamber'
 import Radar from './Radar'
 import Rooms, { NewRoom } from './Rooms'
 import ShortsView from './Shorts'
+import { TeamPanel } from './Banner'
 import AfterDark from './AfterDark'
 import Arcade, { GamePlayer } from './Arcade'
 import { RoomGate, MiniPlayer } from './RoomView'
@@ -79,10 +80,10 @@ export default function App() {
   useEffect(() => { document.body.classList.toggle('inshorts', (tab === 'shorts' && !stack.length) || stack[stack.length - 1]?.t === 'adshorts'); return () => document.body.classList.remove('inshorts') }, [tab, stack])
   const [playV, setPlayV] = useState(null), [recovery, setRecovery] = useState(false)
   useEffect(() => { if (uid) registerSW() }, [uid])
-  const [isAdmin, setIsAdmin] = useState(false), sy = useRef(0), prevLen = useRef(0)
+  const [isAdmin, setIsAdmin] = useState(false), [isStaff, setIsStaff] = useState(false), sy = useRef(0), prevLen = useRef(0)
   useEffect(() => { if (stack.length === 0 && prevLen.current > 0) requestAnimationFrame(() => window.scrollTo(0, sy.current)); prevLen.current = stack.length }, [stack.length])
   useEffect(() => { const f = e => setStack(s => [...s, { t: 'tag', tag: e.detail }]); window.addEventListener('open-tag', f); return () => window.removeEventListener('open-tag', f) }, [])
-  useEffect(() => { if (uid) sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle().then(({ data }) => setIsAdmin(!!data)) }, [uid])
+  useEffect(() => { if (uid) sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle().then(({ data }) => setIsAdmin(!!data)); if (uid) sb.rpc('am_staff').then(({ data }) => setIsStaff(!!data)) }, [uid])
   useEffect(() => { const f = () => setStack(s => s[s.length - 1]?.t === 'submit' ? s : [...s, { t: 'submit' }]); window.addEventListener('open-submit', f); return () => window.removeEventListener('open-submit', f) }, [])
   useEffect(() => { if (uid) warmIce() }, [uid])
   useEffect(() => {
@@ -108,9 +109,9 @@ export default function App() {
         <button className="ib" onClick={() => push({ t: 'notifs' })} aria-label="Notifications"><I n="bell" s={22} />{nb > 0 && <span className="badge">{nb > 99 ? '99+' : nb}</span>}</button>
         <button className="ib" onClick={() => push({ t: 'inbox' })} aria-label="Messages"><I n="chat" s={22} />{badge > 0 && <span className="badge">{badge}</span>}</button>
         <span className="ringav"><Avatar p={profile} size={46} online={online.has(me.id)} onClick={() => openProfile(me.id)} /></span></div></header>
-    <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} goDiscover={() => setTab('discover')} active={tab === 'home' && !top} /></main>
+    <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} goDiscover={() => setTab('discover')} go={k => push({ t: k })} active={tab === 'home' && !top} /></main>
     {tab === 'discover' && <div hidden={!!top}><Discover me={me} openProfile={openProfile} openOpps={openOpps} /></div>}
-    {tab === 'more' && !top && <More go={k => push(k === 'passport' ? { t: 'passport', id: me.id } : { t: k })} openProfile={openProfile} me={me} isAdmin={isAdmin} />}
+    {tab === 'more' && !top && <More go={k => push(k === 'passport' ? { t: 'passport', id: me.id } : { t: k })} openProfile={openProfile} me={me} isAdmin={isAdmin} isStaff={isStaff} />}
     {tab === 'shorts' && <div hidden={!!top}><Shorts me={me} active={tab === 'shorts' && !top} openPost={openPost} openProfile={openProfile} goCreate={() => go('create')} /></div>}
     {tab !== 'home' && tab !== 'discover' && tab !== 'more' && tab !== 'shorts' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>
       {tab === 'more' ? <><button className="wb p" onClick={() => push({ t: 'settings' })}>Settings and Activity</button><button className="wb p" onClick={openOpps}>Opportunity Board</button><button className="wb p" onClick={() => push({ t: 'media' })}>Media</button><button className="wb" onClick={() => push({ t: 'submit' })}>Get featured</button><button className="wb p" onClick={() => openProfile(me.id)}>My profile</button><button className="wb" onClick={() => push({ t: 'safety' })}>Blocked & muted</button>{isAdmin && <button className="wb p" onClick={() => push({ t: 'admin' })}>Admin</button>}<button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button><small className="bld inl">DAHUB {BUILD}</small></>
@@ -148,6 +149,7 @@ export default function App() {
     {top?.t === 'saved' && <Saved me={me} back={back} openPost={openPost} openProfile={openProfile} />}
     {top?.t === 'guidelines' && <Guidelines back={back} />}
     {top?.t === 'safety' && <Safety me={me} back={back} />}
+    {top?.t === 'team' && isStaff && <TeamPanel me={me} isAdmin={isAdmin} back={back} />}
     {top?.t === 'admin' && isAdmin && <Admin me={me} back={back} openPost={openPost} openProfile={openProfile} openOpp={openOpp} />}
     {top?.t === 'chat' && <Chat key={top.id} id={top.id} me={me} online={online} back={back} openProfile={openProfile} />}
     {top?.t !== 'room' && <MiniPlayer open={id => push({ t: 'room', id })} />}

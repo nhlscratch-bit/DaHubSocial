@@ -5,9 +5,10 @@ import Avatar from './Avatar'
 import I from './Icons'
 import { QotdCard } from './Daily'
 import Stories from './Stories'
+import Banner from './Banner'
 const TABS = [['for', 'For You'], ['following', 'Following'], ['trend', '🔥 Trending']]
 const FILT = [['all', 'Everything'], ['photo', 'Photos'], ['video', 'Videos'], ['text', 'Text only']]
-export default function Feed({ me, profile, openPost, openProfile, focusKey, goDiscover, active }) {
+export default function Feed({ me, profile, openPost, openProfile, focusKey, goDiscover, go, active }) {
   const [fc, setFc] = useState(null), [tab, setTab] = useState('for'), [posts, setPosts] = useState(null), [err, setErr] = useState('')
   const [text, setText] = useState(''), [files, setFiles] = useState([]), [aud, setAud] = useState('public'), [busy, setBusy] = useState(false), [flt, setFlt] = useState('all'), [fOpen, setFOpen] = useState(false), [poll, setPoll] = useState(null)
   const input = useRef(), photoIn = useRef(), videoIn = useRef()
@@ -54,6 +55,7 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
     } catch (e) { setErr(friendly(e)) } finally { setBusy(false) }
   }
   return <div>
+    <Banner go={go} />
     <Stories me={me} profile={profile} />
     <QotdCard openPost={openPost} />
     <div className="comp"><div className="crow"><Avatar p={profile} size={46} /><span className="cgap" />
