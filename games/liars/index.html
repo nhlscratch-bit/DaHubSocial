@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>DAHUB CAP or Not</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;600;700&family=Russo+One&family=Rajdhani:wght@600;700&family=Permanent+Marker&display=swap">
 <style>
 /* Layout: phone-first table. Three opponents across the top, the table (claim + pile) in the middle, your seat and hand at the bottom. */
 :root{--bg:#07050d;--neon:#19e0f0;--neon2:#c79bff;--red:#ff3b5c;--gold:#ffd77a;--ok:#3ddc84;--fg:#f4f1ff;--dim:#a9a3c4;--panel:#120d22e6;--line:#ffffff22;
@@ -39,11 +39,93 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .btn:disabled{opacity:.4;pointer-events:none}
 .btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,#fff5,transparent);transform:skewX(-20deg);animation:shine 3.2s infinite}
 @keyframes shine{0%,70%{left:-60%}100%{left:140%}}
-.picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;max-width:420px}
-.pk{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px}
-.pk img{width:100%;aspect-ratio:1;object-fit:cover;object-position:top;border-radius:10px;background:#0006}
-.pk b{font:400 12px var(--display)}.pk small{font-size:10.5px;color:var(--dim)}
-.pk[aria-pressed=true]{border-color:var(--neon);box-shadow:0 0 16px #19e0f088}
+/* Character Room: electric-blue select screen. Portrait = hero on top, card strip, stats, buttons. Landscape = cards left, hero right (like the reference). */
+.cr{position:fixed;inset:0;z-index:6;overflow:hidden;color:#fff;font-family:"Rajdhani",var(--body);display:grid;
+  grid-template-rows:auto auto minmax(0,1fr) auto auto;grid-template-areas:"top" "title" "hero" "cards" "bot";
+  padding:max(8px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom));
+  background:radial-gradient(70% 45% at 70% 32%,#4b4dff55,transparent 70%),radial-gradient(60% 40% at 15% 85%,#1a6bff33,transparent 70%),linear-gradient(165deg,#0d2378 0%,#0a1c66 30%,#071352 62%,#040a2c 100%)}
+.cr-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.cr-bg .rain{position:absolute;inset:-30% -30%;opacity:.55;background:repeating-linear-gradient(100deg,transparent 0 26px,#a9d8ff26 26px 27px,transparent 27px 71px);animation:crRain .5s linear infinite}
+.cr-bg .rain.r2{opacity:.35;background:repeating-linear-gradient(100deg,transparent 0 47px,#cfe9ff30 47px 48.5px,transparent 48.5px 113px);animation-duration:.8s}
+@keyframes crRain{to{transform:translate(-14px,80px)}}
+.cr-bg .glow{position:absolute;right:-20%;top:8%;width:90%;height:60%;background:radial-gradient(closest-side,#7a5cff55,#2a4bff22 60%,transparent);filter:blur(10px);animation:crPulse 3s ease-in-out infinite alternate}
+@keyframes crPulse{to{opacity:.55;transform:scale(1.06)}}
+.shard{position:absolute;background:linear-gradient(135deg,#e8f7ff 0%,#8cc8ff 30%,#2f6bff 65%,#1b2fa6 100%);opacity:.8;filter:drop-shadow(0 0 6px #5fb4ff);animation:crFloat 6s ease-in-out infinite alternate}
+.shard::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 40%,#fff9 50%,transparent 60%);mix-blend-mode:screen}
+@keyframes crFloat{to{transform:translate(var(--dx),var(--dy)) rotate(var(--dr))}}
+.cr > *:not(.cr-bg){position:relative;z-index:1}
+/* top */
+.cr-top{grid-area:top;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.cr-badge{display:flex;align-items:center;gap:8px;min-width:0}
+.cr-badge .hex{width:46px;height:46px;flex:none;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:linear-gradient(135deg,#ffd77a,#e0891a);padding:2px}
+.cr-badge .hex img{width:100%;height:100%;object-fit:cover;object-position:top;clip-path:inherit;background:#1a2a80;display:block}
+.cr-badge small{display:block;font:italic 700 11px "Rajdhani","Chakra Petch",sans-serif;letter-spacing:1px;color:#cfe6ff}
+.cr-badge b{display:block;font:italic 700 13px "Rajdhani","Chakra Petch",sans-serif;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.cr-badge .bar{display:block;width:120px;height:5px;margin:3px 0 1px;background:#ffffff22;clip-path:polygon(0 0,100% 0,97% 100%,0 100%)}
+.cr-badge .bar i{display:block;height:100%;background:linear-gradient(90deg,#4fe3ff,#ffe36a);width:0;transition:width .4s}
+.cr-badge em{font:italic 600 11px "Rajdhani","Chakra Petch",sans-serif;color:#cfe6ff}
+.cr-cnt{display:flex;gap:6px}
+.cr-cnt span{display:flex;align-items:center;gap:6px;padding:4px 14px 4px 10px;background:linear-gradient(90deg,#0b1a5ccc,#13287acc);border:1px solid #6fa8ff55;transform:skewX(-14deg);font:italic 700 15px "Rajdhani","Chakra Petch",sans-serif}
+.cr-cnt span > *{transform:skewX(14deg)}
+.cr-cnt .gem{width:13px;height:13px;background:linear-gradient(135deg,#bff3ff,#21c7ff 50%,#0b6bd8);clip-path:polygon(50% 0,100% 38%,50% 100%,0 38%);filter:drop-shadow(0 0 4px #39d0ff)}
+.cr-cnt .zap{width:15px;height:15px;border-radius:50%;background:radial-gradient(#d6ff5a,#5ccf1a);display:grid;place-items:center;font-size:10px;color:#1c3a00;font-style:normal}
+/* title */
+.cr-title{grid-area:title;margin:4px 0 0;line-height:.86;font:400 clamp(30px,10vw,58px) "Russo One",var(--display);transform:skewX(-12deg);display:grid;grid-template-columns:auto auto;justify-content:start;align-items:end;column-gap:8px;padding-left:4px}
+.cr-title .t{grid-column:1/3;background:linear-gradient(180deg,#f2fbff 0%,#9fe0ff 30%,#2f8bff 62%,#1240c8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px #d6f1ff;filter:drop-shadow(0 0 10px #2a8bffcc) drop-shadow(0 3px 0 #06155a);letter-spacing:1px}
+.cr-title .t.r2{grid-column:2;margin-top:-2px}
+.cr-title small{grid-column:1;grid-row:2;font:italic 700 clamp(10px,3vw,15px)/1 "Rajdhani","Chakra Petch",sans-serif;color:#bfe4ff;text-align:right;letter-spacing:1px;text-shadow:0 0 8px #2a8bff;padding-bottom:6px}
+/* hero */
+.cr-hero{grid-area:hero;position:relative;min-height:0;display:flex;justify-content:flex-end;align-items:flex-end;margin:0 -12px}
+.cr-hero .frame{position:absolute;right:4%;top:6%;bottom:12%;width:min(72%,420px);clip-path:polygon(18% 0,100% 6%,92% 100%,0 90%);background:linear-gradient(160deg,#5a7bff55,#7a3dff33 50%,transparent);border:0;filter:drop-shadow(0 0 18px #6a5cff)}
+.cr-hero .frame::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(100deg,transparent 0 18px,#cfe9ff1a 18px 19px)}
+.cr-hero img{position:relative;height:100%;max-height:100%;max-width:92%;object-fit:contain;object-position:right bottom;filter:drop-shadow(0 0 2px #cfe9ff) drop-shadow(0 0 22px #6a6bffaa) drop-shadow(-12px 10px 18px #000a);-webkit-mask:linear-gradient(180deg,#000 78%,transparent 100%);mask:linear-gradient(180deg,#000 78%,transparent 100%)}
+.cr-hero img.in{animation:crIn .45s cubic-bezier(.2,1.2,.4,1) both}
+@keyframes crIn{from{opacity:0;transform:translateX(40px) scale(1.04);filter:brightness(2.5) drop-shadow(0 0 30px #8fd0ff)}}
+.cr-name{position:absolute;right:14px;bottom:6%;text-align:right;transform:skewX(-8deg) rotate(-6deg);transform-origin:right bottom}
+.cr-name::before{content:"";position:absolute;inset:-4px -12px -4px -26px;z-index:-1;background:linear-gradient(100deg,#06103ee6,#0b1a5cd9);clip-path:polygon(8% 0,100% 0,96% 100%,0 100%);box-shadow:inset 0 0 0 1px #6fa8ff;border-top:2px solid #8fc2ff}
+.cr-name b{display:block;font:400 clamp(34px,11vw,60px)/1 "Permanent Marker",var(--display);background:linear-gradient(180deg,#ffffff 0%,#dbe9ff 45%,#8fb4ff 70%,#4e6bff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1.5px #0a1446;filter:drop-shadow(0 0 8px #4f8bffcc) drop-shadow(0 3px 0 #050c33);padding:0 4px;letter-spacing:1px}
+.cr-name span{display:block;font:italic 700 clamp(15px,4.4vw,22px)/1.1 "Rajdhani","Chakra Petch",sans-serif;color:#fff;text-shadow:0 2px 0 #0008,0 0 8px #4f8bff;margin-top:-2px;padding-right:6px}
+/* cards */
+.cr-cards{grid-area:cards;display:flex;gap:10px;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;padding:10px 10px 6px 14px;margin:0 -12px;scrollbar-width:none}
+.cr-cards::-webkit-scrollbar{display:none}
+.crc{flex:none;width:clamp(96px,27vw,150px);scroll-snap-align:center;display:flex;flex-direction:column;gap:6px;transition:transform .25s}
+.crc .pic{position:relative;aspect-ratio:.66;transform:skewX(-8deg);clip-path:polygon(16% 0,100% 0,100% 90%,84% 100%,0 100%,0 10%);background:linear-gradient(180deg,#8fc2ff,#2a5cff 50%,#5fd0ff);padding:2px;transition:filter .25s}
+.crc .pic > div{position:relative;width:100%;height:100%;clip-path:inherit;overflow:hidden;background:radial-gradient(90% 70% at 50% 30%,#2a49c8,#0b1a5c 70%,#06103e)}
+.crc .pic > div::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(100deg,transparent 0 14px,#cfe9ff1c 14px 15px);z-index:1}
+.crc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%;transform:skewX(8deg) scale(1.18);filter:grayscale(1) brightness(.72) contrast(1.15);transition:filter .3s}
+.crc .pic > div::after{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,#1a3cff22,#0a1446aa);mix-blend-mode:multiply;transition:opacity .3s}
+.crc .nm{transform:skewX(-8deg);background:linear-gradient(90deg,#0a1650e6,#162d8ae6);border-top:1.5px solid #7fb6ff;box-shadow:0 0 0 1px #2a4bbf inset;padding:5px 6px;text-align:center;font:italic 700 clamp(12px,3.6vw,16px)/1 "Rajdhani","Chakra Petch",sans-serif;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#dbe9ff}
+.crc[aria-pressed=true]{transform:translateY(-6px) scale(1.04)}
+.crc[aria-pressed=true] .pic{background:linear-gradient(180deg,#e8f7ff,#4fd8ff 40%,#2a5cff);filter:drop-shadow(0 0 10px #4fb8ff) drop-shadow(0 0 22px #3a5cff)}
+.crc[aria-pressed=true] img{filter:none}
+.crc[aria-pressed=true] .pic > div::after{opacity:0}
+.crc[aria-pressed=true] .nm{color:#fff;background:linear-gradient(90deg,#1a3cc8,#2f6bff);border-top-color:#e8f7ff;text-shadow:0 0 8px #8fd0ff}
+/* bottom */
+.cr-bot{grid-area:bot;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"stats stats stats" "ret id act";gap:8px 8px;align-items:center;padding-top:6px}
+.cr-stats{grid-area:stats;display:flex;justify-content:space-around;align-items:center;gap:4px;padding:7px 14px;transform:skewX(-14deg);background:linear-gradient(90deg,#071242e6,#0d1e66e6 50%,#071242e6);border:1px solid #4f7fff66;border-left:3px solid #6fb4ff}
+.cr-stats > span{transform:skewX(14deg);font:italic 700 clamp(11px,3.3vw,15px) "Rajdhani","Chakra Petch",sans-serif;letter-spacing:.5px;white-space:nowrap;color:#e8f1ff}
+.cr-stats b{font-size:1.45em;color:#59c8ff;margin-left:4px}.cr-stats b.y{color:#ffd23f}.cr-stats i{font-style:inherit;color:#e8f1ff}
+.cr-btn{position:relative;height:46px;padding:0 14px;white-space:nowrap;transform:skewX(-14deg);background:linear-gradient(180deg,#3d74ff 0%,#2350e0 45%,#14309e 100%);border:1.5px solid #9cc8ff;box-shadow:0 0 14px #2f6bff99,inset 0 1px 0 #ffffff88,inset 0 -3px 0 #0b1f6e;font:italic 700 clamp(15px,4.4vw,19px) "Rajdhani","Chakra Petch",sans-serif;letter-spacing:1px;text-transform:uppercase;color:#fff;text-shadow:0 2px 0 #0b1f6e}
+.cr-btn > *{display:inline-flex;align-items:center;gap:8px;transform:skewX(14deg)}
+.cr-btn:active{transform:skewX(-14deg) translateY(2px);filter:brightness(1.15)}
+.cr-btn.ret{grid-area:ret}
+.cr-btn.id{grid-area:id;padding-left:52px}
+.cr-btn.id img{position:absolute;left:6px;bottom:2px;width:46px;height:52px;object-fit:cover;object-position:top;transform:skewX(14deg);filter:drop-shadow(0 0 4px #8fd0ff)}
+.cr-btn.act{grid-area:act;padding-left:14px}
+.cr-btn.act .city{font-size:18px;font-style:normal}
+/* landscape: cards left, hero right, like the reference */
+@media (min-aspect-ratio: 6/5){
+  .cr{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"top top" "title hero" "cards hero" "bot bot"}
+  .cr-hero{margin:0;align-items:flex-end}
+  .cr-hero img{max-width:100%}
+  .cr-cards{margin:0;padding:12px 6px;align-items:flex-end}
+  .crc{width:clamp(84px,24vh,180px)}
+  .cr-title{font-size:clamp(26px,8.5vh,64px)}
+  .cr-name b{font-size:clamp(26px,8vh,58px)}.cr-name span{font-size:clamp(13px,3.6vh,22px)}
+  .cr-hero img{max-width:110%}
+  .cr-bot{grid-template-columns:auto minmax(0,1fr) auto auto;grid-template-areas:"ret stats id act"}
+}
+
 .sheet{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;max-width:420px;text-align:left;font-size:14.5px;line-height:1.45;max-height:70vh;overflow:auto}
 .sheet h3{font:400 16px var(--display);margin:0 0 6px;color:var(--gold)}.sheet p{margin:6px 0}.sheet b{color:#fff}
 /* table */
@@ -134,10 +216,21 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
     <button class="btn ghost" id="bSound">Sound: on</button>
   </section>
 
-  <section id="pick" class="screen" hidden>
-    <h2 class="logo" style="font-size:30px">PICK YOUR<br>PLAYER</h2>
-    <div class="picker" id="picker"></div>
-    <button class="btn" id="bPickDone">Lock in</button>
+  <section id="pick" class="cr" hidden aria-label="Character room">
+    <div class="cr-bg"><i class="glow"></i><i class="rain"></i><i class="rain r2"></i><div id="crShards"></div></div>
+    <header class="cr-top">
+      <div class="cr-badge"><span class="hex"><img id="crBadgeImg" alt=""></span><div><small>YOUR PLAYER</small><b id="crBadgeName"></b><span class="bar"><i id="crBadgeBar"></i></span><em id="crBadgeRec"></em></div></div>
+      <div class="cr-cnt"><span title="Total wins on this device"><i class="gem"></i><b id="crWins">0</b></span><span title="Games played on this device"><i class="zap">⚡</i><b id="crGames">0</b></span></div>
+    </header>
+    <h2 class="cr-title"><span class="t">CHARACTER</span><small>CAP<br>OR NOT</small><span class="t r2">ROOM</span></h2>
+    <div class="cr-hero"><i class="frame"></i><img id="crHeroImg" alt=""><div class="cr-name"><b id="crName"></b><span id="crPen"></span></div></div>
+    <div class="cr-cards" id="crCards" role="listbox" aria-label="Characters"></div>
+    <footer class="cr-bot">
+      <button class="cr-btn ret" id="crBack"><span>Return</span></button>
+      <div class="cr-stats"><span>WINS<b class="y" id="sW">0</b><i>/<span id="sG">0</span></i></span><span>GOOD CAPS<b id="sC">0</b><i>/<span id="sCT">0</span></i></span><span>CAUGHT<b id="sK">0</b></span></div>
+      <button class="cr-btn id" id="bPickDone"><img id="crIdImg" alt=""><span>Lock in</span></button>
+      <button class="cr-btn act" id="crRules"><span><i class="city">🏙️</i>Rules</span></button>
+    </footer>
   </section>
 
   <section id="rules" class="screen" hidden>
@@ -230,7 +323,7 @@ const SFX = {
 let me = ls.get('lp.char'); if (!CHARS[me]) me = 'mm'
 let P = [], tableCard = 'K', turn = 0, last = null, pileN = 0, busy = false, gameId = 0, sel = new Set(), waitHuman = null
 
-function show(id){ for (const s of ['menu', 'pick', 'rules', 'end']) $(s).hidden = s !== id; $('game').hidden = id !== 'game'; $('topbtns').hidden = id !== 'game' }
+function show(id){ for (const s of ['menu', 'rules', 'end']) $(s).hidden = s !== id; $('pick').hidden = id !== 'pick'; $('game').hidden = id !== 'game'; $('topbtns').hidden = id !== 'game' }
 function flash(){ const f = $('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); const a = $('app'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake') }
 async function banner(text, sub = '', kind = '', ms = 1300){ const b = $('banner'); b.className = 'banner ' + kind; b.innerHTML = `<div>${text}${sub ? `<small>${sub}</small>` : ''}</div>`; b.hidden = false; await sleep(ms); b.hidden = true }
 const log = t => { $('log').textContent = t }
@@ -328,6 +421,7 @@ async function resolveCall(caller, id){
   for (const c of cards) { const e = cardEl(c, 'flip'); R.appendChild(e); SFX.flip(); await sleep(260) }
   const lied = cards.some(c => !isTrue(c)); await sleep(400)
   R.querySelectorAll('.card').forEach((e, k) => e.classList.add(isTrue(cards[k]) ? 'good' : 'bad'))
+  if (caller.human) bump(caller.c, lied ? 'caps' : 'miss'); if (tgt.human && lied) bump(tgt.c, 'caught')
   const loser = lied ? tgt : caller
   if (lied) { SFX.bad(); setPose(tgt, 'caught'); bubble(tgt, tgt.human ? 'Caught!' : CHARS[tgt.c].caught) } else { SFX.good(); setPose(tgt, 'clean'); bubble(tgt, 'Told you.') }
   await banner(lied ? 'CAUGHT LYING' : 'NO CAP', lied ? `${tgt.human ? 'You' : CHARS[tgt.c].name} pays` : `${caller.human ? 'You' : CHARS[caller.c].name} pays for that call`, lied ? '' : 'ok', 1500)
@@ -373,6 +467,7 @@ function endGame(id){
   if (id !== gameId) return
   const w = alive()[0], youWon = w && w.human
   if (w) { setPose(w, 'win') }
+  bump(P[0].c, 'games'); if (youWon) bump(P[0].c, 'wins')
   youWon ? SFX.win() : SFX.out(); confetti()
   setTimeout(() => {
     if (id !== gameId) return
@@ -385,17 +480,44 @@ function endGame(id){
 function confetti(){ const c = $('conf'); c.innerHTML = ''; for (let i = 0; i < 26; i++) { const e = document.createElement('i'); e.style.left = rnd(100) + '%'; e.style.animationDuration = 1.8 + Math.random() * 1.6 + 's'; e.style.animationDelay = Math.random() * 0.6 + 's'; c.appendChild(e) } setTimeout(() => c.innerHTML = '', 4200) }
 
 // ---- menus
+// Real per-device stats for the Character Room (no made-up numbers).
+const ST = () => { try { return JSON.parse(ls.get('lp.stats') || '{}') || {} } catch { return {} } }
+function bump(c, k){ const s = ST(); s[c] = s[c] || {}; s[c][k] = (s[c][k] || 0) + 1; ls.set('lp.stats', JSON.stringify(s)) }
+function shards(){
+  const box = $('crShards'); if (box.childElementCount) return
+  const shapes = ['polygon(50% 0,100% 60%,40% 100%,0 40%)', 'polygon(0 0,100% 30%,60% 100%)', 'polygon(30% 0,100% 20%,70% 100%,0 80%)', 'polygon(50% 0,100% 100%,0 70%)']
+  for (let i = 0; i < 16; i++) { const e = document.createElement('i'); e.className = 'shard'; const z = 10 + rnd(46)
+    Object.assign(e.style, { width: z + 'px', height: z * (1 + Math.random()) + 'px', left: rnd(100) + '%', top: rnd(100) + '%', clipPath: shapes[i % 4], opacity: (0.35 + Math.random() * 0.55).toFixed(2), transform: `rotate(${rnd(360)}deg)`, animationDuration: 4 + rnd(5) + 's', animationDelay: -rnd(5) + 's' })
+    e.style.setProperty('--dx', rnd(30) - 15 + 'px'); e.style.setProperty('--dy', rnd(30) - 15 + 'px'); e.style.setProperty('--dr', rnd(60) - 30 + 'deg'); box.appendChild(e) }
+}
+function crSelect(k, anim){
+  me = k; ls.set('lp.char', k); const c = CHARS[k], s = ST(), m = s[k] || {}
+  document.querySelectorAll('.crc').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k))
+  const hero = $('crHeroImg'); hero.src = A(`art/${k}/portrait.webp`); hero.alt = c.name
+  if (anim) { hero.classList.remove('in'); void hero.offsetWidth; hero.classList.add('in') }
+  $('crName').textContent = c.name.toUpperCase(); $('crPen').textContent = `${c.penE} ${c.pen}`
+  $('crBadgeImg').src = $('crIdImg').src = A(`art/${k}/portrait.webp`); $('crBadgeName').textContent = c.name
+  const g = m.games || 0, w = m.wins || 0, calls = (m.caps || 0) + (m.miss || 0)
+  $('crBadgeBar').style.width = (g ? Math.round(100 * w / g) : 0) + '%'; $('crBadgeRec').textContent = g ? `${w} W · ${g - w} L` : 'No games yet'
+  $('sW').textContent = w; $('sG').textContent = g; $('sC').textContent = m.caps || 0; $('sCT').textContent = calls; $('sK').textContent = m.caught || 0
+  let tw = 0, tg = 0; for (const v of Object.values(s)) { tw += v.wins || 0; tg += v.games || 0 } $('crWins').textContent = tw; $('crGames').textContent = tg
+  $('whoName').textContent = c.name
+}
 function pickUI(){
-  $('picker').innerHTML = ''
-  for (const [k, c] of Object.entries(CHARS)) { const b = document.createElement('button'); b.className = 'pk'; b.setAttribute('aria-pressed', k === me)
-    b.innerHTML = `<img alt="" src="${A(`art/${k}/portrait.webp`)}"><b>${c.name}</b><small>${c.penE} ${c.pen}</small>`
-    b.onclick = () => { SFX.click(); me = k; ls.set('lp.char', k); pickUI() }; $('picker').appendChild(b) }
-  $('whoName').textContent = CHARS[me].name
+  shards(); const box = $('crCards'); box.innerHTML = ''
+  for (const [k, c] of Object.entries(CHARS)) { const b = document.createElement('button'); b.className = 'crc'; b.dataset.k = k; b.setAttribute('role', 'option'); b.setAttribute('aria-label', `${c.name}, ${c.pen}`)
+    b.innerHTML = `<span class="pic"><div><img alt="" src="${A(`art/${k}/portrait.webp`)}"></div></span><span class="nm">${c.name}</span>`
+    b.onclick = () => { if (me === k) return; SFX.click(); crSelect(k, true); b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }) }
+    box.appendChild(b) }
+  crSelect(me, true)
+  requestAnimationFrame(() => box.querySelector('[aria-pressed=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' }))
 }
 document.addEventListener('pointerdown', () => { audio(); if (AC && AC.state === 'suspended') AC.resume() }, true)
 $('bPlay').onclick = () => { SFX.click(); newGame() }
 $('bWho').onclick = () => { SFX.click(); pickUI(); show('pick') }
 $('bPickDone').onclick = () => { SFX.click(); show('menu') }
+$('crBack').onclick = () => { SFX.click(); show('menu') }
+$('crRules').onclick = () => { SFX.click(); show('rules') }
 $('bRules').onclick = () => { SFX.click(); show('rules') }
 $('bRulesDone').onclick = () => { SFX.click(); show('menu') }
 $('bSound').onclick = () => { soundOn = !soundOn; ls.set('lp.sound', soundOn ? '1' : '0'); $('bSound').textContent = 'Sound: ' + (soundOn ? 'on' : 'off'); SFX.click() }
