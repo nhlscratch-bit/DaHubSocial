@@ -13,6 +13,7 @@ import Discover from './Discover'
 import PulseChamber from './PulseChamber'
 import Radar from './Radar'
 import Rooms, { NewRoom } from './Rooms'
+import ShortsView from './Shorts'
 import AfterDark from './AfterDark'
 import Arcade, { GamePlayer } from './Arcade'
 import { RoomGate, MiniPlayer } from './RoomView'
@@ -75,7 +76,7 @@ export default function App() {
     refresh(); const ch = sb.channel('notif-' + uid).on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` }, refresh).subscribe()
     window.addEventListener('notif-read', refresh); return () => { sb.removeChannel(ch); window.removeEventListener('notif-read', refresh) }
   }, [uid])
-  useEffect(() => { document.body.classList.toggle('inshorts', tab === 'shorts' && !stack.length); return () => document.body.classList.remove('inshorts') }, [tab, stack.length])
+  useEffect(() => { document.body.classList.toggle('inshorts', (tab === 'shorts' && !stack.length) || stack[stack.length - 1]?.t === 'adshorts'); return () => document.body.classList.remove('inshorts') }, [tab, stack])
   const [playV, setPlayV] = useState(null), [recovery, setRecovery] = useState(false)
   useEffect(() => { if (uid) registerSW() }, [uid])
   const [isAdmin, setIsAdmin] = useState(false), sy = useRef(0), prevLen = useRef(0)
@@ -128,7 +129,8 @@ export default function App() {
     {top?.t === 'event' && <EventView key={top.id} id={top.id} me={me} back={back} openProfile={openProfile} deleted={back} />}
     {top?.t === 'pulse' && <PulseChamber back={back} openRadar={() => push({ t: 'radar' })} open={openDest} />}
     {top?.t === 'radar' && <Radar back={back} open={openDest} />}
-    {top?.t === 'afterdark' && <AfterDark me={me} profile={profile} back={back} openPost={openPost} openProfile={openProfile} openRoom={id => push({ t: 'room', id })} openEvent={id => push({ t: 'event', id })} newRoom={() => push({ t: 'newroom', ad: true })} />}
+    {top?.t === 'afterdark' && <AfterDark me={me} profile={profile} back={back} openPost={openPost} openProfile={openProfile} openRoom={id => push({ t: 'room', id })} openEvent={id => push({ t: 'event', id })} newRoom={() => push({ t: 'newroom', ad: true })} openShorts={() => push({ t: 'adshorts' })} />}
+    {top?.t === 'adshorts' && <AdShorts me={me} back={back} openPost={openPost} openProfile={openProfile} />}
     {top?.t === 'arcade' && <Arcade back={back} play={id => push({ t: 'game', id })} />}
     {top?.t === 'game' && <GamePlayer key={top.id} id={top.id} code={top.code} back={back} />}
     {top?.t === 'rooms' && <Rooms me={me} profile={profile} back={back} create={() => push({ t: 'newroom' })} open={id => push({ t: 'room', id })} />}
@@ -153,4 +155,9 @@ export default function App() {
     <nav className={top?.t === 'profile' || top?.t === 'passport' ? 'over' : undefined}>{NAV.map(([k, i, l]) => k === 'create' ? <button key={k} className="fabn" onClick={() => go(k)} aria-label="Create"><I n="plus" s={34} /></button>
       : <button key={k} className="n" aria-current={tab === k && !top ? 'page' : undefined} onClick={() => go(k)}><I n={i} s={26} />{l}</button>)}</nav>
   </div>
+}
+
+function AdShorts({ me, back, openPost, openProfile }) {
+  useEffect(() => { document.body.classList.add('hidenav'); return () => document.body.classList.remove('hidenav') }, [])
+  return <ShortsView ad me={me} active back={back} openPost={openPost} openProfile={openProfile} goCreate={back} />
 }

@@ -6,6 +6,7 @@ import { FEATURES } from './features'
 import { RCAT, joinRoom, micSupported } from './roomsEngine'
 import { roomRow, meOf } from './Rooms'
 import Verified from './Verified'
+import Stories from './Stories'
 import I from './Icons'
 import moon from './mi-afterdark.png'
 const RICON = ['shield', 'people', 'block', 'lock', 'moon']
@@ -72,7 +73,7 @@ function AdRooms({ me, profile, openRoom, newRoom }) {
     {d?.scheduled?.length > 0 && <><h3><I n="cal2" s={20} />Coming up</h3>{d.scheduled.map(r => card(r, false))}</>}
   </div>
 }
-export default function AfterDark({ me, profile, back, openPost, openProfile, openRoom, openEvent, newRoom }) {
+export default function AfterDark({ me, profile, back, openPost, openProfile, openRoom, openEvent, newRoom, openShorts }) {
   const [st, setSt] = useState(undefined), [tab, setTab] = useState('feed'), [posts, setPosts] = useState(null), [tn, setTn] = useState(null), [err, setErr] = useState(''), [menu, setMenu] = useState(false)
   const status = async () => { const { data, error } = await sb.rpc('ad_status'); if (error) return setErr(friendly(error)); setSt(data) }
   const load = async () => { setErr(''); const { data, error } = await sb.from('posts').select(SEL).eq('after_dark', true).order('created_at', { ascending: false }).limit(40); if (error) return setErr(friendly(error)); const hid = await hiddenIds(); setPosts((data || []).filter(p => !hid.has(p.author.id))) }
@@ -94,8 +95,8 @@ export default function AfterDark({ me, profile, back, openPost, openProfile, op
       {err && <p className="msg" role="alert">{err} <button className="link" onClick={() => { status(); st?.ok && load() }}>Retry</button></p>}
       {st && !st.ok && <Gate st={st} done={status} />}
       {st?.ok && <>
-        <div className="adtabs">{[['feed', 'Feed', 'comment'], ['rooms', 'Rooms', 'live'], ['tonight', 'Tonight', 'cal2'], ['rules', 'Rules', 'shield']].map(([k, l, ic]) => <button key={k} aria-selected={tab === k} onClick={() => setTab(k)}><I n={ic} s={18} />{l}</button>)}</div>
-        {tab === 'feed' && <><Composer me={me} profile={profile} creator={st.creator} posted={load} />
+        <div className="adtabs">{[['feed', 'Feed', 'comment'], ['shorts', 'Shorts', 'play'], ['rooms', 'Rooms', 'live'], ['tonight', 'Tonight', 'cal2'], ['rules', 'Rules', 'shield']].map(([k, l, ic]) => <button key={k} aria-selected={tab === k} onClick={() => k === 'shorts' ? openShorts() : setTab(k)}><I n={ic} s={18} />{l}</button>)}</div>
+        {tab === 'feed' && <><Stories ad me={me} profile={profile} /><Composer me={me} profile={profile} creator={st.creator} posted={load} />
           {posts === null && <div className="skel"><i /><i /></div>}
           {posts?.length === 0 && <div className="adempty"><img src={moon} alt="" /><b>Quiet tonight</b><span>Be the first to post After Dark.</span></div>}
           <div style={{ paddingBottom: 140 }}>{posts?.map(p => <PostCard key={p.id} post={p} me={me} openPost={openPost} openProfile={openProfile} />)}</div></>}

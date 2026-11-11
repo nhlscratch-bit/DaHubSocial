@@ -1,28 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { sb, SEL, mediaUrl, hiddenIds, friendly } from './supabase'
+import { useMediaUrls } from './admedia'
 import Avatar from './Avatar'
 import I from './Icons'
 import ReportSheet from './ReportSheet'
 import Verified from './Verified'
 let sound = true
 const vid = p => [...p.post_media].sort((a, b) => a.position - b.position).find(m => m.media_type === 'video')
-export default function Shorts({ me, active, openPost, openProfile, goCreate }) {
+// ad = After Dark Shorts: only After Dark video posts (signed media links, 18+ videos blurred until tapped)
+export default function Shorts({ me, active, openPost, openProfile, goCreate, ad = false, back }) {
   const [tab, setTab] = useState('for'), [items, setItems] = useState(null), [err, setErr] = useState(''), [cur, setCur] = useState(0), [rel, setRel] = useState({}), [rep, setRep] = useState(null), [menu, setMenu] = useState(null), [muted, setMuted] = useState(false)
   const box = useRef()
   const load = useCallback(async () => {
     setErr(''); setItems(null); setCur(0); box.current && (box.current.scrollTop = 0)
     const { data: f } = await sb.from('follows').select('followee_id,status').eq('follower_id', me.id); setRel(Object.fromEntries((f || []).map(x => [x.followee_id, x.status])))
-    let q = sb.from('posts').select(SEL).eq('after_dark', false).eq('kind', 'video').order('created_at', { ascending: false }).limit(40)
+    let q = sb.from('posts').select(SEL).eq('after_dark', !!ad).eq('kind', 'video').order('created_at', { ascending: false }).limit(40)
     if (tab === 'following') { const ids = (f || []).filter(x => x.status === 'accepted').map(x => x.followee_id); if (!ids.length) return setItems([]); q = q.in('author_id', ids) }
     const { data, error } = await q; if (error) return setErr(error.message)
     const hid = await hiddenIds(); setItems((data || []).filter(p => vid(p) && !hid.has(p.author.id)))
-  }, [tab, me.id])
+  }, [tab, me.id, ad])
   useEffect(() => { load() }, [load])
   useEffect(() => { if (active) { const s = box.current; s && s.dispatchEvent(new Event('scroll')) } }, [active])
   const onScroll = e => { const i = Math.round(e.currentTarget.scrollTop / e.currentTarget.clientHeight); if (i !== cur) setCur(i) }
   async function follow(id) { const { error } = await sb.from('follows').insert({ follower_id: me.id, followee_id: id }); error ? alert(friendly(error)) : setRel(r => ({ ...r, [id]: 'pending-or-accepted' })) }
   const block = async p => { setMenu(null); if (!confirm(`Block @${p.author.username}? You'll both be unfollowed and you won't see their posts.`)) return; const { error } = await sb.from('blocks').insert({ blocker_id: me.id, blocked_id: p.author.id }); error ? alert('Could not block: ' + error.message) : setItems(a => a.filter(x => x.author.id !== p.author.id)) }
-  return <div className="shorts">
+  return <div className={'shorts' + (ad ? ' adshorts' : '')}>
+    {ad && back && <button className="adshback" onClick={back} aria-label="Back to After Dark">←</button>}
     <div className="shtabs">{[['for', 'For You'], ['following', 'Following']].map(([k, l]) => <button key={k} aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>)}</div>
     <div className="shscroll" ref={box} onScroll={onScroll}>
       {err && <div className="shmsg"><p>{err}</p><button className="wb p sm" onClick={load}>Retry</button></div>}
@@ -41,12 +44,13 @@ export default function Shorts({ me, active, openPost, openProfile, goCreate }) 
 
 function Slide({ p, me, on, near, rel, muted, setMuted, openPost, openProfile, follow, more }) {
   const v = useRef(), [paused, setPaused] = useState(false), [pct, setPct] = useState(0), [port, setPort] = useState(true), [heart, setHeart] = useState(false), [rx, setRx] = useState(p.post_reactions), tap = useRef(0), timer = useRef()
-  const mine = rx.find(r => r.user_id === me.id), src = mediaUrl(vid(p).storage_path)
+  const urlOf = useMediaUrls([vid(p)]), [reveal, setReveal] = useState(!p.sensitive)
+  const mine = rx.find(r => r.user_id === me.id), src = urlOf(vid(p))
   useEffect(() => {
     const el = v.current; if (!el) return
-    if (on && !paused) { el.muted = !sound || muted; el.play().catch(() => { el.muted = true; setMuted(true); el.play().catch(() => {}) }) } else el.pause()
+    if (on && !paused && reveal) { el.muted = !sound || muted; el.play().catch(() => { el.muted = true; setMuted(true); el.play().catch(() => {}) }) } else el.pause()
     if (!on) { el.currentTime = 0; setPaused(false) }
-  }, [on, paused, near])
+  }, [on, paused, near, reveal, src])
   async function like(force) {
     if (mine) { if (force) return; setRx(r => r.filter(x => x.user_id !== me.id)); await sb.from('post_reactions').delete().eq('post_id', p.id).eq('user_id', me.id) }
     else { setRx(r => [...r, { user_id: me.id, reaction_id: 0 }]); const { error } = await sb.from('post_reactions').insert({ post_id: p.id, user_id: me.id, reaction_id: 0 }); if (error) setRx(p.post_reactions) }
@@ -59,9 +63,9 @@ function Slide({ p, me, on, near, rel, muted, setMuted, openPost, openProfile, f
   const share = async () => { const u = location.origin + '/?post=' + p.id; try { navigator.share ? await navigator.share({ title: 'DAHUB', url: u }) : (await navigator.clipboard.writeText(u), alert('Link copied')) } catch {} }
   const own = p.author.id === me.id
   return <div className="shslide">
-    {near ? <video ref={v} src={src + '#t=0.1'} loop playsInline preload={on ? 'auto' : 'metadata'} className={port ? 'cover' : ''} onClick={press}
+    {near && src ? <video ref={v} src={src + '#t=0.1'} loop playsInline preload={on ? 'auto' : 'metadata'} className={(port ? 'cover' : '') + (reveal ? '' : ' shblur')} onClick={press}
       onLoadedMetadata={e => setPort(e.target.videoHeight >= e.target.videoWidth * 0.9)} onTimeUpdate={e => setPct(e.target.duration ? e.target.currentTime / e.target.duration * 100 : 0)} /> : <div className="shph" />}
-    {paused && <div className="shpause">▶</div>}{muted && on && <div className="shsnd">🔇 Tap for sound</div>}{heart && <div className="shheart">❤️</div>}
+    {!reveal && <button className="shreveal" onClick={() => setReveal(true)}><b>18+</b><span>Sensitive video</span><em>Tap to view</em></button>}{paused && <div className="shpause">▶</div>}{muted && on && <div className="shsnd">🔇 Tap for sound</div>}{heart && <div className="shheart">❤️</div>}
     <div className="shrail">
       <div className="shav"><Avatar p={p.author} size={52} onClick={() => openProfile(p.author.id)} />{!own && !rel && <button className="shfol" onClick={() => follow(p.author.id)} aria-label="Follow">+</button>}</div>
       <button className={mine ? 'on' : ''} onClick={() => like(false)} aria-label="Like"><I n="heart" s={32} fill={!!mine} /><small>{rx.length}</small></button>
