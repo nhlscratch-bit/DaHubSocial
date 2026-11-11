@@ -1,0 +1,314 @@
+<title>Liars Party Forge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: liars-table builder. Form on the left, seat preview + 12 numbered prompts on the right; stacks on phones. Single dark look by choice. */
+:root{
+  --bg:#09060f; --panel:#141026; --panel2:#1c1733; --line:#2f2750;
+  --fg:#f1eefa; --dim:#a39cc0; --gold:#e3b04b; --gold2:#ffd77a; --purple:#e0304e; --cyan:#19e0f0; --red:#ff3b5c; --ok:#3ddc84;
+  --display:"Bungee","Impact","Arial Black",sans-serif; --body:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;background-image:radial-gradient(90% 55% at 50% -10%,#4a0f1f 0%,transparent 60%)}
+.wrap{max-width:1180px;margin:0 auto;padding-block:18px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:16px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,6vw,44px);line-height:1;margin:0;background:linear-gradient(180deg,#ffe0e5,#ff3b5c 60%,#8a0f25);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 #000);text-wrap:balance}
+h1 span{color:var(--gold2);-webkit-text-fill-color:var(--gold2)}
+.sub{color:var(--dim);margin:6px 0 0;max-width:62ch}
+.badge{font-family:var(--display);font-size:12px;letter-spacing:1px;color:#140e00;background:var(--gold);padding:6px 12px;border-radius:4px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.sticky{position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}
+@media (max-width:880px){.sticky{position:static}}
+.sec{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lab{font-family:var(--display);font-size:12.5px;letter-spacing:1px;color:var(--gold2);text-transform:uppercase}
+.lab small{font-family:var(--body);color:var(--dim);text-transform:none;letter-spacing:0;font-size:12px;margin-left:6px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:520px){.row2{grid-template-columns:minmax(0,1fr)}}
+input[type=text],textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:10px 12px;font:inherit;font-size:15px}
+textarea{min-height:64px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible,label:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:8px 12px;border-radius:6px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.chip:hover{border-color:var(--purple)}
+.chip[aria-pressed=true]{background:linear-gradient(180deg,#ff7a8f,#c4183a);color:#fff;border-color:#ffd0d8;box-shadow:0 0 12px #ff3b5c66}
+.colors{display:flex;gap:14px;flex-wrap:wrap}.colors label{display:flex;align-items:center;gap:8px;font-weight:600}
+input[type=color]{width:44px;height:34px;border:1px solid var(--line);border-radius:6px;background:none;padding:2px}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font-family:var(--display);font-size:14px;letter-spacing:.5px;padding:12px 18px;border-radius:8px;border:0;cursor:pointer;background:var(--gold);color:#140e00;box-shadow:0 4px 0 #9a7400}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #9a7400}
+.btn.gen{background:var(--purple);color:#fff;box-shadow:0 4px 0 #7a0c20}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line);box-shadow:none}
+.btn.small{font-size:12px;padding:8px 12px}
+.btn:disabled{opacity:.5;cursor:default}
+label.btn{display:inline-flex;align-items:center}
+.refs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.ref{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.ref img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#000}
+.ref input{border:0;border-top:1px solid var(--line);border-radius:0;font-size:13px;padding:8px 10px}
+.ref .x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:#000c;color:#fff;cursor:pointer}
+.note{color:var(--dim);font-size:12.5px}
+/* preview */
+.prev{position:relative;border-radius:12px;overflow:hidden;border:2px solid var(--gold);background:linear-gradient(180deg,#3a0f1c,#120609);padding:16px;display:grid;grid-template-columns:140px minmax(0,1fr);gap:14px;align-items:center}
+.prev canvas{width:140px;height:170px}
+.pn{font-family:var(--display);font-size:24px;line-height:1;margin:0;word-break:break-word}
+.pt{color:var(--gold2);font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tag{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:4px;background:#ffffff14;border:1px solid #ffffff22}
+.tip{font-size:13px;color:var(--dim);background:#0e0b1c;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tip b{color:var(--fg)}
+.prompts{display:flex;flex-direction:column;gap:10px}
+.step{display:flex;gap:10px;align-items:flex-start}
+.step i{flex:none;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#140e00;font:400 13px var(--display);display:flex;align-items:center;justify-content:center;font-style:normal;margin-top:6px}
+.pr{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.pr header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0;padding:8px 10px;background:#0e0b1c;border-bottom:1px solid var(--line)}
+.pr header b{font-size:13.5px}.pr header small{color:var(--dim);font-size:12px;display:block;font-weight:500}
+.pr pre{margin:0;padding:10px 12px;white-space:pre-wrap;word-break:break-word;font-family:var(--body);font-size:13px;color:#e2ddf2;max-height:170px;overflow:auto}
+.ph{color:var(--dim);font-size:14px;padding:14px;border:1px dashed var(--line);border-radius:8px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.rc{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--c,#e0304e);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.rc b{font-family:var(--display);font-weight:400;font-size:15px;word-break:break-word}.rc small{color:var(--dim)}
+.status{font-size:13px;color:var(--dim);min-height:18px}.status.ok{color:var(--ok)}.status.err{color:var(--red)}
+.empty{color:var(--dim);font-size:14px;padding:10px;border:1px dashed var(--line);border-radius:8px}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div><h1>Liars <span>🃏</span> Party Forge</h1><p class="sub">Build a player for the liars table. Fill in the look, add reference pics, tap Generate, and you get 12 prompts: turnaround, character-select art, portrait, the character in their own chair, plus every table animation (holding cards, laying cards, calling cap, caught, told the truth, penalty, out, win).</p></div>
+    <span class="badge">LIARS SEAT</span>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-label="Player builder">
+      <div class="row2">
+        <div class="sec"><label class="lab" for="f-name">Name</label><input id="f-name" type="text" maxlength="28" placeholder="e.g. Unc Ray"></div>
+        <div class="sec"><label class="lab" for="f-title">Nickname</label><input id="f-title" type="text" maxlength="40" placeholder="e.g. The Human Lie Detector"></div>
+      </div>
+      <div class="sec"><span class="lab">What are they?</span><div class="chips" data-k="type"></div>
+        <input id="f-species" type="text" maxlength="60" placeholder="Be specific: retired mail carrier, young rapper, auntie, robot…"></div>
+      <div class="sec"><span class="lab">Build</span><div class="chips" data-k="build"></div></div>
+      <div class="sec"><span class="lab">Presents as</span><div class="chips" data-k="pres"></div></div>
+      <div class="sec"><span class="lab">Reference pics <small>optional, up to 3</small></span>
+        <div id="refs" class="refs"></div>
+        <div class="actions"><label class="btn ghost small" for="f-ref" tabindex="0">+ Add reference pic</label><input id="f-ref" type="file" accept="image/*" multiple hidden><button class="btn small" id="aidesc" type="button" hidden>Fill the look from my pics</button></div>
+        <label class="lab" for="f-refhow" style="margin-top:6px">How should it use your pics?</label><textarea id="f-refhow" maxlength="500" placeholder="e.g. Copy the ski mask and gold grill from pic 1 exactly. Use the jacket from pic 2 but make it navy. Make him heavier than the guy in the pics. Keep the cartoon style, not realistic."></textarea>
+        <span class="note">Write anything here: what to copy exactly, what to change, what to ignore. You can also add a short note under each pic. The face always stays original.</span></div>
+      <div class="sec"><span class="lab">Look</span>
+        <div class="row2"><input id="f-skin" type="text" maxlength="70" placeholder="Skin / build details"><input id="f-hair" type="text" maxlength="70" placeholder="Hair / head (twists, wig, fade…)"></div>
+        <input id="f-outfit" type="text" maxlength="140" placeholder="Outfit (black tee, floral blouse, baggy jeans…)">
+        <input id="f-item" type="text" maxlength="80" placeholder="Signature item (purse, chain, cup, toothpick…)">
+      </div>
+      <div class="sec"><span class="lab">Their chair <small>designed to match them automatically</small></span>
+        <textarea id="f-chair2" maxlength="200" placeholder="Optional ideas: milk crate with a cushion, velvet throne, folding chair with duct tape, gold trim…"></textarea>
+        <span class="note">Leave it blank and the chair is designed from their outfit, colors and personality. Add ideas to steer it.</span>
+        <div class="colors"><label for="f-c1">Main color <input id="f-c1" type="color" value="#c4183a"></label><label for="f-c2">Accent color <input id="f-c2" type="color" value="#e3b04b"></label></div></div>
+      <div class="sec"><span class="lab">Table personality <small>up to 3</small></span><div class="chips" data-k="pers"></div></div>
+      <div class="sec"><span class="lab">How they bluff <small>their tell</small></span><div class="chips" data-k="tell"></div></div>
+      <div class="sec"><span class="lab">Their penalty <small>pick one per character</small></span><div class="chips" data-k="pen"></div><span class="note">What happens to this character when they lose a call. Every character can have a different one.</span></div>
+      <div class="row2">
+        <div class="sec"><label class="lab" for="f-cap">Calling cap line</label><input id="f-cap" type="text" maxlength="60" placeholder="“CAP! Flip ’em!”"></div>
+        <div class="sec"><label class="lab" for="f-lose">Caught line</label><input id="f-lose" type="text" maxlength="60" placeholder="“Okay okay, I lied.”"></div>
+        <div class="sec"><label class="lab" for="f-win">Win line</label><input id="f-win" type="text" maxlength="60" placeholder="“Last one standing, baby!”"></div>
+      </div>
+      <div class="sec"><label class="lab" for="f-art">Art direction <small>keep it the same for every player</small></label><textarea id="f-art"></textarea></div>
+      <div class="actions"><button class="btn gen" id="gen" type="button">Generate my prompts</button><button class="btn" id="save" type="button">Save player</button><button class="btn ghost" id="reset" type="button">New player</button></div>
+      <div id="status" class="status" role="status"></div>
+    </section>
+
+    <div class="sticky" style="display:flex;flex-direction:column;gap:18px;min-width:0">
+      <section class="panel" aria-label="Preview"><span class="lab">Seat preview</span><div class="prev" id="prev"></div></section>
+      <section class="panel" aria-label="Prompts">
+        <span class="lab">ChatGPT prompts</span>
+        <div id="ptip" class="tip" hidden><b>Run them in order, all in one ChatGPT chat.</b> Prompt 1 (turnaround): attach your reference pics. Prompt 2 is the big character-select art. Prompt 4 (chair) sets the seat; prompts 5–12 keep the same chair and angle so the animations line up. Send each result to Claude for the kit.</div>
+        <div class="prompts" id="prompts"><div class="ph">Fill in your player, then tap <b>Generate my prompts</b>.<button class="btn gen small" type="button" onclick="document.getElementById('gen').click()">Generate my prompts</button></div></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top:18px" aria-label="Saved players">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="lab">Saved players</span><span id="rstatus" class="status"></span></div>
+    <div id="roster" class="roster"><div class="empty">No players yet. Build one and tap Save player.</div></div>
+  </section>
+</div>
+
+<script>
+const OPTS = {
+  type: ['Human','Animal','Robot','Creature','Spirit','Alien'],
+  build: ['Slim','Average','Big & heavy','Tall'],
+  pres: ['Man','Woman','Androgynous','Not applicable'],
+    pers: ['Trash talker','Cool & quiet','Hothead','Cocky','Funny','Petty','Wise','Hype','Cold','Paranoid','Smooth liar'],
+  tell: ['Poker face','Sweats','Laughs too much','Won’t look up','Over-explains','Stares you down'],
+  pen: ['Hot sauce shot','Auntie takes your plate','Strike (3 and out)','Pie to the face','Bucket of ice water','Lose the chain']
+}
+const ART = 'Bold hand-drawn 2D cartoon illustration for a late-night bluffing card game at a house-party table: thick clean black outlines, cel shading, rich saturated colors, warm dramatic lighting, natural adult proportions, full body including the whole chair, solid pure green background (#00FF00) with no shadows, props or text on the background'
+const blank = () => ({ name:'', title:'', type:'Human', species:'', build:'Average', pres:'Man', skin:'', hair:'', outfit:'', item:'', chair2:'', c1:'#c4183a', c2:'#e3b04b', pers:[], tell:'Poker face', pen:'Hot sauce shot', cap:'', win:'', lose:'', art:ART, refhow:'', refs:[], gen:null })
+let F = blank(), editId = null, db = null, assets = null, sample = null, canImg = false, roster = []
+const $ = id => document.getElementById(id)
+const TXT = ['refhow','name','title','species','skin','hair','outfit','item','chair2','cap','win','lose','art']
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+function status(m, cls=''){ const s=$('status'); s.textContent=m; s.className='status '+cls }
+
+function chips(){ document.querySelectorAll('.chips[data-k]').forEach(box => { const k = box.dataset.k; box.innerHTML = ''
+  OPTS[k].forEach(v => { const b = document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=v
+    b.setAttribute('aria-pressed', k==='pers' ? F.pers.includes(v) : F[k]===v)
+    b.onclick = () => { if (k==='pers') F.pers = F.pers.includes(v) ? F.pers.filter(x=>x!==v) : F.pers.length<3 ? [...F.pers,v] : F.pers; else F[k]=v; chips(); preview() }
+    box.appendChild(b) }) }) }
+function fillForm(){ TXT.forEach(k => $('f-'+k).value = F[k] || ''); $('f-c1').value=F.c1; $('f-c2').value=F.c2 }
+TXT.forEach(k => $('f-'+k).addEventListener('input', e => { F[k] = e.target.value; preview() }))
+$('f-c1').oninput = e => { F.c1 = e.target.value; preview() }; $('f-c2').oninput = e => { F.c2 = e.target.value; preview() }
+const chairText = () => `custom card-table chair designed to match this character's outfit and personality, upholstered in ${F.c1} with ${F.c2} trim${F.outfit ? ', echoing the colors and patterns of their outfit' : ''}${F.chair2.trim() ? ', with these details: ' + F.chair2.trim() : ''}`
+const chairShort = () => F.chair2.trim() ? F.chair2.trim().slice(0, 40) : 'Matched chair'
+
+function describe(){
+  const what = F.species.trim() ? `${F.species.trim()} (${F.type.toLowerCase()})` : F.type.toLowerCase()
+  const p = [`${F.name || 'An original card player'}${F.title ? ', "' + F.title + '"' : ''}: a ${what}`]
+  if (F.pres !== 'Not applicable') p.push(F.pres === 'Androgynous' ? 'androgynous' : F.pres.toLowerCase())
+  p.push({ 'Slim':'slim build', 'Average':'average build', 'Big & heavy':'big, heavyset build', 'Tall':'tall, long-limbed build' }[F.build])
+  if (F.skin) p.push(F.skin); if (F.hair) p.push(F.hair); if (F.outfit) p.push('wearing ' + F.outfit); if (F.item) p.push('with ' + F.item)
+  if (F.pers.length) p.push(F.pers.join(', ').toLowerCase() + ' personality')
+  if (F.tell) p.push('bluffing tell: ' + F.tell.toLowerCase())
+  return p.join(', ')
+}
+function refLine(){ if (!F.refs.length && !F.refhow.trim()) return ''; const n = F.refs.map((x, i) => x.note.trim() ? `pic ${i + 1}: ${x.note.trim()}` : '').filter(Boolean); const how = F.refhow.trim(); return F.refs.length ? ` Use the attached reference photo${F.refs.length > 1 ? 's' : ''} as a close guide${n.length ? ' (' + n.join('; ') + ')' : ''}${how ? '. Follow these instructions about the references exactly: ' + how : ', matching outfit, hair and vibe as closely as possible'}, with an original face.` : ` Design notes: ${how}.` }
+const KEYS = [['sheet','Character turnaround','Run first. Attach your reference pics.'],['select','Character select art','Big hero pose for the pick-your-player screen'],['portrait','Portrait','Square, for their seat badge'],['main','In their matching chair','Sets the seat for every pose after this'],['idle','Holding cards','Their default seat pose'],['lay','Laying cards face down','When they play and make their claim'],['cap','Calling CAP!','When they call someone a liar'],['caught','Caught lying','Their bluff got exposed'],['clean','Told the truth','Someone called cap on them and they were honest'],['penalty','Taking the penalty','Lost a call'],['out','Out of the game','Eliminated'],['win','Last one standing','Won the game']]
+const penText = () => ({ 'Hot sauce shot': 'downing a small shot glass of glowing red hot sauce, face turning red, sweat flying, steam puffing from their ears', 'Auntie takes your plate': 'watching in shock as an older woman’s hand (only her arm and sleeve visible, entering from the edge of the frame) snatches the paper plate of food from their lap', 'Strike (3 and out)': 'flinching as a big glowing red X strike mark flashes beside them, hands on their head', 'Pie to the face': 'getting hit square in the face with a big whipped-cream pie thrown from the right, cream splattering everywhere', 'Bucket of ice water': 'getting drenched by a bucket of ice water dumped from above, ice cubes bouncing off, shivering in shock', 'Lose the chain': 'clutching their chest in shock as their gold chain is yanked off by a hand entering from the right edge of the frame' }[F.pen])
+const outText = () => ({ 'Hot sauce shot': 'knocked out by the hot sauce: slumped sideways in the chair, tongue out, eyes as swirls, little flames above their head, cards scattered on their lap', 'Auntie takes your plate': 'defeated with an empty paper plate: slumped back, empty plate face-down on their lap, staring at the ceiling, cards dropped', 'Strike (3 and out)': 'eliminated: standing up from the chair and walking off to the RIGHT, waving the table off over their shoulder, three red X marks floating beside them', 'Pie to the face': 'slumped back in defeat, face completely covered in whipped cream, cards dropped', 'Bucket of ice water': 'frozen solid in a cartoon block of ice in the chair, only their eyes moving', 'Lose the chain': 'slumped back broke and defeated, empty neck, pockets turned out, cards dropped' }[F.pen])
+const q = s => String(s || '').replace(/["“”]/g, '')
+function standard(){
+  const a = (F.art || ART).trim(), d = describe(), ch = chairText(), same = `Same character, SAME ${ch}, same art style, same three-quarter angle toward the RIGHT side of the image, same size and framing as the image above.`
+  const tail = ' Show the whole chair and the whole character. Solid pure green background (#00FF00), no shadows, no text.'
+  const sheetArt = a.replace(/, full body including the whole chair/, ', full body')
+  const lie = { 'Poker face': 'stone-cold blank expression', 'Sweats': 'a single bead of sweat rolling down the temple', 'Laughs too much': 'a nervous too-wide grin', 'Won’t look up': 'eyes glued down at the cards', 'Over-explains': 'one hand open mid-gesture like they are explaining too much', 'Stares you down': 'a hard unblinking stare toward the right' }[F.tell] || 'a sly look'
+  return [
+    [...KEYS[0].slice(1), `${sheetArt}.${refLine()} Character turnaround sheet for ${d}. Show the same character three times side by side: front view, side view, back view, standing relaxed. Clear readable silhouette, original design, no chair, no logos or brand names, no text.`],
+    [...KEYS[1].slice(1), `Same character as the turnaround sheet above, same art style. Full-body character-select hero pose, standing, facing the camera at a slight angle, ${F.pers.includes('Cool & quiet') || F.pers.includes('Cold') ? 'calm and unbothered, one hand in a pocket' : 'confident and cocky'}, fanning a hand of red-backed playing cards in one hand with a sly look like they might be lying, dramatic red and turquoise rim light, tall vertical 2:3 framing with the whole body visible head to toe. Solid pure green background (#00FF00), no shadows, no text.`],
+    [...KEYS[2].slice(1), `Same character as the turnaround sheet above, same art style. Head-and-shoulders portrait, square 1:1 crop, facing slightly right, sly expression that fits their personality, strong warm rim light, solid pure green background (#00FF00), no text.`],
+    [...KEYS[3].slice(1), `${a}. Same character as the turnaround sheet above. Character: ${d}. Sitting in their own chair: a ${ch}. Three-quarter view with the chair and body angled toward the RIGHT side of the image, settled in like at a card table, holding a fan of 5 red-backed playing cards at chest height, expression that fits their personality. Feet flat on the floor, knees bent.${tail}`],
+    [...KEYS[4].slice(1), `${same} Relaxed default pose: leaning back, one arm on the armrest, the other hand holding a fan of 5 red-backed playing cards close to the chest so no one can see them, ${lie}.${tail}`],
+    [...KEYS[5].slice(1), `${same} Now they lean forward and slide two red-backed playing cards FACE DOWN toward the right with one flat hand, as if laying them on a table and claiming they are kings, the other hand still holding their cards, ${lie}.${tail}`],
+    [...KEYS[6].slice(1), `${same} Calling someone a liar: half standing up out of the chair, leaning forward, pointing hard toward the right with one finger, mouth wide open yelling${F.cap ? ' "' + q(F.cap) + '"' : ' CAP'}, eyebrows up, other hand gripping the armrest, comic motion lines.${tail}`],
+    [...KEYS[7].slice(1), `${same} Caught lying: frozen in the chair with a guilty awkward smile, eyes wide, one hand behind the head, the other hand dropping the revealed cards${F.lose ? ', like they just said "' + q(F.lose) + '"' : ''}, a small comic sweat drop.${tail}`],
+    [...KEYS[8].slice(1), `${same} They told the truth and someone wrongly called them out: leaning back smug, flipping their cards face up toward the right to show they were honest, one eyebrow raised, smirking.${tail}`],
+    [...KEYS[9].slice(1), `${same} Losing a call and taking the penalty: ${penText()}, still seated in the chair, cards held loosely.${tail}`],
+    [...KEYS[10].slice(1), `${same} Out of the game, ${outText()}.${tail}`],
+    [...KEYS[11].slice(1), `${same} Last one standing: standing on the seat of the chair, both fists up in victory, playing cards flying in the air around them, huge grin${F.win ? ', yelling "' + q(F.win) + '"' : ''}.${tail}`]
+  ]
+}
+const RULES = `Rules:
+- Twelve complete standalone prompts, 80-150 words each, plain text, no markdown.
+- sheet: character turnaround (front, side, back views side by side, standing, no chair). select: same character, full-body standing hero pose for a character-select screen, tall 2:3 framing, holding a fan of cards with a sly look. portrait: head-and-shoulders, square 1:1, facing slightly right. All on solid pure green (#00FF00). Every later prompt starts from "Same character as the turnaround sheet above".
+- Art style for all: ${'${ART}'}.
+- The main prompt shows the character sitting in their own signature chair. DESIGN the chair to match the character: echo their outfit colors, patterns and textures, personality and signature item. Use the owner's chair_ideas if given. Describe it precisely (shape, material, color, trim, base). Every later pose starts with "Same character, SAME chair" and repeats every physical, outfit and chair detail exactly so nothing changes between images.
+- Seated images: chair and body in a three-quarter view angled toward the RIGHT side of the image, whole chair and full body visible, natural adult proportions, red-backed playing cards, solid pure green background (#00FF00), no shadows, no text.
+- The game is a bluffing card game: players lay cards face down and claim what they are; others can call "cap" (liar). Poses: idle (cards hidden close to the chest, showing their bluffing tell), lay (sliding 2 cards face down toward the right), cap (half standing, pointing hard to the right, yelling), caught (guilty awkward smile, bluff exposed), clean (smugly flipping cards face up, they told the truth), penalty, out, win (standing on the chair seat, fists up, cards flying).
+- The penalty is: ${'${PEN}'}. Penalty pose: ${'${PENTXT}'}. Out pose: ${'${OUTTXT}'}. Keep it cartoon and funny, never a weapon or real violence.
+- Original face. Never name a real person, actor or existing movie/TV character. No brand names or logos.`
+async function refBlob(x){ if (x.blob) return x.blob; try { const r = await fetch(x.url); return r.ok ? await r.blob() : null } catch { return null } }
+function renderPrompts(list){
+  const P = $('prompts'); P.innerHTML = ''; $('ptip').hidden = false
+  list.forEach(([t, sub, txt], i) => { const w = document.createElement('div'); w.className = 'step'
+    w.innerHTML = `<i>${i + 1}</i><div class="pr"><header><div><b>${esc(t)}</b><small>${esc(sub)}</small></div><button class="btn small" type="button">Copy</button></header><pre></pre></div>`
+    const pre = w.querySelector('pre'); pre.textContent = txt
+    const btn = w.querySelector('button'); btn.onclick = async () => { try { await navigator.clipboard.writeText(txt); btn.textContent = 'Copied' } catch { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selected' } setTimeout(() => btn.textContent = 'Copy', 1500) }
+    P.appendChild(w) })
+}
+const phHTML = $('prompts').innerHTML
+function clearPrompts(){ $('prompts').innerHTML = phHTML; $('ptip').hidden = true }
+async function generate(){
+  if (!F.name.trim()) return status('Give your player a name first.', 'err')
+  const b = $('gen'); b.disabled = true; b.textContent = 'Writing prompts…'; status('Writing prompts for ' + F.name + '…')
+  let list = null, note = ''
+  if (sample) {
+    try {
+      const images = canImg ? (await Promise.all(F.refs.map(refBlob))).filter(Boolean) : []
+      const info = { name:F.name, nickname:F.title, type:F.type, what:F.species, build:F.build, presents_as:F.pres, skin:F.skin, hair:F.hair, outfit:F.outfit, signature_item:F.item, chair_ideas:F.chair2.trim() || 'none: design it from the character', colors:[F.c1, F.c2], personality:F.pers, bluffing_tell:F.tell, penalty:F.pen, cap_line:F.cap, caught_line:F.lose, win_line:F.win, reference_notes:F.refs.map((x, i) => x.note.trim() ? `pic ${i + 1}: ${x.note.trim()}` : '').filter(Boolean), how_to_use_references:F.refhow.trim() || 'match outfit, hair and vibe closely' }
+      const out = await sample.json(`You write image-generation prompts (for ChatGPT image generation) for an original character in a 2D cartoon bluffing card game (players lay cards face down, others call "cap" if they think it's a lie). ${images.length ? 'The attached images are the owner\'s reference pics; describe outfit, hair, build, colors and vibe from them precisely (style only, original face). Follow the owner\'s how_to_use_references instructions exactly: copy what they say to copy, change what they say to change, ignore what they say to ignore.' : ''}\nCharacter details:\n${JSON.stringify(info)}\n${RULES.replace('${ART}', (F.art || ART).trim()).replace('${PEN}', F.pen).replace('${PENTXT}', penText()).replace('${OUTTXT}', outText())}\nReturn JSON only with keys sheet, select, portrait, main, idle, lay, cap, caught, clean, penalty, out, win, each a full prompt string.`, { images, modelTier: 'complex' })
+      list = KEYS.map(([k, t, sub]) => [t, sub, String(out[k] || '').trim()]).filter(x => x[2])
+      if (list.length < 12) { list = null; note = 'The AI answer was incomplete, so these are the standard prompts.' }
+    } catch (e) { note = e.code === 'not_granted' ? 'AI help is off for this page, so these are the standard prompts.' : e.code === 'rate_limited' ? 'Too many AI requests right now, so these are the standard prompts.' : 'The AI couldn’t write them (' + (e.message || e.code) + '), so these are the standard prompts.' }
+  } else note = 'Open this page signed in to claude.ai for AI-written prompts. These are the standard prompts.'
+  if (!list) list = standard()
+  F.gen = { at: new Date().toISOString(), list }; renderPrompts(list)
+  status(note || `Prompts ready for ${F.name}. Save the player to keep them.`, note ? '' : 'ok')
+  b.disabled = false; b.textContent = 'Generate my prompts'
+  if (innerWidth < 880) $('prompts').scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+$('gen').onclick = generate
+
+function refsUI(){
+  const R = $('refs'); R.innerHTML = ''
+  F.refs.forEach((x, i) => { const c = document.createElement('div'); c.className = 'ref'
+    c.innerHTML = `<img alt="Reference ${i + 1}"><button class="x" type="button" aria-label="Remove reference ${i + 1}">✕</button><input type="text" maxlength="80" id="ref-note-${i}" placeholder="Pic note: take the mask, the jacket…">`
+    c.querySelector('img').src = x.preview || x.url; const n = c.querySelector('input'); n.value = x.note || ''
+    n.oninput = () => { x.note = n.value }; c.querySelector('.x').onclick = () => { F.refs.splice(i, 1); refsUI() }
+    R.appendChild(c) })
+  $('aidesc').hidden = !(canImg && F.refs.length); document.querySelector('label[for=f-ref]').hidden = F.refs.length >= 3
+}
+$('f-ref').onchange = e => { const fs = [...e.target.files].filter(f => f.type.startsWith('image/')); e.target.value = ''
+  for (const f of fs) { if (F.refs.length >= 3) break; if (f.size > 15e6) { status('That image is too big. Use one under 15 MB.', 'err'); continue } F.refs.push({ blob: f, preview: URL.createObjectURL(f), note: '' }) } refsUI() }
+document.querySelector('label[for=f-ref]').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('f-ref').click() } }
+$('aidesc').onclick = async () => {
+  const b = $('aidesc'); b.disabled = true; b.textContent = 'Looking at your pics…'
+  try {
+    const images = (await Promise.all(F.refs.map(refBlob))).filter(Boolean); if (!images.length) throw { message: 'Could not read the pics.' }
+    const notes = F.refs.map((x, i) => `Image ${i + 1}: ${x.note.trim() || 'use whatever fits'}`).join('\n') + (F.refhow.trim() ? '\nOverall instructions from the owner: ' + F.refhow.trim() : '')
+    const out = await sample.json(`You help design an ORIGINAL character for a cartoon bluffing card game. Study the attached reference images. What to take from each:\n${notes}\nDescribe ONLY visual design: clothing, colors, hairstyle type, body type, accessories, vibe. Never identify or name any person; no brand names or logos. Short vivid values.\nReturn JSON only: {"skin":"","hair":"","outfit":"","item":"","c1":"#rrggbb","c2":"#rrggbb"}`, { images, modelTier: 'default' })
+    ;['skin','hair','outfit','item'].forEach(k => { if (typeof out[k] === 'string' && out[k].trim()) F[k] = out[k].trim().slice(0, k === 'outfit' ? 140 : 80) })
+    ;['c1','c2'].forEach(k => { if (/^#[0-9a-f]{6}$/i.test(out[k] || '')) F[k] = out[k] })
+    fillForm(); preview(); status('Look filled in from your pics. Change anything you want.', 'ok')
+  } catch (e) { status(e.code === 'not_granted' ? 'AI help was not allowed, so fill the look in yourself.' : 'Could not read the pics: ' + (e.message || e.code), 'err') }
+  finally { b.disabled = false; b.textContent = 'Fill the look from my pics' }
+}
+
+function drawChair(cv){
+  const x = cv.getContext('2d'), w = cv.width = 280, h = cv.height = 340; x.clearRect(0, 0, w, h); x.lineWidth = 5; x.strokeStyle = '#000'
+  x.fillStyle = F.c2; [[70,330],[210,330],[140,334]].forEach(([a,b]) => { x.beginPath(); x.moveTo(140,285); x.lineTo(a,b); x.stroke() }); x.fillRect(132,240,16,50); x.strokeRect(132,240,16,50)
+  x.fillStyle = F.c1; x.beginPath(); x.roundRect(60,40,160,150,26); x.fill(); x.stroke()
+  x.beginPath(); x.roundRect(48,170,184,70,20); x.fill(); x.stroke()
+  x.fillStyle = F.c2; x.beginPath(); x.roundRect(30,140,34,90,12); x.fill(); x.stroke(); x.beginPath(); x.roundRect(216,140,34,90,12); x.fill(); x.stroke()
+  x.fillStyle = '#8a0f25'; x.strokeStyle = '#fff'; x.lineWidth = 3; for (let i = 0; i < 4; i++) { x.save(); x.translate(190, 110); x.rotate(-0.4 + i * 0.22); x.fillRect(-10, -36, 26, 38); x.strokeRect(-10, -36, 26, 38); x.restore() }
+}
+function preview(){
+  const p = $('prev'); p.innerHTML = `<canvas aria-hidden="true"></canvas><div style="min-width:0"><h2 class="pn">${esc(F.name || 'Your Player')}</h2><div class="pt">${esc(F.title || F.species || 'Liars table player')}</div><div class="tags"><span class="tag">${esc(chairShort())}</span><span class="tag">Tell: ${esc(F.tell)}</span>${F.pers.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div>${F.cap ? `<p class="note" style="margin:8px 0 0">Cap: “${esc(q(F.cap))}”</p>` : ''}${F.lose ? `<p class="note" style="margin:2px 0 0">Caught: “${esc(q(F.lose))}”</p>` : ''}${F.win ? `<p class="note" style="margin:2px 0 0">Win: “${esc(q(F.win))}”</p>` : ''}</div>`
+  drawChair(p.querySelector('canvas'))
+}
+const slug = s => (s || 'player').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'player'
+$('save').onclick = async () => {
+  if (!F.name.trim()) return status('Give your player a name first.', 'err')
+  const id = editId || slug(F.name) + '-' + Math.random().toString(36).slice(2, 6)
+  if (F.refs.some(x => x.blob)) { if (!assets) status('Reference pics only save when this page is open signed in to claude.ai. Saving without them.', 'err')
+    else { status('Uploading reference pics…'); for (const x of F.refs) if (x.blob) { try { const u = await assets.upload(x.blob); x.id = u.id; x.url = u.url; delete x.blob } catch (e) { return status('Could not upload a reference pic: ' + (e.message || e.code), 'err') } } } }
+  const data = { ...F, refs: F.refs.filter(x => x.id).map(x => ({ id: x.id, url: x.url, note: x.note || '' })), gen: F.gen ? { at: F.gen.at, list: F.gen.list.map(x => ({ t: x[0], sub: x[1], p: x[2] })) } : null, updatedAt: new Date().toISOString() }
+  if (!db) { try { const all = JSON.parse(localStorage.getItem('lforge') || '{}'); all[id] = data; localStorage.setItem('lforge', JSON.stringify(all)) } catch {} editId = id; loadLocal(); return status('Saved on this device only. Open this page signed in to claude.ai so Claude can read it.', 'ok') }
+  $('save').disabled = true
+  try { await db.doc('players/' + id).set(data); editId = id; status(`${F.name} saved.`, 'ok') } catch (e) { status('Could not save: ' + (e.message || e.code), 'err') } finally { $('save').disabled = false }
+}
+$('reset').onclick = () => { F = blank(); editId = null; fillForm(); refsUI(); clearPrompts(); chips(); preview(); status('') }
+function rosterUI(list, note){
+  roster = list; const R = $('roster')
+  if (!list.length) { R.innerHTML = '<div class="empty">No players yet. Build one and tap Save player.</div>'; $('rstatus').textContent = note || ''; return }
+  R.innerHTML = ''; $('rstatus').textContent = `${list.length} player${list.length > 1 ? 's' : ''}` + (note ? ' · ' + note : '')
+  list.forEach(({ id, d }) => { const c = document.createElement('div'); c.className = 'rc'; c.style.setProperty('--c', d.c1 || '#e0304e')
+    c.innerHTML = `<b>${esc(d.name)}</b><small>${esc(d.species || d.type)}${d.gen ? ' · prompts ready' : ''}</small><div class="actions"><button class="btn small ghost" data-a="edit">Edit</button><button class="btn small ghost" data-a="del">Delete</button></div>`
+    c.querySelector('[data-a=edit]').onclick = () => { F = { ...blank(), ...d, refs: (d.refs || []).map(x => ({ ...x, preview: x.id ? '/_blob/' + x.id : x.url })), gen: d.gen && Array.isArray(d.gen.list) ? { at: d.gen.at, list: d.gen.list.map(x => [x.t, x.sub, x.p]) } : null }; editId = id; fillForm(); refsUI(); F.gen ? renderPrompts(F.gen.list) : clearPrompts(); chips(); preview(); status(`Editing ${d.name}.`); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+    c.querySelector('[data-a=del]').onclick = () => { const act = c.querySelector('.actions'); act.innerHTML = `<span class="confirm">Delete? <button class="btn small" data-y>Yes</button><button class="btn small ghost" data-n>No</button></span>`
+      act.querySelector('[data-n]').onclick = () => rosterUI(roster)
+      act.querySelector('[data-y]').onclick = async () => { if (db) { try { await db.doc('players/' + id).delete() } catch (e) { status('Could not delete: ' + (e.message || e.code), 'err') } } else { try { const all = JSON.parse(localStorage.getItem('lforge') || '{}'); delete all[id]; localStorage.setItem('lforge', JSON.stringify(all)) } catch {} loadLocal() } if (editId === id) editId = null } }
+    R.appendChild(c) })
+}
+function loadLocal(){ let all = {}; try { all = JSON.parse(localStorage.getItem('lforge') || '{}') } catch {} rosterUI(Object.entries(all).map(([id, d]) => ({ id, d })), 'saved on this device') }
+chips(); fillForm(); refsUI(); preview(); loadLocal()
+;(async () => {
+  try { assets = await window.claude?.use?.('assets') } catch { assets = null }
+  try { sample = await window.claude?.use?.('sample'); const lim = sample ? await sample.limits().catch(() => null) : null; canImg = !!lim?.images } catch { sample = null }
+  refsUI()
+  try { db = await window.claude?.use?.('db') } catch { db = null }
+  if (!db) return
+  $('rstatus').textContent = 'Loading…'
+  const t = setTimeout(() => { $('rstatus').textContent = 'Taking a while to load.' }, 10000)
+  db.collection('players').orderBy('updatedAt', 'desc').onSnapshot(s => { clearTimeout(t); rosterUI(s.docs.map(x => ({ id: x.id, d: x.data() }))) }, e => { clearTimeout(t); $('rstatus').textContent = 'Could not load: ' + (e.message || e.code) })
+})()
+</script>

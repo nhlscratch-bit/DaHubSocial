@@ -8,7 +8,8 @@ import { useTableVoice, joinTableVoice, leaveTableVoice, setTableMic, resumeTabl
 // and people who entered the tester password read them. Layout/design is a placeholder until the owner's redesign.
 export const GAMES = [
   { id: 'fight', name: 'DAHUB Fighters', blurb: '2.5D street brawler. Best of 3, Blazin’ moves, CPU on 3 levels.', emoji: '🥊' },
-  { id: 'spades', name: 'DAHUB Spades', blurb: 'Lounge table vs 3 bots. Nil, bags, Jokers optional.', emoji: '♠️' }]
+  { id: 'spades', name: 'DAHUB Spades', blurb: 'Lounge table vs 3 bots. Nil, bags, Jokers optional.', emoji: '♠️' },
+  { id: 'liars', name: 'Liars Party', blurb: 'Cap or no cap? Lay cards face down, call the liars, survive the penalty.', emoji: '🃏' }]
 
 const sheet = (title, back, body, cls = '') => <div className={'sheet solid ' + cls}><div className="bar"><button onClick={back} aria-label="Back">←</button>{title}</div><div className="sbody">{body}</div></div>
 
