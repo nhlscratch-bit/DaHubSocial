@@ -91,8 +91,9 @@ export default function App() {
   useEffect(() => { if (uid) warmIce() }, [uid])
   useEffect(() => {
     if (!uid) return
-    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community'), psp = q.get('passport'), rom = q.get('room'), spd = q.get('spades')
+    const q = new URLSearchParams(location.search), post = q.get('post'), prof = q.get('profile'), art = q.get('artist'), evn = q.get('event'), cht = q.get('chat'), cmn = q.get('community'), psp = q.get('passport'), rom = q.get('room'), spd = q.get('spades'), cap = q.get('capornot')
     if (spd) { setStack([{ t: 'arcade' }, { t: 'game', id: 'spades', code: spd.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) }]); history.replaceState(null, '', '/'); return }
+    if (cap) { setStack([{ t: 'arcade' }, { t: 'game', id: 'liars', code: cap.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) }]); history.replaceState(null, '', '/'); return }
     if (post || prof || art || evn || cht || cmn || psp || rom) { setStack([rom ? { t: 'room', id: rom } : psp ? { t: 'passport', id: psp } : cmn ? { t: 'community', id: cmn } : cht ? { t: 'chat', id: cht } : post ? { t: 'post', id: post } : evn ? { t: 'event', id: evn } : art ? { t: 'artist', id: art } : { t: 'profile', id: prof }]); history.replaceState(null, '', '/') }
   }, [uid])
   if (!booted) return <Boot onDone={() => setBooted(true)} />

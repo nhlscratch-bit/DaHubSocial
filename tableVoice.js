@@ -1,5 +1,5 @@
 // Live voice for a game table (Spades): up to 4 players, everyone connected to everyone (peer to peer).
-// Signaling runs on the private Realtime channel "spv:<table id>"; the database only lets players seated
+// Signaling runs on the private Realtime channel "spv:<table id>" (Spades) or "cpv:<table id>" (CAP or Not); the database only lets players seated
 // at that table join it. Mic starts OFF; you always hear the others. Same audio approach as Live Rooms.
 import { useSyncExternalStore } from 'react'
 import { sb } from './supabase'
@@ -81,19 +81,19 @@ function reconcile() {
   for (const uid of here) if (uid !== V.me && !V.peers.has(uid) && V.me < uid) call(uid)
 }
 
-export function joinTableVoice(tableId, me, onChange) {
+export function joinTableVoice(tableId, me, onChange, prefix = 'spv') {
   if (V && V.table === tableId) { V.onChange = onChange; emit(); return }
   leaveTableVoice()
   V = { table: tableId, me, onChange, status: 'connecting', micOn: false, track: null, stream: null, peers: new Map(), speaking: new Set(), meters: [], needTap: false, error: '', ctx: null, ch: null }
   const ses = V
-  const ch = sb.channel('spv:' + tableId, { config: { private: true, presence: { key: me }, broadcast: { self: false } } })
+  const ch = sb.channel(prefix + ':' + tableId, { config: { private: true, presence: { key: me }, broadcast: { self: false } } })
   V.ch = ch
   ch.on('broadcast', { event: 'sig' }, onSig)
     .on('presence', { event: 'sync' }, () => { if (V === ses) reconcile() })
     .subscribe(async s => {
       if (V !== ses) return
       if (s === 'SUBSCRIBED') { V.status = 'live'; emit(); await ch.track({ at: Date.now() }); reconcile() }
-      else if (s === 'CHANNEL_ERROR' || s === 'TIMED_OUT') { V.status = 'error'; V.error = 'Voice couldn’t connect. It will retry.'; emit(); setTimeout(() => { if (V === ses) { const t = V.table, m = V.me, f = V.onChange; leaveTableVoice(); joinTableVoice(t, m, f) } }, 4000) }
+      else if (s === 'CHANNEL_ERROR' || s === 'TIMED_OUT') { V.status = 'error'; V.error = 'Voice couldn’t connect. It will retry.'; emit(); setTimeout(() => { if (V === ses) { const t = V.table, m = V.me, f = V.onChange; leaveTableVoice(); joinTableVoice(t, m, f, prefix) } }, 4000) }
     })
   emit()
 }
