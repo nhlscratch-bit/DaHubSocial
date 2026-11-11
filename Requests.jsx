@@ -94,3 +94,26 @@ export function VerifyAdmin({ openProfile }) {
       </div>)}
   </div>
 }
+
+// Notification settings: which phone alerts you get (saved to profiles.notif_prefs, checked by the push triggers).
+const NCATS = [['messages', 'Messages', 'New DMs'], ['calls', 'Calls', 'Incoming voice and video calls'], ['comments', 'Comments and replies', 'When people comment on or reply to you'], ['reactions', 'Reactions', 'When people react to your posts'], ['follows', 'Follows', 'New followers and follow requests'], ['reposts', 'Reposts', 'When people repost you'], ['shoutouts', 'Shoutouts', 'When someone gives you a shoutout'], ['rooms', 'Live Rooms', 'When a room you asked to be reminded about goes live'], ['opps', 'Opportunities', 'Responses to your gigs and your responses'], ['admessages', 'After Dark messages', 'Only says “New After Dark message 🌙”']]
+export function NotifSheet({ me, pushOn, close }) {
+  const [p, setP] = useState(null), [err, setErr] = useState('')
+  useEffect(() => { sb.from('profiles').select('notif_prefs').eq('id', me.id).single().then(({ data, error }) => { if (error) return setErr(friendly(error)); setP(data?.notif_prefs || {}) }) }, [])
+  const set = async (k, v) => {
+    const prev = p, next = { ...p, [k]: v }; setP(next); setErr('')
+    const { error } = await sb.from('profiles').update({ notif_prefs: next }).eq('id', me.id)
+    if (error) { setP(prev); setErr(friendly(error)) }
+  }
+  const on = k => p?.[k] !== false
+  return <div className="scrim" onClick={close}><div className="msheet" onClick={e => e.stopPropagation()}>
+    <h3 style={{ margin: 0 }}>Notification settings</h3>
+    <p className="pnote" style={{ padding: 0 }}>Choose which alerts reach your phone. Everything still shows in your Notifications list.{pushOn === false ? ' Push is off on this device: turn on Push notifications in Settings first.' : ''}</p>
+    {p === null ? (err ? <p className="msg">{err}</p> : <div className="skel"><i /><i /></div>) : <div className="nprefs">
+      <label className="nrow strong"><span><b>Pause all alerts</b><small>Quiet mode. Nothing pings your phone.</small></span><input type="checkbox" role="switch" className="swt" checked={!!p.pause} onChange={e => set('pause', e.target.checked)} /></label>
+      {NCATS.map(([k, l, d]) => <label key={k} className={'nrow' + (p.pause ? ' dim' : '')}><span><b>{l}</b><small>{d}</small></span><input type="checkbox" role="switch" className="swt" checked={on(k)} disabled={!!p.pause} onChange={e => set(k, e.target.checked)} /></label>)}
+    </div>}
+    {err && p !== null && <p className="msg" role="alert" style={{ padding: 0 }}>{err}</p>}
+    <button className="wb p" onClick={close}>Done</button>
+  </div></div>
+}

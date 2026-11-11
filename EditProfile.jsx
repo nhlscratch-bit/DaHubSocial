@@ -5,6 +5,7 @@ import Cropper from './Cropper'
 const pub = (b, p) => sb.storage.from(b).getPublicUrl(p).data.publicUrl
 export default function EditProfile({ pr, me, close, saved }) {
   const [f, setF] = useState({ display_name: pr.display_name || '', username: pr.username || '', bio: pr.bio || '', location: pr.location || '', link: pr.link || '' })
+  const [biz, setBiz] = useState({ hours: '', address: '', phone: '', book: '', order: '', menu: '', price: '', ...(pr.biz || {}) }), setB = k => e => setBiz({ ...biz, [k]: e.target.value })
   const [cur, setCur] = useState(pr), [crop, setCrop] = useState(null), [err, setErr] = useState(''), [busy, setBusy] = useState(false)
   const set = k => e => setF({ ...f, [k]: e.target.value })
   const meta = shape => shape === 'circle' ? ['avatar_url', 'avatars'] : ['cover_url', 'covers']
@@ -26,7 +27,7 @@ export default function EditProfile({ pr, me, close, saved }) {
     if (!/^[a-z0-9_]{3,30}$/.test(username)) return setErr('Handle must be 3–30 letters, numbers or underscores.')
     if (!name) return setErr('Add a display name.')
     setBusy(true); setErr('')
-    const { error } = await sb.from('profiles').update({ display_name: name, username, bio: f.bio.trim() || null, location: f.location.trim() || null, link: f.link.trim() || null }).eq('id', me.id)
+    const { error } = await sb.from('profiles').update({ display_name: name, username, bio: f.bio.trim() || null, location: f.location.trim() || null, link: f.link.trim() || null, ...(pr.account_type && pr.account_type !== 'standard' ? { biz: Object.fromEntries(Object.entries(biz).map(([k, v]) => [k, String(v || '').trim().slice(0, 300)]).filter(([, v]) => v)) } : {}) }).eq('id', me.id)
     setBusy(false)
     if (error) return setErr(error.code === '23505' ? 'That handle is already taken.' : error.message)
     saved(); close()
@@ -44,6 +45,15 @@ export default function EditProfile({ pr, me, close, saved }) {
       <label>Bio<textarea value={f.bio} onChange={set('bio')} maxLength={300} rows={3} placeholder="Tell people about you" /></label>
       <label>Location<input value={f.location} onChange={set('location')} maxLength={60} placeholder="City, State" /></label>
       <label>Link<input value={f.link} onChange={set('link')} maxLength={120} placeholder="yoursite.com" autoCapitalize="none" /></label>
+      {pr.account_type && pr.account_type !== 'standard' && <div className="edbiz"><h4>{pr.account_type === 'business' ? 'Business info' : 'Booking & contact'}</h4><small>Shows as buttons on your profile. Leave anything blank to hide it.</small>
+        {pr.account_type === 'business' && <label>Hours<input value={biz.hours} onChange={setB('hours')} maxLength={120} placeholder="Mon–Sat 11am–9pm · Sun closed" /></label>}
+        {pr.account_type === 'business' && <label>Address<input value={biz.address} onChange={setB('address')} maxLength={160} placeholder="123 N Charles St, Baltimore, MD" /></label>}
+        <label>Phone<input value={biz.phone} onChange={setB('phone')} maxLength={30} inputMode="tel" placeholder="(410) 555-0123" /></label>
+        <label>Booking link<input value={biz.book} onChange={setB('book')} maxLength={300} autoCapitalize="none" placeholder="Booksy, Calendly, Square, Vagaro…" /></label>
+        {pr.account_type === 'business' && <label>Order link<input value={biz.order} onChange={setB('order')} maxLength={300} autoCapitalize="none" placeholder="DoorDash, Uber Eats, your site…" /></label>}
+        <label>{pr.account_type === 'business' ? 'Menu / price list link' : 'Rates / press kit link'}<input value={biz.menu} onChange={setB('menu')} maxLength={300} autoCapitalize="none" placeholder="Link to your menu or prices" /></label>
+        {pr.account_type === 'business' && <label>Price range<select value={biz.price} onChange={setB('price')}><option value="">Not shown</option><option value="$">$</option><option value="$$">$$</option><option value="$$$">$$$</option><option value="$$$$">$$$$</option></select></label>}
+      </div>}
       {err && <p className="msg" role="alert">{err}</p>}
       <button className="wb p" disabled={busy} onClick={save}>{busy ? 'Saving…' : 'Save changes'}</button>
       <button className="wb" onClick={() => sb.auth.signOut()}>Sign out</button></div>

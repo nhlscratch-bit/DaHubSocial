@@ -65,7 +65,8 @@ export default function Profile({ openPassport, id, me, back, openSettings, open
     <div className="pbg">
       <div className="avw"><Avatar p={pr} size={116} />{pr.is_verified && <Verified big />}</div>
       <div className="ptext"><h2>{pr.display_name}</h2><small>@{pr.username}</small><AcctBadge type={pr.account_type} />{pr.bio && <p className="bio">{pr.bio}</p>}
-        <div className="meta">{pr.location && <span><I n="pin" s={15} /> {pr.location}</span>}{pr.link && <a href={/^https?:/.test(pr.link) ? pr.link : 'https://' + pr.link} target="_blank" rel="noreferrer"><I n="link" s={15} /> {pr.link.replace(/^https?:\/\//, '')}</a>}<span><I n="cal" s={15} /> Joined {joined}</span></div></div>
+        <div className="meta">{pr.location && <span><I n="pin" s={15} /> {pr.location}</span>}{pr.link && <a href={/^https?:/.test(pr.link) ? pr.link : 'https://' + pr.link} target="_blank" rel="noreferrer"><I n="link" s={15} /> {pr.link.replace(/^https?:\/\//, '')}</a>}<span><I n="cal" s={15} /> Joined {joined}</span></div>
+        <BizBar pr={pr} /></div>
       <div className="srow"><div className="stats"><div><b>{fmt(n.f)}</b>Followers</div><div><b>{fmt(n.g)}</b>Following</div><div><b>{fmt(n.p)}</b>Posts</div></div>
         {own && <><button className="wb sm" onClick={() => setEdit(true)}>Edit Profile</button><button className="go" onClick={share} aria-label="Share profile"><I n="send" s={18} fill /></button></>}</div>
       {FEATURES.passport && <div className="acts"><button className="wb" onClick={() => openPassport?.(id)}>🪪 Clout Passport</button></div>}
@@ -83,4 +84,15 @@ export default function Profile({ openPassport, id, me, back, openSettings, open
       <button className="wb" onClick={() => setMenu(false)}>Cancel</button></div></div>}
     {rep && <ReportSheet me={me} type="profile" targetId={id} reportedUser={id} close={() => setRep(false)} />}
     {edit && <EditProfile pr={pr} me={me} close={() => setEdit(false)} saved={() => { load(); onUpdated?.() }} />}</div>
+}
+
+// Business / creator quick actions on a profile (from profiles.biz)
+const href = u => /^https?:\/\//i.test(u) ? u : 'https://' + u
+function BizBar({ pr }) {
+  const b = pr?.biz || {}; if (!pr || pr.account_type === 'standard' || !Object.keys(b).length) return null
+  const btns = [b.phone && ['phone', 'Call', 'tel:' + b.phone.replace(/[^\d+]/g, '')], b.book && ['cal', 'Book', href(b.book)], b.order && ['briefcase', 'Order', href(b.order)], b.menu && ['image', pr.account_type === 'business' ? 'Menu' : 'Rates', href(b.menu)], b.address && ['pin', 'Directions', 'https://maps.apple.com/?q=' + encodeURIComponent(b.address)]].filter(Boolean)
+  return <div className="bizbar">
+    {(b.hours || b.price || b.address) && <div className="bizinfo">{b.price && <b>{b.price}</b>}{b.hours && <span><I n="cal2" s={14} />{b.hours}</span>}{b.address && <span><I n="pin" s={14} />{b.address}</span>}</div>}
+    {btns.length > 0 && <div className="bizbtns">{btns.map(([ic, l, u]) => <a key={l} href={u} target={u.startsWith('tel:') ? undefined : '_blank'} rel="noreferrer"><I n={ic} s={18} />{l}</a>)}</div>}
+  </div>
 }
