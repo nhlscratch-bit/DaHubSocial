@@ -29,7 +29,7 @@ export default function Auth() {
     if (mode === 'up') { const bad = await checkPassword(f.password, { email: f.email, username: f.username }); if (bad) { setBusy(false); return setMsg(bad) } }
     const { data, error } = mode === 'in'
       ? await sb.auth.signInWithPassword({ email: f.email.trim(), password: f.password })
-      : await sb.auth.signUp({ email: f.email.trim(), password: f.password, options: { data: { username: f.username.trim().toLowerCase(), display_name: f.username.trim() } } })
+      : await sb.auth.signUp({ email: f.email.trim(), password: f.password, options: { data: { username: f.username.trim().toLowerCase(), display_name: f.username.trim(), ref: (() => { try { return localStorage.getItem('dahub.ref') || undefined } catch { return undefined } })() } } })
     setBusy(false)
     if (error) setMsg(authMsg(error))
     else if (mode === 'up' && !data.session) setMsg('Check your email to confirm your account, then sign in.')
