@@ -113,7 +113,7 @@ export default function App() {
         <button className="ib" onClick={() => push({ t: 'inbox' })} aria-label="Messages"><I n="chat" s={22} />{badge > 0 && <span className="badge">{badge}</span>}</button>
         <span className="ringav"><Avatar p={profile} size={46} online={online.has(me.id)} onClick={() => openProfile(me.id)} /></span></div></header>
     <main hidden={tab !== 'home' || !!top}><Feed me={me} profile={profile} openPost={openPost} openProfile={openProfile} focusKey={fk} goDiscover={() => setTab('discover')} go={k => push({ t: k })} active={tab === 'home' && !top} /></main>
-    {tab === 'discover' && <div hidden={!!top}><Discover me={me} openProfile={openProfile} openOpps={openOpps} /></div>}
+    {tab === 'discover' && <div hidden={!!top}><Discover me={me} openProfile={openProfile} openOpps={openOpps} openPost={openPost} openEvent={id => push({ t: 'event', id })} openCommunity={id => push({ t: 'community', id })} /></div>}
     {tab === 'more' && !top && <More go={k => push(k === 'passport' ? { t: 'passport', id: me.id } : { t: k })} openProfile={openProfile} me={me} isAdmin={isAdmin} isStaff={isStaff} />}
     {tab === 'shorts' && <div hidden={!!top}><Shorts me={me} active={tab === 'shorts' && !top} openPost={openPost} openProfile={openProfile} goCreate={() => go('create')} /></div>}
     {tab !== 'home' && tab !== 'discover' && tab !== 'more' && tab !== 'shorts' && !top && <div className="stub"><h2>{tab === 'more' ? 'More' : tab[0].toUpperCase() + tab.slice(1)}</h2>

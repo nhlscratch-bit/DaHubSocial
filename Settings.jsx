@@ -11,10 +11,10 @@ import { tapsOn, setTaps } from './tapsound'
 import { warmIce, iceSource } from './ice'
 import { checkPassword } from './pwcheck'
 import { InviteSheet } from './Onboarding'
-import { FeedbackSheet, VerifySheet } from './Requests'
+import { FeedbackSheet, VerifySheet, NotifSheet } from './Requests'
 
 export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) {
-  const [q, setQ] = useState(''), [inv, setInv] = useState(false), [fb, setFb] = useState(false), [ver, setVer] = useState(false), [edit, setEdit] = useState(false), [pw, setPw] = useState(false), [priv, setPriv] = useState(!!profile?.is_private), [err, setErr] = useState('')
+  const [q, setQ] = useState(''), [inv, setInv] = useState(false), [fb, setFb] = useState(false), [ver, setVer] = useState(false), [np, setNp] = useState(false), [edit, setEdit] = useState(false), [pw, setPw] = useState(false), [priv, setPriv] = useState(!!profile?.is_private), [err, setErr] = useState('')
   const [pushOn, setPushOn] = useState(false), [glow, setGlowS] = useState(glowOn())
   const toggleGlow = () => { const v = !glow; setGlow(v); setGlowS(v) }
   const [relay, setRelay] = useState('')
@@ -42,6 +42,7 @@ export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) 
     ['How you use DAHUB', [
       ['bookmark', 'Saved', 'Posts you bookmarked', () => go('saved'), 'bookmarks'],
       ['bell', 'Notifications', 'Likes, follows, requests, replies', () => go('notifs'), 'alerts'],
+      ['bell', 'Notification settings', 'Pick which alerts reach your phone, or pause them', () => setNp(true), 'alerts push preferences quiet mute pause'],
       ...(supported() ? [['bell', 'Push notifications', pushOn ? 'On: alerts for messages, calls and activity' : 'Off: tap to get alerts when the app is closed', togglePush, 'alerts phone push messages calls', pushOn, true]] : []),
       ['chat', 'Messages', 'Your conversations', () => go('inbox'), 'dm inbox']]],
     ['Look and feel', [
@@ -74,6 +75,7 @@ export default function Settings({ me, profile, isAdmin, back, go, onUpdated }) 
     {pw && <PasswordSheet close={() => setPw(false)} />}
     {inv && <InviteSheet profile={profile} close={() => setInv(false)} />}
     {fb && <FeedbackSheet me={me} close={() => setFb(false)} />}
+    {np && <NotifSheet me={me} pushOn={supported() ? pushOn : null} close={() => setNp(false)} />}
     {ver && <VerifySheet me={me} profile={profile} close={() => setVer(false)} />}</div>
 }
 
