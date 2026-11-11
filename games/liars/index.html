@@ -121,10 +121,12 @@ svg.i{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.2;stroke
 .np .cc{position:absolute;right:4px;top:-9px;display:flex}
 .np .cc i{width:11px;height:15px;border-radius:2px;background:var(--cB) center/100% 100%;border:1px solid #cfe6ff88;margin-left:-5px;box-shadow:0 1px 2px #000}
 .np .cc i:first-child{margin-left:0}
-.bubble{position:absolute;top:-34px;left:50%;transform:translateX(-50%);background:#fff;color:#111;font:700 12px var(--ui);padding:5px 9px;border-radius:10px;white-space:nowrap;z-index:6;animation:pop .3s cubic-bezier(.2,1.6,.4,1);box-shadow:0 3px 0 #0008;max-width:160%;overflow:hidden;text-overflow:ellipsis}
+.bubble{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;color:#0a0f2a;font:700 14px/1.2 var(--ui);padding:7px 11px;border-radius:12px;white-space:normal;width:max-content;max-width:min(200%,220px);text-align:center;z-index:8;animation:pop .3s cubic-bezier(.2,1.6,.4,1);box-shadow:0 4px 0 #0009,0 6px 16px #000a;border:2px solid #0a0f2a}
 .bubble::after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:10px;background:#fff;transform:translateX(-50%) rotate(45deg);z-index:-1}
-.bubble.cap{background:var(--red);color:#fff;font:400 14px var(--display)}.bubble.cap::after{background:var(--red)}
-.bubble.taunt{background:#1b2a78;color:#fff;border:1px solid #7fc0ff}.bubble.taunt::after{background:#1b2a78}
+.bubble.cap{background:var(--red);color:#fff;font:400 16px var(--display);border-color:#fff}.bubble.cap::after{background:var(--red)}
+.bubble.taunt{background:#1b2a78;color:#fff;border-color:#7fc0ff}.bubble.taunt::after{background:#1b2a78}
+.seat2:first-child .bubble{left:0;transform:none}.seat2:first-child .bubble::after{left:22px}
+.seat2:last-child .bubble{left:auto;right:0;transform:none}.seat2:last-child .bubble::after{left:auto;right:16px}
 /* table */
 .tbl{position:absolute;left:50%;bottom:0;width:128%;transform:translateX(-50%);aspect-ratio:1672/609;z-index:2}
 .tbl > img.tb{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 0 18px #2f6bff88)}
@@ -136,12 +138,14 @@ svg.i{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.2;stroke
 .pile2{position:absolute;right:4%;top:50%;transform:translateY(-50%);width:clamp(44px,13vw,64px);aspect-ratio:.68}
 .pile2 img{position:absolute;inset:0;width:100%;height:100%;border-radius:4px;box-shadow:0 2px 6px #000a}
 .pile2 em{position:absolute;bottom:-14px;left:0;right:0;text-align:center;font:400 10px var(--display);color:#cfe6ff;font-style:normal;white-space:nowrap}
-.turnTxt{position:absolute;left:17%;right:17%;top:40%;transform:translateY(-50%);text-align:center;pointer-events:none;background:radial-gradient(closest-side,#030820dd,#03082099 60%,transparent);padding:6px 0;transition:opacity .2s}
-.turnTxt b{display:block;font:400 clamp(22px,7.5vw,38px)/1 var(--tag);color:#cfe9ff;text-shadow:0 0 6px #fff,0 0 14px #2f8bff,0 0 30px #2f6bff;animation:tt 1.4s ease-in-out infinite alternate}
-.turnTxt small{display:block;font:400 clamp(11px,3.6vw,16px)/1.1 var(--tag);color:#bfe4ff;text-shadow:0 0 10px #2f8bff;margin-top:2px}
-.turnTxt.claim b{font-size:clamp(15px,5vw,24px);color:#fff;animation:none}
-.turnTxt.claim small{color:var(--gold)}
-@keyframes tt{to{text-shadow:0 0 8px #fff,0 0 22px #4fa8ff,0 0 44px #2f6bff}}
+.status{position:absolute;left:8px;top:6px;z-index:6;max-width:64%;padding:6px 14px 7px 12px;transform:skewX(-10deg);background:linear-gradient(90deg,#0a1650f2,#0d1d6bd9);border:1.5px solid #4f8bff;border-left:4px solid #7ff4ff;box-shadow:0 4px 14px #000a,0 0 14px #2f6bff66;transition:opacity .2s}
+.status > *{display:block;transform:skewX(10deg)}
+.status b{font:400 clamp(13px,3.9vw,16px)/1.1 var(--display);letter-spacing:1px;color:#fff;white-space:nowrap}
+.status small{font:700 clamp(11px,3.2vw,13px)/1.2 var(--ui);letter-spacing:.5px;color:#9fd0ff;margin-top:2px}
+.status.me{border-color:#7ff4ff;box-shadow:0 4px 14px #000a,0 0 16px #19e0f0aa;animation:stpulse 1.2s ease-in-out infinite alternate}
+.status.me b{color:#7ff4ff;text-shadow:0 0 10px #19e0f0}
+.status.claim small{color:var(--gold)}
+@keyframes stpulse{to{box-shadow:0 4px 14px #000a,0 0 26px #19e0f0}}
 .reveal2{position:absolute;left:0;right:0;top:44%;transform:translateY(-50%);display:flex;gap:6px;justify-content:center;z-index:3;perspective:600px}
 /* cards */
 .card{position:relative;flex:none;width:var(--cw,58px);aspect-ratio:.676;border-radius:7px;background:center/100% 100% no-repeat;transition:transform .16s,filter .16s;filter:drop-shadow(0 4px 6px #000b);transform-style:preserve-3d}
@@ -180,7 +184,7 @@ svg.i{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.2;stroke
 .you small{display:block;font:700 11px var(--ui);color:#9fd0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .you.turn{border-color:#7ff4ff;box-shadow:0 0 14px #19e0f0,0 0 28px #19e0f088}
 .you.out .ring img{filter:grayscale(1)}
-.you .bubble{top:-32px;left:54px;transform:none}.you .bubble::after{left:16px}
+.you .bubble{bottom:calc(100% + 8px);left:54px;transform:none}.you .bubble::after{left:16px}
 .acts2{display:flex;gap:10px;padding:0 10px;z-index:4}
 .abtn{flex:1;height:58px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;font:400 clamp(13px,4.2vw,18px)/1 var(--display);letter-spacing:.5px;color:#fff;background:linear-gradient(180deg,#0d1d6b,#071040);border:2px solid #4fa8ff;box-shadow:0 0 12px #2f8bff,0 0 26px #2f6bff88,inset 0 0 14px #2f6bff55;transition:transform .1s,opacity .2s,box-shadow .2s}
 .abtn .i{font-size:22px}
@@ -420,11 +424,11 @@ svg.i{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.2;stroke
       <button class="gear" id="bOpts" aria-label="Game options"><svg class="i"><use href="#i-gear"/></svg></button>
     </div>
     <div class="stage" id="stage">
+      <div class="status" id="status"></div>
       <div class="opps2" id="opps"></div>
       <div class="tbl" id="tbl"><img class="tb" id="tblImg" alt="">
         <div class="felt2">
           <div class="tchip" aria-live="polite"><img id="tcImg" alt=""><span>TABLE</span><b id="tc">KINGS</b></div>
-          <div class="turnTxt" id="turnTxt"></div>
           <div class="reveal2" id="reveal"></div>
           <div class="pile2" id="pile"></div>
         </div>
@@ -639,9 +643,9 @@ function renderSeats(){
   sizeStage(); update()
 }
 function felt(){
-  const t = $('turnTxt'), you = P[0]; if (!t || !you) return
-  if (waitHuman && !you.out) { t.className = 'turnTxt'; t.innerHTML = `<b>YOUR TURN</b><small>${!you.hand.length ? 'NO CARDS · CALL CAP' : last && last.p !== you ? 'LAY OR CALL CAP' : 'LAY 1–3 CARDS'}</small>` }
-  else { const [a, b] = (claimTxt || '').split('|'); t.className = 'turnTxt claim'; t.innerHTML = a ? `<b>${a}</b>${b ? `<small>${b}</small>` : ''}` : '' }
+  const t = $('status'), you = P[0]; if (!t || !you) return
+  if (waitHuman && !you.out) { t.className = 'status me'; t.innerHTML = `<b>YOUR TURN</b><small>${!you.hand.length ? 'No cards · call CAP' : last && last.p !== you ? 'Lay cards or call CAP' : 'Lay 1–3 cards'}</small>` }
+  else { const [a, b] = (claimTxt || '').split('|'); t.className = 'status claim'; t.innerHTML = a ? `<b>${a}</b>${b ? `<small>${b}</small>` : ''}` : `<b>ROUND ${round}</b><small>${P[turn]?.human ? 'Your move' : (CHARS[P[turn]?.c]?.name || '') + ' is thinking'}</small>` }
 }
 function update(){
   for (const p of P) {
@@ -671,7 +675,7 @@ function setPose(p, name, ms){
 }
 function bubble(p, text, cls = ''){
   const s = p.human ? $('you') : $('seat' + p.idx)?.querySelector('.np'); if (!s) return
-  s.querySelector('.bubble')?.remove(); const b = document.createElement('div'); b.className = 'bubble ' + cls; b.textContent = text; s.appendChild(b); setTimeout(() => b.remove(), 1800)
+  s.querySelector('.bubble')?.remove(); const b = document.createElement('div'); b.className = 'bubble ' + cls; b.textContent = text; s.appendChild(b); setTimeout(() => b.remove(), 2400)
 }
 // Flying cards: from one on-screen rect to another, optional flip to a face.
 const rectOf = el => { const r = el.getBoundingClientRect(), a = $('app').getBoundingClientRect(); return { x: r.left - a.left, y: r.top - a.top, w: r.width, h: r.height } }
@@ -764,7 +768,7 @@ async function doPlay(p, idxs, id){
   idxs.sort((a, b) => b - a).forEach(i => p.hand.splice(i, 1))
   last = { p, cards }; SFX.card(); setTimeout(SFX.card, 120)
   setPose(p, 'lay', 1100); bubble(p, `${cards.length} ${plural(cards.length, tableCard)}${p.hand.length ? '' : ' · LAST CARDS'}`)
-  claimTxt = `${p.human ? 'YOU' : CHARS[p.c].name.toUpperCase()} LAID ${cards.length}|says ${plural(cards.length, tableCard)}${p.hand.length ? '' : ' · out of cards'}`
+  claimTxt = `${p.human ? 'YOU' : CHARS[p.c].name.toUpperCase()} LAID ${cards.length}|“${plural(cards.length, tableCard)}”${p.hand.length ? '' : ' · out of cards'}`
   await Promise.all(flights); pileN += cards.length; update()
   if (!p.human && Math.random() < .3) { await sleep(500); if (id === gameId) bubble(p, pick(CHARS[p.c].taunts), 'taunt') }
   await sleep(p.human ? 450 : 800)
@@ -774,7 +778,6 @@ async function resolveCall(caller, id){
   SFX.cap(); flash('red'); buzz([30, 40, 60]); setPose(caller, 'cap'); bubble(caller, caller.human ? 'CAP!' : CHARS[caller.c].cap, 'cap'); $('vig').classList.add('on')
   await stamp('CAP!', `${caller.human ? 'You call' : CHARS[caller.c].name + ' calls'} ${tgt.human ? 'you' : CHARS[tgt.c].name} a liar`, '', 1150)
   if (id !== gameId) return {}
-  $('turnTxt').style.opacity = 0
   // cards rise from the pile and flip one by one
   const R = $('reveal'); R.innerHTML = ''; const els = []
   for (const c of cards) { const e = document.createElement('div'); e.className = 'card back'; e.style.opacity = 0; R.appendChild(e); els.push(e) }
@@ -791,7 +794,7 @@ async function resolveCall(caller, id){
   await stamp(lied ? 'CAUGHT LYING' : 'NO CAP', lied ? (tgt.human ? 'You pay' : `${CHARS[tgt.c].name} pays`) : (caller.human ? 'You pay for that call' : `${CHARS[caller.c].name} pays for that call`), lied ? '' : 'ok', 1500)
   $('vig').classList.remove('on'); if (id !== gameId) return {}
   const ko = await penalty(loser, id); if (id !== gameId) return {}
-  $('reveal').innerHTML = ''; $('turnTxt').style.opacity = ''; update()
+  $('reveal').innerHTML = ''; update()
   return { loser, over: alive().length <= 1 }
 }
 // Penalty cinematic: the loser's penalty pose, the six chances, a sweep that lands on this chance, then SAFE or KNOCKED OUT.
