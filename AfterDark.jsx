@@ -4,6 +4,9 @@ import PostCard from './PostCard'
 import Avatar from './Avatar'
 import { FEATURES } from './features'
 import { RCAT } from './roomsEngine'
+import I from './Icons'
+import moon from './mi-afterdark.png'
+const RICON = ['shield', 'people', 'block', 'lock', 'moon']
 const RULES = ['18+ only. Never post or share anyone under 18, real or not. We report it to NCMEC and law enforcement.',
   'Consent always. Only post people who agreed to be posted. No hidden cameras, leaks or revenge content.',
   'No buying or selling sex, escort ads or links to them.',
@@ -18,8 +21,8 @@ function Gate({ st, done }) {
     setBusy(false); if (error) return setErr(friendly(error)); done()
   }
   const max = new Date(Date.now() - 18 * 365.25 * 864e5).toISOString().slice(0, 10)
-  return <div className="adgate"><div className="admoon">🌙</div><h2>After Dark</h2><p>DAHUB’s 18+ space for grown conversation, nightlife and adult content. It’s off unless you turn it on.</p>
-    <ul>{RULES.map(r => <li key={r}>{r}</li>)}</ul>
+  return <div className="adgate"><div className="admoon2"><span className="glow" /><img src={moon} alt="" /></div><h2 className="adtitle">AFTER DARK</h2><span className="ad18">18+ ONLY</span><p>DAHUB’s grown space for late-night conversation, nightlife and adult content. It stays off unless you turn it on.</p>
+    <ul className="adrules">{RULES.map((r, i) => <li key={r}><i><I n={RICON[i] === 'moon' ? 'lock' : RICON[i]} s={18} /></i><span>{r}</span></li>)}</ul>
     {!st?.confirmed && <label className="adl">Your date of birth<input type="date" value={dob} max={max} onChange={e => setDob(e.target.value)} /></label>}
     <label className="adck"><input type="checkbox" checked={ok} onChange={e => setOk(e.target.checked)} /> I’m 18 or older and I agree to the After Dark rules.</label>
     {err && <p className="msg" role="alert">{err}</p>}
@@ -57,26 +60,29 @@ export default function AfterDark({ me, profile, back, openPost, openProfile, op
     const [r, e] = await Promise.all([sb.rpc('list_rooms'), sb.from('events').select('id,title,venue,neighborhood,starts_at').eq('cancelled', false).gte('starts_at', new Date(Date.now() - 3 * 3600e3).toISOString()).lte('starts_at', until).order('starts_at').limit(20)])
     setTn({ rooms: r.data?.live || [], events: e.data || [] })
   }
-  useEffect(() => { status() }, [])
+  useEffect(() => { status(); document.body.classList.add('inad'); return () => document.body.classList.remove('inad') }, [])
   useEffect(() => { if (st?.ok) { load(); loadT() } }, [st?.ok])
   const off = async () => { setMenu(false); if (!confirm('Turn off After Dark? Its posts will be hidden from you until you turn it back on.')) return; const { error } = await sb.rpc('ad_set', { p_on: false }); if (error) return setErr(friendly(error)); back() }
-  return <div className="sheet adpg"><div className="bar adbar"><button onClick={back} aria-label="Back">←</button><span style={{ flex: 1 }}>🌙 After Dark{isNight() && <small className="adopen"> · open late</small>}</span>{st?.ok && <button className="ib" onClick={() => setMenu(!menu)} aria-label="After Dark settings">⋯</button>}</div>
+  return <div className="sheet adpg"><div className="adsky" aria-hidden>{Array.from({ length: 40 }, (_, i) => <i key={i} style={{ left: (i * 37) % 100 + '%', top: (i * 53) % 70 + '%', animationDelay: -(i % 7) * 0.6 + 's' }} />)}</div>
+    <div className="adtop"><button className="adcirc" onClick={back} aria-label="Back"><I n="back" s={24} /></button>
+      <span className="adhead"><img src={moon} alt="" /><span><b>After Dark</b><small>{isNight() ? <><u />Open late</> : '18+ · Members only'}</small></span></span>
+      {st?.ok ? <button className="adcirc" onClick={() => setMenu(!menu)} aria-label="After Dark settings"><I n="more" s={22} /></button> : <span style={{ width: 48 }} />}</div>
     {menu && <div className="pmenu admenu"><button onClick={off}>Turn off After Dark</button><button onClick={() => { setMenu(false); setTab('rules') }}>Rules</button><button onClick={() => setMenu(false)}>Cancel</button></div>}
     <div className="sbody">
       {st === undefined && !err && <div className="skel"><i /><i /></div>}
       {err && <p className="msg" role="alert">{err} <button className="link" onClick={() => { status(); st?.ok && load() }}>Retry</button></p>}
       {st && !st.ok && <Gate st={st} done={status} />}
       {st?.ok && <>
-        <div className="chips">{[['feed', 'Feed'], ['tonight', 'Tonight'], ['rules', 'Rules']].map(([k, l]) => <button key={k} className="chipb" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>)}</div>
+        <div className="adtabs">{[['feed', 'Feed', 'comment'], ['tonight', 'Tonight', 'cal2'], ['rules', 'Rules', 'shield']].map(([k, l, ic]) => <button key={k} aria-selected={tab === k} onClick={() => setTab(k)}><I n={ic} s={18} />{l}</button>)}</div>
         {tab === 'feed' && <><Composer me={me} profile={profile} creator={st.creator} posted={load} />
           {posts === null && <div className="skel"><i /><i /></div>}
-          {posts?.length === 0 && <div className="empty">Quiet tonight. Be the first to post After Dark.</div>}
+          {posts?.length === 0 && <div className="adempty"><img src={moon} alt="" /><b>Quiet tonight</b><span>Be the first to post After Dark.</span></div>}
           <div style={{ paddingBottom: 140 }}>{posts?.map(p => <PostCard key={p.id} post={p} me={me} openPost={openPost} openProfile={openProfile} />)}</div></>}
         {tab === 'tonight' && <div className="adt2" style={{ paddingBottom: 140 }}>
-          <h3>Live rooms now</h3>{!tn ? <div className="skel"><i /></div> : tn.rooms.length ? tn.rooms.map(r => <button key={r.id} className="gl prow" onClick={() => openRoom(r.id)}><Avatar p={r.host} size={44} /><span className="evi"><b>{r.title}</b><small>#{RCAT[r.category]} · 🎧 {r.listeners}</small></span></button>) : <p className="pnote">No live rooms right now.</p>}
-          <h3>Happening in the next 12 hours</h3>{tn && (tn.events.length ? tn.events.map(e => <button key={e.id} className="gl prow" onClick={() => openEvent(e.id)}><span className="pth" style={{ width: 44, height: 44 }}>📅</span><span className="evi"><b>{e.title}</b><small>{new Date(e.starts_at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}{e.venue && ' · ' + e.venue}</small></span></button>) : <p className="pnote">No events coming up tonight.</p>)}
+          <h3><I n="live" s={20} />Live rooms now</h3>{!tn ? <div className="skel"><i /></div> : tn.rooms.length ? tn.rooms.map(r => <button key={r.id} className="gl prow" onClick={() => openRoom(r.id)}><Avatar p={r.host} size={44} /><span className="evi"><b>{r.title}</b><small>#{RCAT[r.category]} · 🎧 {r.listeners}</small></span></button>) : <p className="pnote">No live rooms right now.</p>}
+          <h3><I n="cal2" s={20} />Next 12 hours</h3>{tn && (tn.events.length ? tn.events.map(e => <button key={e.id} className="gl prow" onClick={() => openEvent(e.id)}><span className="pth" style={{ width: 44, height: 44 }}>📅</span><span className="evi"><b>{e.title}</b><small>{new Date(e.starts_at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}{e.venue && ' · ' + e.venue}</small></span></button>) : <p className="pnote">No events coming up tonight.</p>)}
           <button className="wb sm" style={{ margin: '12px 14px' }} onClick={loadT}>Refresh</button></div>}
-        {tab === 'rules' && <div className="adgate"><h3>After Dark rules</h3><ul>{RULES.map(r => <li key={r}>{r}</li>)}</ul><small>See something that breaks these? Use Report on the post. Reports about minors or non-consent hide the post right away until DAHUB reviews it.</small></div>}
+        {tab === 'rules' && <div className="adgate"><h3>After Dark rules</h3><ul className="adrules">{RULES.map((r, i) => <li key={r}><i><I n={RICON[i] === 'moon' ? 'lock' : RICON[i]} s={18} /></i><span>{r}</span></li>)}</ul><small>See something that breaks these? Use Report on the post. Reports about minors or non-consent hide the post right away until DAHUB reviews it.</small></div>}
       </>}
     </div></div>
 }
