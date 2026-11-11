@@ -19,7 +19,7 @@ for cid,(name,tight) in LIARS.items():
         if pose=='turnaround': continue
         im=(KT.key(f'{src}/{f}')[0] if tight else K.key(f'{src}/{f}')); im=holes(im)
         if pose=='portrait':
-            bb=im.getchannel('A').point(lambda v:255 if v>30 else 0).getbbox(); im=im.crop(bb); im.thumbnail((360,360))
+            bb=im.getchannel('A').point(lambda v:255 if v>30 else 0).getbbox(); im=im.crop(bb); im.thumbnail((760,760))
         else:
             im=im.resize((512,int(512*im.height/im.width)),Image.LANCZOS)
         im.save(f'{OUT}/{cid}/{pose}.webp',quality=82,method=6)
@@ -28,6 +28,6 @@ for cid in ['fp','kd','mb','tc']:
     for p in ['idle','slap','celebrate','mad','portrait']:
         im=Image.open(f'games/spades/img/{cid}_{p}.webp')
         if p!='portrait': im=im.resize((512,int(512*im.height/im.width)),Image.LANCZOS)
-        else: im.thumbnail((360,360))
+        else: im.thumbnail((760,760))
         im.save(f'{OUT}/{cid}/{p}.webp',quality=82,method=6)
 print('ok')
