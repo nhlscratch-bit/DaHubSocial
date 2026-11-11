@@ -879,3 +879,11 @@ body.inad::after{display:none}
 .adlive{display:inline-flex;align-items:center;gap:4px;font-style:normal;font-weight:900;font-size:11px;color:#fff;padding:1px 7px;border-radius:999px;background:#c4163a;box-shadow:0 0 8px #ff3b5c}.adlive u{width:6px;height:6px;border-radius:50%;background:#fff;animation:ldp 1.4s infinite}
 .adstart{width:calc(100% - 24px);margin:6px 12px 8px}
 .lrpage.lrad{background:radial-gradient(120% 70% at 50% -10%,#1c2a5a 0%,#0b1230 45%,#03050f 100%)}.lrpage.lrad .lrcard{background:linear-gradient(160deg,#141f48f0,#0a1028f0);border-color:#7af7ff33;color:#e8f4ff}.lrpage.lrad h1,.lrpage.lrad b,.lrpage.lrad label{color:#fff}.lrpage.lrad p,.lrpage.lrad small{color:#bcd2ea}
+
+/* After Dark Shorts + Stories */
+.shorts video.shblur{filter:blur(28px) brightness(.6);transform:scale(1.1)}
+.shreveal{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#0008;border:0;color:#fff}
+.shreveal b{font-size:22px;padding:4px 14px;border-radius:999px;background:linear-gradient(180deg,#ff4d6d,#c4163a);box-shadow:0 0 18px #ff3b5c}.shreveal span{font-weight:800;font-size:17px}.shreveal em{font-style:normal;color:#cfe0ff}
+.adshback{position:absolute;z-index:4;top:calc(12px + env(safe-area-inset-top));left:12px;width:44px;height:44px;border-radius:50%;border:2px solid #7af7ff66;background:#070b1ccc;color:#fff;font-size:22px}
+.adshorts .shtabs button[aria-selected=true]{border-bottom-color:#8f7bff}
+.adstories .ring{background:conic-gradient(#8f7bff,#19e0f0,#c79bff,#8f7bff)!important}.adstories small{color:#cfe0ff!important}.adstories .ring.plain{background:#16224c!important;color:#cfe0ff}
