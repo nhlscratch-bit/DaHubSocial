@@ -49,8 +49,12 @@ export default function Profile({ openPassport, id, me, back, openSettings, open
   const cover = pr.cover_url && sb.storage.from('covers').getPublicUrl(pr.cover_url).data.publicUrl
   const joined = new Date(pr.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
   const tile = p => { const m = [...p.post_media].sort((a, b) => a.position - b.position)[0]
-    return <button key={p.id} className="tile" onClick={() => openPost(p.id)}>
-      {p.after_dark ? <div className="ttext adt">🌙 After Dark</div> : m ? (m.media_type === 'video' ? <video src={mediaUrl(m.storage_path)} muted playsInline /> : <img src={mediaUrl(m.storage_path)} alt="" loading="lazy" />) : <div className="ttext">{p.body}</div>}
+    return <button key={p.id} className={'tile' + (m || p.after_dark ? '' : ' ttile')} onClick={() => openPost(p.id)}>
+      {p.after_dark ? <div className="ttext adt">🌙 After Dark</div> : m ? (m.media_type === 'video' ? <video src={mediaUrl(m.storage_path)} muted playsInline /> : <img src={mediaUrl(m.storage_path)} alt="" loading="lazy" />) : <div className={'tquote' + (p.poll_options?.length ? ' poll' : '')}>
+        <span className="tqtag">{p.poll_options?.length ? <><I n="poll" s={13} />POLL</> : <><I n="comment" s={13} />POST</>}</span>
+        <i className="tqmark" aria-hidden>“</i><p>{p.body}</p>
+        {p.poll_options?.length > 0 && <em className="tqvote"><I n="poll" s={13} />Tap to vote</em>}
+        <small>{new Date(p.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</small></div>}
       <div className="tstat"><span><I n="heart" s={16} /> {fmt(p.post_reactions.length)}</span><span><I n="comment" s={16} /> {fmt(p.comments[0]?.count || 0)}</span><span><I n="repost" s={16} /> {fmt(p.reposts.length)}</span><i><I n="more" s={18} /></i></div></button> }
   return <div className="sheet clear">
     <div className={'mini' + (sc ? ' on' : '')}><button className="ib" onClick={back} aria-label="Back"><I n="back" s={22} /></button><Avatar p={pr} size={34} /><b>{pr.display_name}</b>{own && <button className="wb sm" onClick={() => setEdit(true)}>Edit</button>}</div>

@@ -20,10 +20,16 @@ export default function Feed({ me, profile, openPost, openProfile, focusKey, goD
     const { data: f } = await sb.from('follows').select('followee_id').eq('follower_id', me.id).eq('status', 'accepted')
     const ids = (f || []).map(x => x.followee_id); setFc(ids.length)
     if (tab !== 'following') ids.push(me.id)
-    if (!ids.length) return setPosts([])
-    const q = sb.from('posts').select(SEL).eq('after_dark', false).in('author_id', ids).order('created_at', { ascending: false }).limit(40)
-    const { data, error } = await q
+    // For You / Trending also include public posts from verified and official accounts (unless their profile is private)
+    let vids = []
+    if (tab !== 'following') { const { data: v } = await sb.from('profiles').select('id').eq('is_verified', true).eq('is_private', false).eq('account_status', 'active').limit(200); vids = (v || []).map(x => x.id).filter(id => !ids.includes(id)) }
+    if (!ids.length && !vids.length) return setPosts([])
+    const [a, b] = await Promise.all([
+      ids.length ? sb.from('posts').select(SEL).eq('after_dark', false).in('author_id', ids).order('created_at', { ascending: false }).limit(40) : { data: [] },
+      vids.length ? sb.from('posts').select(SEL).eq('after_dark', false).eq('audience', 'public').is('community_id', null).in('author_id', vids).order('created_at', { ascending: false }).limit(40) : { data: [] }])
+    const error = a.error || b.error
     if (error) return setErr(error.message)
+    const seen = new Set(), data = [...(a.data || []), ...(b.data || [])].filter(x => !seen.has(x.id) && seen.add(x.id)).sort((x, y) => y.created_at.localeCompare(x.created_at)).slice(0, 50)
     const hid = await hiddenIds(); for (let i = data.length - 1; i >= 0; i--) if (hid.has(data[i].author.id)) data.splice(i, 1)
     if (tab === 'trend') data.sort((a, b) => b.post_reactions.length - a.post_reactions.length)
     setPosts(data)
