@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { FeedbackAdmin, VerifyAdmin } from './Requests'
 import { sb, ago } from './supabase'
 import { CAT, SUBSEL, subUrl } from './media'
 import { REASONS } from './opp'
@@ -35,10 +36,12 @@ export default function Admin({ me, back, openPost, openProfile, openOpp }) {
   const nm = id => names[id] ? `${names[id].display_name} (@${names[id].username})` : 'unknown'
   const noteBox = id => <input className="anote" value={note[id] || ''} onChange={e => setNote(n => ({ ...n, [id]: e.target.value }))} placeholder="Note (shown to the creator on a rejection)" maxLength={200} />
   return <div className="sheet"><div className="bar"><button onClick={back}>←</button>Admin</div><div className="sbody">
-    <div className="chips">{[['subs', `Submissions${subs ? ` (${subs.length})` : ''}`], ['reps', `Reports${reps ? ` (${reps.length})` : ''}`], ['accts', 'Accounts'], ['audit', 'Audit log'], ['daily', 'Daily question'], ['arts', 'Artists'], ['live', 'Live spotlights']].map(([k, l]) => <button key={k} className="chipb" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>)}</div>
+    <div className="chips">{[['subs', `Submissions${subs ? ` (${subs.length})` : ''}`], ['reps', `Reports${reps ? ` (${reps.length})` : ''}`], ['accts', 'Accounts'], ['audit', 'Audit log'], ['daily', 'Daily question'], ['arts', 'Artists'], ['live', 'Live spotlights'], ['fb', 'Feedback'], ['ver', 'Verify']].map(([k, l]) => <button key={k} className="chipb" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>)}</div>
     {msg && <p className="msg" role="status">{msg}</p>}
     {(tab === 'accts' || tab === 'audit') && <AccountsAdmin me={me} mode={tab} openProfile={openProfile} />}
     {tab === 'daily' && <DailyAdmin me={me} />}
+    {tab === 'fb' && <FeedbackAdmin openProfile={openProfile} />}
+    {tab === 'ver' && <VerifyAdmin openProfile={openProfile} />}
     {tab === 'arts' && <MediaAdmin me={me} />}
     {tab === 'subs' && (subs === null ? <div className="skel"><i /></div> : subs.length === 0 ? <div className="empty">No submissions waiting.</div> : subs.map(s => <div key={s.id} className="gl arow">
       {s.cover_path && <img className="mimg2" src={subUrl(s.cover_path)} alt="" />}
