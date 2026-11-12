@@ -139,7 +139,7 @@ label.btn{display:inline-flex;align-items:center}
       <div class="sec"><label class="lab" for="c-line">Catchphrase</label><input id="c-line" type="text" maxlength="80" placeholder="“Hold on dummy, you geekin.”"></div>
       <div class="sec"><label class="lab" for="c-bio">Backstory</label><textarea id="c-bio" maxlength="800" placeholder="Who they were, what they want, why they joined the team"></textarea></div>
       <div class="sec"><label class="lab" for="c-beef">Friends and beef <small>on the team and off it</small></label><input id="c-beef" type="text" maxlength="200" placeholder="e.g. Always arguing with the pigeon, protective of the youngest member"></div>
-      <div class="sec"><label class="lab" for="c-art">Art style <small>keep it the same for the whole cast</small></label><textarea id="c-art"></textarea></div>
+      <div class="sec"><label class="lab" for="c-art">Art style <small>keep it the same for the whole cast</small></label><div class="chips" id="c-styles"></div><textarea id="c-art"></textarea></div>
       <div class="actions"><button class="btn" id="c-gen" type="button">Write my prompts</button><button class="btn alt" id="c-save" type="button">Save character</button><button class="btn ghost" id="c-new" type="button">New character</button></div>
       <div id="c-status" class="status" role="status"></div>
     </section>
@@ -190,7 +190,14 @@ const OPTS = {
   body: ['Tiny', 'Scrawny', 'Average', 'Chunky', 'Huge'],
   pers: ['Trash talker', 'Cool & quiet', 'Hothead', 'Cocky', 'Funny', 'Petty', 'Wise', 'Hype', 'Sneaky', 'Paranoid', 'Lovable', 'Unhinged', 'Loyal', 'Reluctant hero']
 }
-const ART = 'Bold hand-drawn 2D cartoon illustration in the style of an adult animated TV comedy: thick clean black outlines, flat cel shading, bright saturated colors, expressive exaggerated faces, an original anthropomorphic animal or object character with hood energy and a Baltimore street vibe'
+const STYLES = {
+  '3D animated movie': 'Polished 3D animated feature film style: stylized appealing character with exaggerated proportions, detailed textures (glossy shell, fabric weave, worn sneakers), soft cinematic lighting with strong rim light, subtle subsurface glow, rich vibrant colors, expressive face, high-end studio animation render quality, an original anthropomorphic creature with hood energy and a Baltimore street vibe',
+  'Comic book ink': 'Classic superhero comic book art: bold black inks, halftone dot shading, heavy dramatic shadows, dynamic foreshortening, punchy flat colors, an original anthropomorphic creature with hood energy and a Baltimore street vibe',
+  'Graffiti': 'Spray-paint street mural art: graffiti textures, paint drips, glowing neon outlines, gritty brick-wall energy, loud saturated colors, an original anthropomorphic creature with hood energy and a Baltimore street vibe',
+  'Anime action': 'Sharp anime action style: clean confident line art, crisp cel shading, speed lines, glowing power effects, dramatic angles, an original anthropomorphic creature with hood energy and a Baltimore street vibe',
+  '2D adult cartoon': 'Bold hand-drawn 2D cartoon illustration in the style of an adult animated TV comedy: thick clean black outlines, flat cel shading, bright saturated colors, expressive exaggerated faces, an original anthropomorphic animal or object character with hood energy and a Baltimore street vibe'
+}
+const ART = STYLES['3D animated movie']
 const blank = () => ({ name: '', hero: '', nick: '', what: '', roleown: '', teamrole: '', body: 'Average', skin: '', head: '', outfit: '', item: '', c1: '#2f8bff', c2: '#19e0f0', powers: [{ n: '', d: '' }, { n: '', d: '' }, { n: '', d: '' }], weak: '', origin: '', pers: [], voice: '', line: '', bio: '', beef: '', art: ART, refhow: '', refs: [], sheet: null, gen: null })
 let C = blank(), cEdit = null, crew = [], team = { name: '', base: '' }, teamVer = null
 const TXT = ['name', 'hero', 'nick', 'what', 'roleown', 'teamrole', 'skin', 'head', 'outfit', 'item', 'weak', 'origin', 'voice', 'line', 'bio', 'beef', 'art', 'refhow']
@@ -237,17 +244,18 @@ function refLine(){ const how = C.refhow.trim(), n = C.refs.map((x, i) => x.note
   return ` Use the attached reference photo${C.refs.length > 1 ? 's' : ''} as a guide${n.length ? ' (' + n.join('; ') + ')' : ''}${how ? '. Follow these instructions about the references exactly: ' + how : ''}. The character is an original cartoon creature, never a real person.` }
 function prompts(){
   const a = (C.art || ART).trim(), L = []
-  const match = C.sheet ? `Use the attached official turnaround sheet of ${C.name}: match the character design, proportions, colors, outfit and details EXACTLY, change nothing.` : `Same character as the turnaround sheet above, same exact design, outfit and colors.`
+  const match = C.sheet ? `Use the attached official turnaround sheet of ${C.name}: match the character design, proportions, colors, outfit and details EXACTLY, change nothing about the design, and render it in the art style described above.` : `Same character as the turnaround sheet above, same exact design, outfit and colors.`
   const BG = ' Solid pure green background (#00FF00), no shadows on the background, no text.'
+  if (C.sheet) L.push(['Restyle the official look', 'Only if the turnaround is in an older style. Then replace the official look with the result.', `Redraw the attached character turnaround sheet in this art style: ${a}. Keep the exact same character design, proportions, outfit, colors, accessories and the same three views (front, side, back), same poses and layout. Change ONLY the rendering style. Solid pure green background (#00FF00), no text.`, 'gpt'])
   if (!C.sheet) L.push(['Character turnaround', 'Run first. This becomes the official look.', `${a}.${refLine()} Character turnaround model sheet for ${who()}: ${looks()}. Show the same character three times side by side: front view, side view, back view, standing in a neutral confident pose, full body. Clear readable silhouette, original design, no logos or brand names.${BG}`, 'gpt'])
   L.push(['Hero pose', 'The key art: posters, intros, the comic cover', `${a}. ${match} Hero key art of ${who()}: dramatic full-body hero pose, low camera angle, ${pw()[0]?.n ? 'their power "' + q(pw()[0].n) + '" glowing and crackling around them, ' : ''}rooftop at night over Baltimore rowhouses with the harbor lights behind, wind, rim light in ${C.c2}. Vertical 2:3, no text.`, 'gpt'])
   L.push(['Expression sheet', 'For acting in every scene', `${a}. ${match} Expression sheet of ${C.name}'s head and shoulders, 6 expressions in a 3x2 grid: laughing, angry, smug, scared, sad, shocked${C.pers.length ? ', all in a way that fits a ' + C.pers.join(', ').toLowerCase() + ' personality' : ''}. Same angle and size in every box.${BG}`, 'gpt'])
   L.push(['Action poses', 'Running, jumping, fighting, talking', `${a}. ${match} Action pose sheet of ${C.name}, full body, 4 poses side by side: running, mid-jump, throwing a punch or using ${C.item || 'their signature item'}, and talking with big hand gestures.${BG}`, 'gpt'])
   pw().forEach((p, i) => L.push([`Power: ${p.n || 'Power ' + (i + 1)}`, 'The power in action', `${a}. ${match} ${C.name} using the power "${q(p.n || 'their power')}"${p.d ? ': ' + p.d : ''}. Dynamic full-body action shot, the power effect big and bright in ${C.c2}, motion lines and impact, set in a Baltimore street scene at night. Vertical 2:3, no text.`, 'gpt']))
   L.push(['Comic book cover', 'Issue #1 cover art', `${a}. ${match} Comic book cover art starring ${who()}: big heroic pose bursting toward the viewer, city skyline and rowhouses behind, dramatic lighting, leave the top fifth of the image as clean sky for the title logo. Vertical comic cover proportions (2:3), no text or logos.`, 'gpt'])
-  L.push(['Hero intro shot', 'Upload the Hero pose image, 5-8 seconds', `Animate this image. ${C.name} stands on the rooftop, wind moving their clothes, then turns their head to camera with a ${C.pers.includes('Cool & quiet') ? 'calm' : 'cocky'} look${pw()[0]?.n ? ' as ' + q(pw()[0].n) + ' flickers to life around them' : ''}. Slow push-in camera, city lights twinkling behind, cartoon style kept exactly the same as the image, smooth 2D animation, no style change, no new characters.`, 'hf'])
-  pw().forEach((p, i) => L.push([`${p.n || 'Power ' + (i + 1)} in motion`, 'Upload that power image, 5 seconds', `Animate this image. ${C.name} unleashes "${q(p.n || 'their power')}"${p.d ? ' (' + p.d + ')' : ''}: build-up, then a big burst toward the camera with a quick camera shake, then the effect fades. Keep the exact cartoon style and character design from the image, smooth 2D animation, no new characters.`, 'hf']))
-  if (C.line) L.push(['Catchphrase line', 'Upload the expression sheet or hero pose', `Animate this image. ${C.name} looks into the camera and says "${q(C.line)}"${C.voice ? ', voice: ' + C.voice : ''}, with exaggerated cartoon mouth movement and a ${C.pers[0]?.toLowerCase() || 'confident'} attitude. Keep the exact cartoon style, close-up, smooth 2D animation.`, 'hf'])
+  L.push(['Hero intro shot', 'Upload the Hero pose image, 5-8 seconds', `Animate this image. ${C.name} stands on the rooftop, wind moving their clothes, then turns their head to camera with a ${C.pers.includes('Cool & quiet') ? 'calm' : 'cocky'} look${pw()[0]?.n ? ' as ' + q(pw()[0].n) + ' flickers to life around them' : ''}. Slow push-in camera, city lights twinkling behind, the 3D animated style kept exactly the same as the image, smooth high-quality 3D animation, no style change, no new characters.`, 'hf'])
+  pw().forEach((p, i) => L.push([`${p.n || 'Power ' + (i + 1)} in motion`, 'Upload that power image, 5 seconds', `Animate this image. ${C.name} unleashes "${q(p.n || 'their power')}"${p.d ? ' (' + p.d + ')' : ''}: build-up, then a big burst toward the camera with a quick camera shake, then the effect fades. Keep the exact animated style and character design from the image, smooth high-quality 3D animation, no new characters.`, 'hf']))
+  if (C.line) L.push(['Catchphrase line', 'Upload the expression sheet or hero pose', `Animate this image. ${C.name} looks into the camera and says "${q(C.line)}"${C.voice ? ', voice: ' + C.voice : ''}, with expressive animated mouth movement and a ${C.pers[0]?.toLowerCase() || 'confident'} attitude. Keep the exact animated style, close-up, smooth high-quality 3D animation.`, 'hf'])
   L.push(['Character bible', 'Paste into your story chat', bible(), 'bible'])
   return L
 }
@@ -272,7 +280,7 @@ Return JSON only: {"prompts":[{"title":"","sub":"","tool":"gpt"|"hf","text":""}]
 - Higgsfield: hero intro shot from the hero pose image
 - Higgsfield: one motion shot per power from that power's image
 - Higgsfield: catchphrase line (only if there is a catchphrase)
-Every ChatGPT prompt: 70-140 words, uses the art style given, and ${'${MATCH}'}. Higgsfield prompts start with "Animate this image.", describe the motion, the camera move and length, and say to keep the exact cartoon style and design. The character is ORIGINAL: never a real person, celebrity or existing cartoon. No brand names or logos. Follow how_to_use_references exactly.`
+Every ChatGPT prompt: 70-140 words, renders in the art style given (even if the official turnaround is drawn in another style: keep its design, change only the rendering style), and ${'${MATCH}'}. Higgsfield prompts start with "Animate this image.", describe the motion, the camera move and length, and say to keep the exact animated style and design. The character is ORIGINAL: never a real person, celebrity or existing cartoon. No brand names or logos. Follow how_to_use_references exactly.`
 async function generate(){
   if (!C.name.trim()) return setStatus('c-status', 'Give your character a name first.', 'err')
   if (!C.what.trim()) return setStatus('c-status', 'Say what kind of creature they are first.', 'err')
@@ -338,13 +346,13 @@ $('c-save').onclick = async () => {
   $('c-save').disabled = true
   try { await db.doc('characters/' + id).set(data); cEdit = id; setStatus('c-status', `${C.name} saved.`, 'ok') } catch (e) { setStatus('c-status', 'Could not save: ' + (e.message || e.code), 'err') } finally { $('c-save').disabled = false }
 }
-$('c-new').onclick = () => { C = blank(); cEdit = null; fill(); refsUI(); lockedUI(); $('c-prompts').innerHTML = '<div class="ph">Fill in your character, then tap <b>Write my prompts</b>.</div>'; $('c-tip').hidden = true; chips(); prev(); setStatus('c-status', ''); scrollTo({ top: 0, behavior: 'smooth' }) }
+$('c-new').onclick = () => { C = blank(); cEdit = null; fill(); refsUI(); lockedUI(); stylesUI(); $('c-prompts').innerHTML = '<div class="ph">Fill in your character, then tap <b>Write my prompts</b>.</div>'; $('c-tip').hidden = true; chips(); prev(); setStatus('c-status', ''); scrollTo({ top: 0, behavior: 'smooth' }) }
 function load(d, id){
   const powers = Array.isArray(d.powers) && d.powers.length ? d.powers.map(p => ({ n: p.n || '', d: p.d || '' })) : []
   while (powers.length < 3) powers.push({ n: '', d: '' })
   C = { ...blank(), ...d, roleown: d.roleown || d.role || '', powers, refs: (d.refs || []).map(x => ({ ...x })), sheet: d.sheet ? { ...d.sheet } : null, gen: d.gen?.list ? { at: d.gen.at, list: d.gen.list.filter(x => x.tool).map(x => [x.t, x.sub, x.p, x.tool]) } : null }
   if (C.gen && !C.gen.list.length) C.gen = null
-  cEdit = id; fill(); refsUI(); lockedUI(); chips(); prev()
+  cEdit = id; fill(); refsUI(); lockedUI(); chips(); stylesUI(); prev()
   if (C.gen) { renderPrompts($('c-prompts'), C.gen.list); $('c-tip').hidden = false } else { $('c-prompts').innerHTML = '<div class="ph">Tap <b>Write my prompts</b>.</div>'; $('c-tip').hidden = true }
   setStatus('c-status', `Editing ${d.name}.`); scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -370,7 +378,7 @@ $('t-gen').onclick = () => {
   const art = (crew[0].d.art || ART).trim(), names = crew.map(({ d }) => `${d.hero || d.name} (${d.what || 'creature'}${d.teamrole ? ', ' + d.teamrole.toLowerCase() : ''})`).join(', ')
   const list = [
     ['Team lineup poster', 'Attach every member’s official turnaround', `${art}. Use the attached official turnaround sheets and match every character's design EXACTLY. Team lineup poster of the super team${team.name ? ' "' + team.name + '"' : ''}: ${names}. All of them standing side by side in heroic poses, the leader in the center, each showing a hint of their power, ${team.base ? 'in front of their home base, ' + team.base : 'on a Baltimore rooftop at night with the harbor behind'}. Wide 16:9, dramatic lighting, no text.`, 'gpt'],
-    ['Team walk-up', 'Upload the lineup poster, 6-8 seconds', `Animate this image. The team walks toward the camera in slow motion as a group, coats and clothes blowing in the wind, each character showing a quick flash of their power, the camera slowly pulling back. Keep the exact cartoon style and every character design from the image, smooth 2D animation, no new characters.`, 'hf']
+    ['Team walk-up', 'Upload the lineup poster, 6-8 seconds', `Animate this image. The team walks toward the camera in slow motion as a group, coats and clothes blowing in the wind, each character showing a quick flash of their power, the camera slowly pulling back. Keep the exact animated style and every character design from the image, smooth high-quality 3D animation, no new characters.`, 'hf']
   ]
   renderPrompts($('t-prompts'), list); setStatus('t-status', 'Team prompts ready.', 'ok')
 }
@@ -379,7 +387,9 @@ function localGet(){ try { return JSON.parse(localStorage.getItem('stcrew') || '
 function localSave(id, d){ try { const a = localGet(); a[id] = d; localStorage.setItem('stcrew', JSON.stringify(a)) } catch {} }
 function localDel(id){ try { const a = localGet(); delete a[id]; localStorage.setItem('stcrew', JSON.stringify(a)) } catch {} }
 function loadLocal(){ rosterUI(Object.entries(localGet()).map(([id, d]) => ({ id, d })), 'saved on this device'); try { team = JSON.parse(localStorage.getItem('stteam') || '{}') || team } catch {} $('t-name').value = team.name || ''; $('t-base').value = team.base || '' }
-$('c-art').value = ART; chips(); fill(); refsUI(); lockedUI(); prev(); loadLocal()
+function stylesUI(){ const box = $('c-styles'); box.innerHTML = ''; for (const [k, v] of Object.entries(STYLES)) { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = k; b.setAttribute('aria-pressed', (C.art || '').trim() === v); b.onclick = () => { C.art = v; $('c-art').value = v; stylesUI(); prev() }; box.appendChild(b) } }
+$('c-art').addEventListener('input', stylesUI)
+$('c-art').value = ART; chips(); stylesUI(); fill(); refsUI(); lockedUI(); prev(); loadLocal()
 ;(async () => {
   try { assets = await window.claude?.use?.('assets') } catch { assets = null }
   try { sample = await window.claude?.use?.('sample'); const lim = sample ? await sample.limits().catch(() => null) : null; canImg = !!lim?.images } catch { sample = null }
