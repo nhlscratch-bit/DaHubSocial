@@ -120,9 +120,12 @@ label.btn{display:inline-flex;align-items:center}
           <div class="sec"><label class="lab" for="c-name">Name</label><input id="c-name" type="text" maxlength="28" placeholder="e.g. Lil Crumbz"></div>
           <div class="sec"><label class="lab" for="c-nick">Nickname</label><input id="c-nick" type="text" maxlength="40" placeholder="e.g. The Corner Store Rat"></div>
         </div>
-        <div class="sec"><span class="lab">What kind of creature?</span><div class="chips" data-k="kind"></div>
-          <input id="c-what" type="text" maxlength="70" placeholder="Be specific: a chunky sewer rat, a one-eyed pigeon, a talking fire hydrant…"></div>
-        <div class="sec"><span class="lab">Hood role <small>who they are on the block</small></span><div class="chips" data-k="role"></div></div>
+        <div class="sec"><label class="lab" for="c-what">What kind of creature? <small>type anything</small></label>
+          <input id="c-what" type="text" maxlength="90" placeholder="Anything you want: a crackhead ice cream truck, a three-eyed sewer gator, a haunted Old Bay can…">
+          <span class="note">Need ideas? Tap one to start from it, then make it your own.</span><div class="chips" data-k="kind"></div></div>
+        <div class="sec"><label class="lab" for="c-roleown">Hood role <small>who they are on the block</small></label>
+          <input id="c-roleown" type="text" maxlength="60" placeholder="Type your own: bootleg DVD man, crab feast hustler, block DJ…">
+          <div class="chips" data-k="role"></div></div>
         <div class="sec"><span class="lab">Body</span><div class="chips" data-k="body"></div></div>
         <div class="sec"><span class="lab">Reference pics <small>optional, up to 3</small></span>
           <div id="c-refs" class="refs"></div>
@@ -229,13 +232,16 @@ const OPTS = {
 }
 const KW = { Bruiser: 'Deals extra damage to the card across.', Shield: 'Blocks the first hit it takes.', Heal: 'Restores health to an ally.', Hustle: 'Draw a card.', Snipe: 'Can hit any enemy card, not just the one across.', Rally: 'Boosts the cards next to it.', Sneak: 'Can’t be targeted the turn it’s played.' }
 const ART = 'Bold hand-drawn 2D cartoon illustration in the style of an adult animated TV comedy: thick clean black outlines, flat cel shading, bright saturated colors, expressive exaggerated faces, an original anthropomorphic animal or object character with hood energy and a Baltimore street vibe'
-const cblank = () => ({ name: '', nick: '', kind: 'Rat', what: '', role: 'Corner boy', body: 'Average', skin: '', head: '', outfit: '', item: '', c1: '#2f8bff', c2: '#19e0f0', pers: [], move: '', line: '', ko: '', art: ART, refhow: '', refs: [], gen: null })
+const cblank = () => ({ name: '', nick: '', kind: '', roleown: '', what: '', role: '', body: 'Average', skin: '', head: '', outfit: '', item: '', c1: '#2f8bff', c2: '#19e0f0', pers: [], move: '', line: '', ko: '', art: ART, refhow: '', refs: [], gen: null })
 let C = cblank(), cEdit = null, crew = []
-const CTXT = ['name', 'nick', 'what', 'skin', 'head', 'outfit', 'item', 'move', 'line', 'ko', 'art', 'refhow']
+const CTXT = ['name', 'nick', 'what', 'roleown', 'skin', 'head', 'outfit', 'item', 'move', 'line', 'ko', 'art', 'refhow']
 function chips(){ document.querySelectorAll('.chips[data-k]').forEach(box => { const k = box.dataset.k, isCard = ['ktype', 'rarity', 'kw'].includes(k), S = isCard ? K : C; box.innerHTML = ''
   OPTS[k].forEach(v => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = v
     b.setAttribute('aria-pressed', k === 'pers' ? S.pers.includes(v) : S[k] === v)
-    b.onclick = () => { if (k === 'pers') S.pers = S.pers.includes(v) ? S.pers.filter(x => x !== v) : S.pers.length < 3 ? [...S.pers, v] : S.pers; else S[k] = v; chips(); isCard ? cardUI() : cprev() }
+    b.onclick = () => { if (k === 'pers') S.pers = S.pers.includes(v) ? S.pers.filter(x => x !== v) : S.pers.length < 3 ? [...S.pers, v] : S.pers
+      else if (k === 'kind') { S.kind = S.kind === v ? '' : v; S.what = S.kind ? (v === 'Living object' ? 'a living object' : 'a ' + v.toLowerCase()) : ''; $('c-what').value = S.what; $('c-what').focus() }
+      else if (k === 'role') { S.role = S.role === v ? '' : v; S.roleown = S.role; $('c-roleown').value = S.roleown }
+      else S[k] = v; chips(); isCard ? cardUI() : cprev() }
     box.appendChild(b) }) }) }
 function cfill(){ CTXT.forEach(k => $('c-' + k).value = C[k] || ''); $('c-c1').value = C.c1; $('c-c2').value = C.c2 }
 CTXT.forEach(k => $('c-' + k).addEventListener('input', e => { C[k] = e.target.value; cprev() }))
@@ -243,12 +249,14 @@ $('c-c1').oninput = e => { C.c1 = e.target.value; cprev() }; $('c-c2').oninput =
 function cprev(){
   const r = C.refs[0], img = r ? (r.preview || r.url || ('/_blob/' + r.id)) : ''
   $('c-prev').innerHTML = `<div class="cprev" style="--c1:${C.c1};--c2:${C.c2}"><div class="blob">${img ? `<img alt="" src="${esc(img)}">` : `<span>${esc((C.name || '?').slice(0, 1).toUpperCase())}</span>`}</div>
-    <div style="min-width:0"><h2>${esc(C.name || 'Your character')}</h2><span class="k">${esc(C.nick || (C.what || C.kind) + ' · ' + C.role)}</span>
-    <div class="tags"><span class="tag">${esc(C.kind)}</span><span class="tag">${esc(C.role)}</span>${C.pers.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div>${C.line ? `<q>${esc(q(C.line))}</q>` : ''}</div></div>`
+    <div style="min-width:0"><h2>${esc(C.name || 'Your character')}</h2><span class="k">${esc(C.nick || whatOf(C) + ' · ' + roleOf(C))}</span>
+    <div class="tags">${C.what || C.kind ? `<span class="tag">${esc(whatOf(C))}</span>` : ''}${roleOf(C) ? `<span class="tag">${esc(roleOf(C))}</span>` : ''}${C.pers.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div>${C.line ? `<q>${esc(q(C.line))}</q>` : ''}</div></div>`
 }
+const roleOf = d => (d.roleown || d.role || 'hustler').trim()
+const whatOf = d => (d.what || d.kind || 'creature').trim()
 function describe(){
-  const what = C.what.trim() || ('anthropomorphic ' + C.kind.toLowerCase())
-  const p = [`${C.name || 'An original character'}${C.nick ? ', "' + C.nick + '"' : ''}: ${what}, a ${C.role.toLowerCase()} on the block`]
+  const what = 'anthropomorphic ' + whatOf(C)
+  const p = [`${C.name || 'An original character'}${C.nick ? ', "' + C.nick + '"' : ''}: ${what}, a ${roleOf(C).toLowerCase()} on the block`]
   p.push({ Tiny: 'tiny build', Scrawny: 'scrawny build', Average: 'average build', Chunky: 'chunky round build', Huge: 'huge hulking build' }[C.body])
   if (C.skin) p.push(C.skin); if (C.head) p.push(C.head); if (C.outfit) p.push('wearing ' + C.outfit); if (C.item) p.push('always with ' + C.item)
   p.push(`color scheme ${C.c1} and ${C.c2}`); if (C.pers.length) p.push(C.pers.join(', ').toLowerCase() + ' personality')
@@ -271,7 +279,7 @@ function cstandard(){
     [...CKEYS[5].slice(1), `${same} Getting hit: knocked back toward the left, eyes squeezed, cartoon stars and a little sweat flying, arms flailing.${GREEN}`],
     [...CKEYS[6].slice(1), `${same} Knocked out: flat on the ground or slumped over, swirly eyes, tongue out, little birds or stars circling the head${C.ko ? ', like they just said "' + q(C.ko) + '"' : ''}.${GREEN}`],
     [...CKEYS[7].slice(1), `${same} Victory: celebrating big, arms up or striking their signature pose, huge grin${C.line ? ', yelling "' + q(C.line) + '"' : ''}.${GREEN}`],
-    [...CKEYS[8].slice(1), `${same} Taunting: leaning toward the right with a smug face, waving the opponent off or making a hand gesture that fits a ${C.role.toLowerCase()}, playful trash talk energy.${GREEN}`]
+    [...CKEYS[8].slice(1), `${same} Taunting: leaning toward the right with a smug face, waving the opponent off or making a hand gesture that fits a ${roleOf(C).toLowerCase()}, playful trash talk energy.${GREEN}`]
   ]
 }
 const CRULES = `Rules:
@@ -283,12 +291,13 @@ const CRULES = `Rules:
 - The special prompt is built around the owner's special_move. Make expressions fit the personality. Follow how_to_use_references exactly when references are attached.`
 async function cgenerate(){
   if (!C.name.trim()) return setStatus('c-status', 'Give your character a name first.', 'err')
+  if (!whatOf(C) || whatOf(C) === 'creature') return setStatus('c-status', 'Say what kind of creature they are first.', 'err')
   const b = $('c-gen'); b.disabled = true; b.textContent = 'Writing…'; setStatus('c-status', 'Writing prompts for ' + C.name + '…')
   let list = null, note = ''
   if (sample) {
     try {
       const images = canImg ? (await Promise.all(C.refs.map(refBlob))).filter(Boolean) : []
-      const info = { name: C.name, nickname: C.nick, creature: C.what || C.kind, hood_role: C.role, body: C.body, fur_or_material: C.skin, head: C.head, outfit: C.outfit, signature_item: C.item, colors: [C.c1, C.c2], personality: C.pers, special_move: C.move, catchphrase: C.line, ko_line: C.ko, reference_notes: C.refs.map((x, i) => x.note?.trim() ? `pic ${i + 1}: ${x.note.trim()}` : '').filter(Boolean), how_to_use_references: C.refhow.trim() || 'use for outfit, colors and attitude' }
+      const info = { name: C.name, nickname: C.nick, creature: whatOf(C), hood_role: roleOf(C), body: C.body, fur_or_material: C.skin, head: C.head, outfit: C.outfit, signature_item: C.item, colors: [C.c1, C.c2], personality: C.pers, special_move: C.move, catchphrase: C.line, ko_line: C.ko, reference_notes: C.refs.map((x, i) => x.note?.trim() ? `pic ${i + 1}: ${x.note.trim()}` : '').filter(Boolean), how_to_use_references: C.refhow.trim() || 'use for outfit, colors and attitude' }
       const out = await sample.json(`You write image-generation prompts (for ChatGPT image generation) for an original character in a 2D cartoon card battle game. ${images.length ? 'The attached images are the owner\'s reference pics; take outfit, colors and attitude from them as the owner instructs, but the character stays an original cartoon creature.' : ''}\nCharacter:\n${JSON.stringify(info)}\n${CRULES.replace('${ART}', (C.art || ART).trim())}\nReturn JSON only with keys sheet, card, idle, attack, special, hit, ko, win, taunt, each a full prompt string.`, { images, modelTier: 'complex' })
       list = CKEYS.map(([k, t, s]) => [t, s, String(out[k] || '').trim()]).filter(x => x[2])
       if (list.length < 9) { list = null; note = 'The AI answer was incomplete, so these are the standard prompts.' }
@@ -315,7 +324,7 @@ $('c-fill').onclick = async () => {
   try {
     const images = (await Promise.all(C.refs.map(refBlob))).filter(Boolean); if (!images.length) throw { message: 'Could not read the pics.' }
     const notes = C.refs.map((x, i) => `Image ${i + 1}: ${x.note?.trim() || 'use whatever fits'}`).join('\n') + (C.refhow.trim() ? '\nOverall instructions: ' + C.refhow.trim() : '')
-    const out = await sample.json(`You help design an ORIGINAL cartoon creature character (an anthropomorphic ${C.what || C.kind}) for a card battle game with hood energy. Study the attached images. What to take from each:\n${notes}\nDescribe only visual design to apply to the creature: fur/material, head/hair/hat, outfit, signature item, two colors. Never identify or name any person; no brand names or logos. Short vivid values.\nReturn JSON only: {"skin":"","head":"","outfit":"","item":"","c1":"#rrggbb","c2":"#rrggbb"}`, { images, modelTier: 'default' })
+    const out = await sample.json(`You help design an ORIGINAL cartoon creature character (an anthropomorphic ${whatOf(C)}) for a card battle game with hood energy. Study the attached images. What to take from each:\n${notes}\nDescribe only visual design to apply to the creature: fur/material, head/hair/hat, outfit, signature item, two colors. Never identify or name any person; no brand names or logos. Short vivid values.\nReturn JSON only: {"skin":"","head":"","outfit":"","item":"","c1":"#rrggbb","c2":"#rrggbb"}`, { images, modelTier: 'default' })
     ;['skin', 'head', 'outfit', 'item'].forEach(k => { if (typeof out[k] === 'string' && out[k].trim()) C[k] = out[k].trim().slice(0, k === 'outfit' ? 140 : 80) })
     ;['c1', 'c2'].forEach(k => { if (/^#[0-9a-f]{6}$/i.test(out[k] || '')) C[k] = out[k] })
     cfill(); cprev(); setStatus('c-status', 'Look filled in from your pics. Change anything you want.', 'ok')
@@ -345,7 +354,7 @@ function crewUI(list, note){
   R.innerHTML = ''; $('c-rstatus').textContent = `${list.length} character${list.length > 1 ? 's' : ''}` + (note ? ' · ' + note : '')
   list.forEach(({ id, d }) => { const c = document.createElement('div'); c.className = 'rc'; c.style.setProperty('--c', d.c1 || '#19e0f0')
     const r = (d.refs || [])[0]
-    c.innerHTML = `${r ? `<img alt="" src="${esc(r.url || '/_blob/' + r.id)}">` : ''}<b>${esc(d.name)}</b><small>${esc((d.what || d.kind) + ' · ' + d.role)}${d.gen ? ' · prompts ready' : ''}</small><div class="actions"><button class="btn small ghost" data-a="edit">Edit</button><button class="btn small ghost" data-a="del">Delete</button></div>`
+    c.innerHTML = `${r ? `<img alt="" src="${esc(r.url || '/_blob/' + r.id)}">` : ''}<b>${esc(d.name)}</b><small>${esc(whatOf(d) + ' · ' + roleOf(d))}${d.gen ? ' · prompts ready' : ''}</small><div class="actions"><button class="btn small ghost" data-a="edit">Edit</button><button class="btn small ghost" data-a="del">Delete</button></div>`
     c.querySelector('[data-a=edit]').onclick = () => { C = { ...cblank(), ...d, refs: (d.refs || []).map(x => ({ ...x, preview: x.url || '/_blob/' + x.id })), gen: d.gen?.list ? { at: d.gen.at, list: d.gen.list.map(x => [x.t, x.sub, x.p]) } : null }; cEdit = id; cfill(); crefsUI(); if (C.gen) { renderPrompts($('c-prompts'), C.gen.list); $('c-tip').hidden = false } else { $('c-prompts').innerHTML = '<div class="ph">Tap <b>Write my prompts</b>.</div>'; $('c-tip').hidden = true } chips(); cprev(); setStatus('c-status', `Editing ${d.name}.`); scrollTo({ top: 0, behavior: 'smooth' }) }
     c.querySelector('[data-a=del]').onclick = () => confirmDel(c, async () => { if (db) { try { await db.doc('characters/' + id).delete() } catch (e) { setStatus('c-status', 'Could not delete: ' + (e.message || e.code), 'err') } } else { localDel('ccrew', id); loadLocal() } if (cEdit === id) cEdit = null }, () => crewUI(crew))
     R.appendChild(c) })
@@ -389,7 +398,7 @@ function cardUI(){
   const c1 = ch?.c1 || '#20304f', c2 = ch?.c2 || '#0b0d17'
   $('k-card').innerHTML = `<div class="card${K.ktype === 'Combo' ? ' combo' : ''}" style="--rc:${K.ktype === 'Combo' ? '#19e0f0' : RCOL[K.rarity]};--c1:${c1};--c2:${c2}">
     <span class="rar">${K.ktype === 'Combo' ? 'COMBO' : K.rarity}</span><span class="cost">${K.cost}</span><div class="nm">${esc(nm)}</div>
-    <div class="art">${art}<span class="ty">${esc(K.ktype)}${ch && hasStats() ? ' · ' + esc(ch.role) : ''}</span></div>
+    <div class="art">${art}<span class="ty">${esc(K.ktype)}${ch && hasStats() ? ' · ' + esc(roleOf(ch)) : ''}</span></div>
     <div class="bot"><div class="ab">${kwText}${esc(K.ab) || (kwText ? '' : '<span style="color:#888">Ability text goes here.</span>')}</div>${hasStats() ? `<div class="stats"><span class="st atk">${SW}${K.atk}</span><span class="st hp">${HT}${K.hp}</span></div>` : ''}</div></div>`
   if (hasStats()) { const [l, t, col, r] = power(); $('k-power').hidden = false; $('k-power').innerHTML = `<b style="color:${col}">${l}</b><span class="meter"><i style="width:${Math.min(100, r * 70)}%;background:${col}"></i></span><span style="flex:2;min-width:140px">${t}</span>` } else $('k-power').hidden = true
 }
@@ -401,7 +410,7 @@ function kstandard(){
   if (K.ktype === 'Item') return [['Item card art', 'One object, hero shot', `${style}. Trading card art of an item for a hood card battle game: "${K.name}". ${look || 'The object shown big and centered with a dramatic glow, like a legendary loot drop'}. A simple cartoon Baltimore background behind it, slightly blurred. ${frame}`]]
   return [['Spot card art', 'A place, no characters', `${style}. Trading card art of a location for a hood card battle game: "${K.name}". ${look || 'A lively cartoon Baltimore spot (rowhouse block, corner store, crab shack, basketball court, harbor)'}, no characters in the scene, warm dramatic lighting, lots of fun little details. ${frame}`]]
 }
-function describeD(d){ const p = [`${d.name}${d.nick ? ', "' + d.nick + '"' : ''}: ${d.what || 'anthropomorphic ' + (d.kind || '').toLowerCase()}, a ${(d.role || '').toLowerCase()}`]; if (d.skin) p.push(d.skin); if (d.head) p.push(d.head); if (d.outfit) p.push('wearing ' + d.outfit); if (d.item) p.push('with ' + d.item); return p.join(', ') }
+function describeD(d){ const p = [`${d.name}${d.nick ? ', "' + d.nick + '"' : ''}: anthropomorphic ${whatOf(d)}, a ${roleOf(d).toLowerCase()}`]; if (d.skin) p.push(d.skin); if (d.head) p.push(d.head); if (d.outfit) p.push('wearing ' + d.outfit); if (d.item) p.push('with ' + d.item); return p.join(', ') }
 $('k-gen').onclick = () => {
   if (!K.name.trim() && !(K.ktype === 'Character' && charOf(K.char))) return setStatus('k-status', 'Give the card a name first.', 'err')
   if ((K.ktype === 'Character' || K.ktype === 'Combo') && !charOf(K.char)) return setStatus('k-status', 'Pick a character first.', 'err')
