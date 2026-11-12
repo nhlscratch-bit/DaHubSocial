@@ -1,0 +1,455 @@
+<title>Card Clash Forge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Rubik:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: a two-tab workshop. Characters tab builds the creature and writes its art + animation prompts. Cards tab builds a card with a live comic-frame preview, power check and art prompt. Saved roster under each. Single dark look by choice (game tooling). */
+:root{
+  --bg:#0b0d17; --panel:#151a2b; --panel2:#1d2438; --line:#2c3654; --fg:#f3f5fb; --dim:#a3acc6;
+  --cyan:#19e0f0; --teal:#0e7f90; --ok:#3ddc84; --bad:#ff5470; --warn:#ffc93d;
+  --common:#9aa6b4; --rare:#2f8bff; --epic:#a855f7; --legend:#ffc93d; --combo:#19e0f0;
+  --display:"Bangers","Impact","Arial Black",sans-serif; --body:"Rubik","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;background-image:radial-gradient(80% 50% at 50% -10%,#173a4d 0%,transparent 60%)}
+.wrap{max-width:1180px;margin:0 auto;padding-block:18px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,7vw,56px);line-height:.95;margin:0;letter-spacing:1px;color:#fff;-webkit-text-stroke:2px #000;paint-order:stroke fill;text-shadow:0 4px 0 #000,0 0 24px #19e0f066;text-wrap:balance}
+h1 span{color:var(--cyan)}
+.sub{color:var(--dim);margin:6px 0 0;max-width:64ch}
+.tabs{display:flex;gap:8px;margin:6px 0 16px}
+.tab{font:400 20px var(--display);letter-spacing:1px;padding:10px 18px;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--dim);cursor:pointer}
+.tab[aria-selected=true]{background:var(--cyan);color:#04141a;border-color:#fff;box-shadow:0 4px 0 #0a5560}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.sticky{position:sticky;top:calc(12px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:18px;min-width:0}
+@media (max-width:880px){.sticky{position:static}}
+.sec{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lab{font:400 17px var(--display);letter-spacing:1px;color:var(--cyan)}
+.lab small{font:400 12.5px var(--body);color:var(--dim);letter-spacing:0;margin-left:6px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.row2{grid-template-columns:minmax(0,1fr)}}
+input[type=text],input[type=number],textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:9px;padding:10px 12px;font:inherit;font-size:15px}
+textarea{min-height:64px;resize:vertical}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,label:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--fg);padding:7px 11px;border-radius:999px;font:inherit;font-size:13.5px;font-weight:500;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--cyan);color:#04141a;border-color:#fff;font-weight:700}
+.colors{display:flex;gap:14px;flex-wrap:wrap}.colors label{display:flex;align-items:center;gap:8px;font-weight:500}
+input[type=color]{width:44px;height:34px;border:1px solid var(--line);border-radius:6px;background:none;padding:2px}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font:400 18px var(--display);letter-spacing:1px;padding:11px 18px;border-radius:10px;border:2px solid #000;cursor:pointer;background:var(--cyan);color:#04141a;box-shadow:0 4px 0 #000}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
+.btn.alt{background:#fff;color:#0b0d17}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line);box-shadow:none}
+.btn.small{font-size:15px;padding:7px 12px}
+.btn:disabled{opacity:.5;cursor:default}
+label.btn{display:inline-flex;align-items:center}
+.refs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.ref{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:9px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.ref img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#000}
+.ref input{border:0;border-top:1px solid var(--line);border-radius:0;font-size:13px;padding:8px 10px}
+.ref .x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:#000c;color:#fff;cursor:pointer}
+.note{color:var(--dim);font-size:12.5px}
+.status{font-size:13px;color:var(--dim);min-height:18px}.status.ok{color:var(--ok)}.status.err{color:var(--bad)}
+/* prompts */
+.tip{font-size:13px;color:var(--dim);background:#0f1322;border:1px solid var(--line);border-radius:9px;padding:10px 12px}.tip b{color:var(--fg)}
+.prompts{display:flex;flex-direction:column;gap:10px}
+.step{display:flex;gap:10px;align-items:flex-start}
+.step i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--cyan);color:#04141a;font:400 16px var(--display);display:flex;align-items:center;justify-content:center;font-style:normal;margin-top:5px;border:2px solid #000}
+.pr{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.pr header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:#0f1322;border-bottom:1px solid var(--line)}
+.pr header b{font-size:14px}.pr header small{color:var(--dim);font-size:12px;display:block}
+.pr pre{margin:0;padding:10px 12px;white-space:pre-wrap;word-break:break-word;font:13px/1.45 var(--body);color:#dde3f3;max-height:170px;overflow:auto}
+.ph{color:var(--dim);font-size:14px;padding:14px;border:1px dashed var(--line);border-radius:9px;text-align:center}
+/* character preview */
+.cprev{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:center;padding:14px;border-radius:12px;border:2px solid #000;background:linear-gradient(160deg,var(--c1,#2f8bff),var(--c2,#19e0f0));box-shadow:0 4px 0 #000}
+.cprev .blob{width:150px;aspect-ratio:1;border-radius:18px;border:3px solid #000;background:#0b0d17aa;display:grid;place-items:center;overflow:hidden}
+.cprev .blob img{width:100%;height:100%;object-fit:cover}
+.cprev .blob span{font:400 64px var(--display);color:#fff;-webkit-text-stroke:2px #000;paint-order:stroke fill}
+.cprev h2{margin:0;font:400 32px/1 var(--display);letter-spacing:1px;color:#fff;-webkit-text-stroke:1.5px #000;paint-order:stroke fill;word-break:break-word}
+.cprev .k{font-weight:800;font-size:13px;color:#0b0d17;background:#fff;border:2px solid #000;border-radius:6px;padding:2px 8px;display:inline-block;margin-top:6px}
+.cprev .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.cprev .tag{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:#000a;color:#fff}
+.cprev q{display:block;margin-top:8px;font-weight:700;color:#fff;text-shadow:0 1px 0 #000}
+/* the card */
+.cardwrap{display:flex;justify-content:center;padding:6px 0}
+.card{--rc:var(--common);position:relative;width:min(100%,290px);aspect-ratio:.7;border-radius:16px;background:var(--rc);border:3px solid #000;padding:9px;box-shadow:0 6px 0 #000,0 0 30px color-mix(in srgb,var(--rc) 45%,transparent);display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:6px;font-family:var(--body)}
+.card.combo{background:linear-gradient(135deg,#19e0f0,#7aa8ff 50%,#c79bff);--rc:#19e0f0}
+.card .nm{position:relative;z-index:2;margin:0 0 0 40px;padding:4px 10px;background:#fff;border:2.5px solid #000;border-radius:8px;font:400 19px/1 var(--display);letter-spacing:.5px;color:#0b0d17;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .cost{position:absolute;z-index:3;left:4px;top:4px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8ff8ff,#0e7f90 70%);border:3px solid #000;display:grid;place-items:center;font:400 28px var(--display);color:#fff;-webkit-text-stroke:1.5px #000;paint-order:stroke fill}
+.card .art{position:relative;border:2.5px solid #000;border-radius:8px;overflow:hidden;background:linear-gradient(160deg,var(--c1,#20304f),var(--c2,#0b0d17));display:grid;place-items:center}
+.card .art img{width:100%;height:100%;object-fit:cover}
+.card .art .ini{font:400 72px var(--display);color:#ffffffcc;-webkit-text-stroke:2px #000;paint-order:stroke fill}
+.card .art .ty{position:absolute;left:6px;bottom:6px;font:800 10.5px var(--body);letter-spacing:1px;text-transform:uppercase;color:#fff;background:#000c;padding:3px 7px;border-radius:5px}
+.card .bot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:end}
+.card .ab{min-height:58px;background:#fffbe9;border:2.5px solid #000;border-radius:8px;padding:5px 7px;font:500 11.5px/1.3 var(--body);color:#1a1a1a;overflow:hidden}
+.card .ab b{font-weight:800}
+.card .stats{display:flex;flex-direction:column;gap:4px}
+.card .st{display:flex;align-items:center;justify-content:center;gap:3px;min-width:44px;height:28px;border-radius:7px;border:2.5px solid #000;font:400 20px var(--display);color:#fff;-webkit-text-stroke:1px #000;paint-order:stroke fill}
+.card .st.atk{background:#ff7a3d}.card .st.hp{background:#ff4d6d}
+.card .st svg{width:14px;height:14px;fill:#fff;stroke:#000;stroke-width:1.5}
+.card .rar{position:absolute;right:12px;top:-11px;font:800 10px var(--body);letter-spacing:1.5px;text-transform:uppercase;background:#000;color:var(--rc);padding:3px 8px;border-radius:999px;border:2px solid var(--rc)}
+.power{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:10px 12px;border-radius:9px;background:#0f1322;border:1px solid var(--line)}
+.power b{font:400 18px var(--display);letter-spacing:1px}
+.power .meter{flex:1;height:8px;border-radius:999px;background:#ffffff14;overflow:hidden;min-width:60px}
+.power .meter i{display:block;height:100%;border-radius:999px}
+/* roster */
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.rc{background:var(--panel2);border:1px solid var(--line);border-left:5px solid var(--c,#19e0f0);border-radius:9px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.rc b{font:400 18px var(--display);letter-spacing:.5px;word-break:break-word}.rc small{color:var(--dim)}
+.rc img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:2px solid #000;background:#000}
+.empty{color:var(--dim);font-size:14px;padding:12px;border:1px dashed var(--line);border-radius:9px}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
+[hidden]{display:none!important}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><h1>CARD CLASH <span>FORGE</span></h1><p class="sub">Build the crew, then build their cards. Every character is an original creature with hood energy. You get ChatGPT prompts for their art and battle animations, and a live card preview with a power check so the deck stays fair.</p></div>
+  </header>
+  <div class="tabs" role="tablist"><button class="tab" role="tab" id="tabC" aria-selected="true">CHARACTERS</button><button class="tab" role="tab" id="tabK" aria-selected="false">CARDS</button></div>
+
+  <!-- ===== CHARACTERS ===== -->
+  <div id="paneC">
+    <div class="grid">
+      <section class="panel" aria-label="Character builder">
+        <div class="row2">
+          <div class="sec"><label class="lab" for="c-name">Name</label><input id="c-name" type="text" maxlength="28" placeholder="e.g. Lil Crumbz"></div>
+          <div class="sec"><label class="lab" for="c-nick">Nickname</label><input id="c-nick" type="text" maxlength="40" placeholder="e.g. The Corner Store Rat"></div>
+        </div>
+        <div class="sec"><span class="lab">What kind of creature?</span><div class="chips" data-k="kind"></div>
+          <input id="c-what" type="text" maxlength="70" placeholder="Be specific: a chunky sewer rat, a one-eyed pigeon, a talking fire hydrant…"></div>
+        <div class="sec"><span class="lab">Hood role <small>who they are on the block</small></span><div class="chips" data-k="role"></div></div>
+        <div class="sec"><span class="lab">Body</span><div class="chips" data-k="body"></div></div>
+        <div class="sec"><span class="lab">Reference pics <small>optional, up to 3</small></span>
+          <div id="c-refs" class="refs"></div>
+          <div class="actions"><label class="btn ghost small" for="c-ref" tabindex="0">+ Add reference pic</label><input id="c-ref" type="file" accept="image/*" multiple hidden><button class="btn small" id="c-fill" type="button" hidden>Fill the look from my pics</button></div>
+          <label class="lab" for="c-refhow" style="margin-top:4px">How should it use your pics?</label>
+          <textarea id="c-refhow" maxlength="500" placeholder="e.g. Use the jacket and chain from pic 1, but make him a raccoon. Keep the attitude from pic 2. Ignore the background."></textarea>
+        </div>
+        <div class="sec"><span class="lab">Look</span>
+          <div class="row2"><input id="c-skin" type="text" maxlength="70" placeholder="Fur / shell / feathers / material"><input id="c-head" type="text" maxlength="70" placeholder="Head (durag, fitted cap, braids, one ear…)"></div>
+          <input id="c-outfit" type="text" maxlength="140" placeholder="Outfit (puffer, tracksuit, church hat, apron, jersey…)">
+          <input id="c-item" type="text" maxlength="80" placeholder="Signature item (crab mallet, chopper bike, purse, mic…)">
+          <div class="colors"><label for="c-c1">Main color <input id="c-c1" type="color" value="#2f8bff"></label><label for="c-c2">Accent color <input id="c-c2" type="color" value="#19e0f0"></label></div>
+        </div>
+        <div class="sec"><span class="lab">Personality <small>up to 3</small></span><div class="chips" data-k="pers"></div></div>
+        <div class="sec"><label class="lab" for="c-move">Special move</label><input id="c-move" type="text" maxlength="80" placeholder="e.g. Old Bay Blast: throws a cloud of seasoning that burns"></div>
+        <div class="row2">
+          <div class="sec"><label class="lab" for="c-line">Catchphrase</label><input id="c-line" type="text" maxlength="60" placeholder="“You ain’t from round here.”"></div>
+          <div class="sec"><label class="lab" for="c-ko">Knocked-out line</label><input id="c-ko" type="text" maxlength="60" placeholder="“Aight, aight, I’m good…”"></div>
+        </div>
+        <div class="sec"><label class="lab" for="c-art">Art direction <small>keep it the same for every character</small></label><textarea id="c-art"></textarea></div>
+        <div class="actions"><button class="btn" id="c-gen" type="button">Write my prompts</button><button class="btn alt" id="c-save" type="button">Save character</button><button class="btn ghost" id="c-new" type="button">New character</button></div>
+        <div id="c-status" class="status" role="status"></div>
+      </section>
+      <div class="sticky">
+        <section class="panel" aria-label="Character preview"><span class="lab">Preview</span><div id="c-prev"></div></section>
+        <section class="panel" aria-label="Character prompts"><span class="lab">ChatGPT prompts</span>
+          <div id="c-tip" class="tip" hidden><b>Run them in order in one ChatGPT chat.</b> Prompt 1 (turnaround): attach your reference pics. Prompt 2 is the art that goes on their card. Prompts 3 to 9 are the battle animations, all facing right on green screen so I can cut them out. Send every result to Claude.</div>
+          <div class="prompts" id="c-prompts"><div class="ph">Fill in your character, then tap <b>Write my prompts</b>.</div></div>
+        </section>
+      </div>
+    </div>
+    <section class="panel" style="margin-top:18px" aria-label="Saved characters">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="lab">The crew</span><span id="c-rstatus" class="status"></span></div>
+      <div id="c-roster" class="roster"><div class="empty">No characters yet. Build one and tap Save character.</div></div>
+    </section>
+  </div>
+
+  <!-- ===== CARDS ===== -->
+  <div id="paneK" hidden>
+    <div class="grid">
+      <section class="panel" aria-label="Card builder">
+        <div class="sec"><span class="lab">Card type</span><div class="chips" data-k="ktype"></div>
+          <span class="note" id="k-typenote"></span></div>
+        <div class="sec" id="k-charsec"><label class="lab" for="k-char">Character</label><select id="k-char"></select><span class="note" id="k-charnote"></span></div>
+        <div class="sec" id="k-combosec" hidden><label class="lab" for="k-with">Combo with</label><select id="k-with"></select><span class="note">A combo is made when this character and this item meet on the board. It gets its own art and a stronger effect.</span></div>
+        <div class="sec"><label class="lab" for="k-name">Card name</label><input id="k-name" type="text" maxlength="26" placeholder="e.g. Corner Store Crumbz"></div>
+        <div class="sec"><span class="lab">Rarity</span><div class="chips" data-k="rarity"></div></div>
+        <div class="row3">
+          <div class="sec"><label class="lab" for="k-cost">Cost</label><input id="k-cost" type="number" min="1" max="8" value="3"></div>
+          <div class="sec" id="k-atksec"><label class="lab" for="k-atk">Attack</label><input id="k-atk" type="number" min="0" max="30" value="5"></div>
+          <div class="sec" id="k-hpsec"><label class="lab" for="k-hp">Health</label><input id="k-hp" type="number" min="1" max="60" value="12"></div>
+        </div>
+        <div class="sec"><span class="lab">Ability keyword <small>optional</small></span><div class="chips" data-k="kw"></div></div>
+        <div class="sec"><label class="lab" for="k-ab">Ability text</label><textarea id="k-ab" maxlength="140" placeholder="e.g. When played, steal 2 attack from the card across from it."></textarea></div>
+        <div class="sec"><label class="lab" for="k-look">What the art shows</label><textarea id="k-look" maxlength="220" placeholder="e.g. Crumbz behind the counter of a cramped corner store, counting loose change, neon lotto sign glowing"></textarea></div>
+        <div class="sec"><span class="lab">Card art <small>once you have it from ChatGPT</small></span>
+          <div class="actions"><label class="btn ghost small" for="k-artfile" tabindex="0">+ Add card art</label><input id="k-artfile" type="file" accept="image/*" hidden><button class="btn ghost small" id="k-artclear" type="button" hidden>Remove art</button></div></div>
+        <div class="actions"><button class="btn" id="k-gen" type="button">Write the art prompt</button><button class="btn alt" id="k-save" type="button">Save card</button><button class="btn ghost" id="k-new" type="button">New card</button></div>
+        <div id="k-status" class="status" role="status"></div>
+      </section>
+      <div class="sticky">
+        <section class="panel" aria-label="Card preview"><span class="lab">The card</span><div class="cardwrap" id="k-card"></div><div class="power" id="k-power"></div></section>
+        <section class="panel" aria-label="Card prompt"><span class="lab">ChatGPT prompt</span>
+          <div class="prompts" id="k-prompts"><div class="ph">Fill in the card, then tap <b>Write the art prompt</b>.</div></div>
+        </section>
+      </div>
+    </div>
+    <section class="panel" style="margin-top:18px" aria-label="Saved cards">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="lab">The deck</span><span id="k-rstatus" class="status"></span></div>
+      <div id="k-roster" class="roster"><div class="empty">No cards yet. Build one and tap Save card.</div></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id)
+const esc = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+const q = s => String(s || '').replace(/["“”]/g, '')
+const slug = s => (s || 'x').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'x'
+let db = null, assets = null, sample = null, canImg = false
+const SW = '<svg viewBox="0 0 24 24"><path d="M14 3l7 0 0 7-9 9-3 1 1-3z"/></svg>', HT = '<svg viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6-8 11-8 11z"/></svg>'
+function setStatus(id, m, cls = ''){ const s = $(id); s.textContent = m; s.className = 'status ' + cls }
+async function refBlob(x){ if (x.blob) return x.blob; try { const r = await fetch(x.url || ('/_blob/' + x.id)); return r.ok ? await r.blob() : null } catch { return null } }
+async function copyBtn(btn, txt, pre){ try { await navigator.clipboard.writeText(txt); btn.textContent = 'Copied' } catch { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selected' } setTimeout(() => btn.textContent = 'Copy', 1500) }
+function renderPrompts(box, list){
+  box.innerHTML = ''
+  list.forEach(([t, sub, txt], i) => { const w = document.createElement('div'); w.className = 'step'
+    w.innerHTML = `<i>${i + 1}</i><div class="pr"><header><div><b>${esc(t)}</b><small>${esc(sub)}</small></div><button class="btn small" type="button">Copy</button></header><pre></pre></div>`
+    const pre = w.querySelector('pre'); pre.textContent = txt; const b = w.querySelector('button'); b.onclick = () => copyBtn(b, txt, pre); box.appendChild(w) })
+}
+// tabs
+function tab(k){ $('tabC').setAttribute('aria-selected', k === 'C'); $('tabK').setAttribute('aria-selected', k === 'K'); $('paneC').hidden = k !== 'C'; $('paneK').hidden = k !== 'K'; if (k === 'K') { charOptions(); cardUI() } }
+$('tabC').onclick = () => tab('C'); $('tabK').onclick = () => tab('K')
+
+// ===================== CHARACTERS =====================
+const OPTS = {
+  kind: ['Rat', 'Pigeon', 'Crab', 'Raccoon', 'Alley cat', 'Roach', 'Possum', 'Stray dog', 'Squirrel', 'Seagull', 'Snail', 'Living object'],
+  role: ['Corner boy', 'Hustler', 'Auntie', 'OG', 'Church mother', 'Rapper', 'Barber', 'Plug', 'Hooper', 'Lunch lady', 'Dirt bike rider', 'Store owner', 'Hype man', 'Street preacher'],
+  body: ['Tiny', 'Scrawny', 'Average', 'Chunky', 'Huge'],
+  pers: ['Trash talker', 'Cool & quiet', 'Hothead', 'Cocky', 'Funny', 'Petty', 'Wise', 'Hype', 'Sneaky', 'Paranoid', 'Lovable', 'Unhinged'],
+  ktype: ['Character', 'Item', 'Spot', 'Combo'],
+  rarity: ['Common', 'Rare', 'Epic', 'Legendary'],
+  kw: ['None', 'Bruiser', 'Shield', 'Heal', 'Hustle', 'Snipe', 'Rally', 'Sneak']
+}
+const KW = { Bruiser: 'Deals extra damage to the card across.', Shield: 'Blocks the first hit it takes.', Heal: 'Restores health to an ally.', Hustle: 'Draw a card.', Snipe: 'Can hit any enemy card, not just the one across.', Rally: 'Boosts the cards next to it.', Sneak: 'Can’t be targeted the turn it’s played.' }
+const ART = 'Bold hand-drawn 2D cartoon illustration in the style of an adult animated TV comedy: thick clean black outlines, flat cel shading, bright saturated colors, expressive exaggerated faces, an original anthropomorphic animal or object character with hood energy and a Baltimore street vibe'
+const cblank = () => ({ name: '', nick: '', kind: 'Rat', what: '', role: 'Corner boy', body: 'Average', skin: '', head: '', outfit: '', item: '', c1: '#2f8bff', c2: '#19e0f0', pers: [], move: '', line: '', ko: '', art: ART, refhow: '', refs: [], gen: null })
+let C = cblank(), cEdit = null, crew = []
+const CTXT = ['name', 'nick', 'what', 'skin', 'head', 'outfit', 'item', 'move', 'line', 'ko', 'art', 'refhow']
+function chips(){ document.querySelectorAll('.chips[data-k]').forEach(box => { const k = box.dataset.k, isCard = ['ktype', 'rarity', 'kw'].includes(k), S = isCard ? K : C; box.innerHTML = ''
+  OPTS[k].forEach(v => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = v
+    b.setAttribute('aria-pressed', k === 'pers' ? S.pers.includes(v) : S[k] === v)
+    b.onclick = () => { if (k === 'pers') S.pers = S.pers.includes(v) ? S.pers.filter(x => x !== v) : S.pers.length < 3 ? [...S.pers, v] : S.pers; else S[k] = v; chips(); isCard ? cardUI() : cprev() }
+    box.appendChild(b) }) }) }
+function cfill(){ CTXT.forEach(k => $('c-' + k).value = C[k] || ''); $('c-c1').value = C.c1; $('c-c2').value = C.c2 }
+CTXT.forEach(k => $('c-' + k).addEventListener('input', e => { C[k] = e.target.value; cprev() }))
+$('c-c1').oninput = e => { C.c1 = e.target.value; cprev() }; $('c-c2').oninput = e => { C.c2 = e.target.value; cprev() }
+function cprev(){
+  const r = C.refs[0], img = r ? (r.preview || r.url || ('/_blob/' + r.id)) : ''
+  $('c-prev').innerHTML = `<div class="cprev" style="--c1:${C.c1};--c2:${C.c2}"><div class="blob">${img ? `<img alt="" src="${esc(img)}">` : `<span>${esc((C.name || '?').slice(0, 1).toUpperCase())}</span>`}</div>
+    <div style="min-width:0"><h2>${esc(C.name || 'Your character')}</h2><span class="k">${esc(C.nick || (C.what || C.kind) + ' · ' + C.role)}</span>
+    <div class="tags"><span class="tag">${esc(C.kind)}</span><span class="tag">${esc(C.role)}</span>${C.pers.map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div>${C.line ? `<q>${esc(q(C.line))}</q>` : ''}</div></div>`
+}
+function describe(){
+  const what = C.what.trim() || ('anthropomorphic ' + C.kind.toLowerCase())
+  const p = [`${C.name || 'An original character'}${C.nick ? ', "' + C.nick + '"' : ''}: ${what}, a ${C.role.toLowerCase()} on the block`]
+  p.push({ Tiny: 'tiny build', Scrawny: 'scrawny build', Average: 'average build', Chunky: 'chunky round build', Huge: 'huge hulking build' }[C.body])
+  if (C.skin) p.push(C.skin); if (C.head) p.push(C.head); if (C.outfit) p.push('wearing ' + C.outfit); if (C.item) p.push('always with ' + C.item)
+  p.push(`color scheme ${C.c1} and ${C.c2}`); if (C.pers.length) p.push(C.pers.join(', ').toLowerCase() + ' personality')
+  return p.join(', ')
+}
+function refLine(){ const how = C.refhow.trim(), n = C.refs.map((x, i) => x.note?.trim() ? `pic ${i + 1}: ${x.note.trim()}` : '').filter(Boolean)
+  if (!C.refs.length) return how ? ` Design notes: ${how}.` : ''
+  return ` Use the attached reference photo${C.refs.length > 1 ? 's' : ''} as a guide${n.length ? ' (' + n.join('; ') + ')' : ''}${how ? '. Follow these instructions about the references exactly: ' + how : ' for outfit, colors and attitude'}. The character itself is an original cartoon creature, never a real person.` }
+const CKEYS = [['sheet', 'Character turnaround', 'Run first. Attach reference pics.'], ['card', 'Card art', 'The picture that goes on their card'], ['idle', 'Battle stance', 'Default pose on the board'], ['attack', 'Attack', 'Plays when they hit'], ['special', 'Special move', 'Their big signature move'], ['hit', 'Getting hit', 'Plays when they take damage'], ['ko', 'Knocked out', 'Plays when they’re beaten'], ['win', 'Victory', 'Plays when their side wins'], ['taunt', 'Taunt', 'Trash talk between turns']]
+const GREEN = ' Full body, facing toward the RIGHT side of the image, solid pure green background (#00FF00) with no shadows, no props on the background, no text.'
+function cstandard(){
+  const a = (C.art || ART).trim(), d = describe(), same = `Same character as the turnaround sheet above, same exact design, outfit, colors and art style.`
+  const mv = C.move.trim() || (C.item ? `a wild signature attack using ${C.item}` : 'a wild signature attack')
+  return [
+    [...CKEYS[0].slice(1), `${a}.${refLine()} Character turnaround sheet for ${d}. Show the same character three times side by side: front view, side view, back view, standing in a confident pose. Clear readable silhouette, original design, no logos or brand names, solid pure green background (#00FF00), no text.`],
+    [...CKEYS[1].slice(1), `${same} Trading card art: the character in an action pose with attitude, framed from the knees up, in a busy cartoon Baltimore setting that fits their role (corner store, rowhouse stoop, alley, block party, crab shack). Vertical 3:4 framing, rich colors, the character fills most of the frame, no card frame, no borders, no text or numbers.`],
+    [...CKEYS[2].slice(1), `${same} Battle stance: ready to fight, weight on the back foot, ${C.item ? 'holding ' + C.item + ', ' : ''}${C.pers.includes('Cool & quiet') ? 'calm unbothered expression' : 'cocky grin'}.${GREEN}`],
+    [...CKEYS[3].slice(1), `${same} Attacking: lunging hard toward the right${C.item ? ' swinging ' + C.item : ' with a big punch'}, mid-motion, comic speed lines, fierce face.${GREEN}`],
+    [...CKEYS[4].slice(1), `${same} Special move "${q(mv)}": the most dramatic pose, big cartoon effect bursting toward the right (smoke, sparks, flying objects) that matches the move, eyes glowing with intensity.${GREEN}`],
+    [...CKEYS[5].slice(1), `${same} Getting hit: knocked back toward the left, eyes squeezed, cartoon stars and a little sweat flying, arms flailing.${GREEN}`],
+    [...CKEYS[6].slice(1), `${same} Knocked out: flat on the ground or slumped over, swirly eyes, tongue out, little birds or stars circling the head${C.ko ? ', like they just said "' + q(C.ko) + '"' : ''}.${GREEN}`],
+    [...CKEYS[7].slice(1), `${same} Victory: celebrating big, arms up or striking their signature pose, huge grin${C.line ? ', yelling "' + q(C.line) + '"' : ''}.${GREEN}`],
+    [...CKEYS[8].slice(1), `${same} Taunting: leaning toward the right with a smug face, waving the opponent off or making a hand gesture that fits a ${C.role.toLowerCase()}, playful trash talk energy.${GREEN}`]
+  ]
+}
+const CRULES = `Rules:
+- Nine complete standalone prompts, 70-140 words each, plain text, no markdown.
+- Art style for all: \${ART}.
+- sheet: turnaround (front, side, back side by side). card: trading-card art in a busy cartoon Baltimore setting matching their role, vertical 3:4, no frame or text. idle, attack, special, hit, ko, win, taunt: full body animation poses, character facing the RIGHT side of the image, solid pure green (#00FF00) background, no shadows, no text.
+- Every prompt after sheet starts with "Same character as the turnaround sheet above" and repeats every physical, outfit and color detail exactly so nothing changes between images.
+- The character is an ORIGINAL anthropomorphic animal or object with hood energy; never a real person, celebrity or existing cartoon character. No brand names or logos.
+- The special prompt is built around the owner's special_move. Make expressions fit the personality. Follow how_to_use_references exactly when references are attached.`
+async function cgenerate(){
+  if (!C.name.trim()) return setStatus('c-status', 'Give your character a name first.', 'err')
+  const b = $('c-gen'); b.disabled = true; b.textContent = 'Writing…'; setStatus('c-status', 'Writing prompts for ' + C.name + '…')
+  let list = null, note = ''
+  if (sample) {
+    try {
+      const images = canImg ? (await Promise.all(C.refs.map(refBlob))).filter(Boolean) : []
+      const info = { name: C.name, nickname: C.nick, creature: C.what || C.kind, hood_role: C.role, body: C.body, fur_or_material: C.skin, head: C.head, outfit: C.outfit, signature_item: C.item, colors: [C.c1, C.c2], personality: C.pers, special_move: C.move, catchphrase: C.line, ko_line: C.ko, reference_notes: C.refs.map((x, i) => x.note?.trim() ? `pic ${i + 1}: ${x.note.trim()}` : '').filter(Boolean), how_to_use_references: C.refhow.trim() || 'use for outfit, colors and attitude' }
+      const out = await sample.json(`You write image-generation prompts (for ChatGPT image generation) for an original character in a 2D cartoon card battle game. ${images.length ? 'The attached images are the owner\'s reference pics; take outfit, colors and attitude from them as the owner instructs, but the character stays an original cartoon creature.' : ''}\nCharacter:\n${JSON.stringify(info)}\n${CRULES.replace('${ART}', (C.art || ART).trim())}\nReturn JSON only with keys sheet, card, idle, attack, special, hit, ko, win, taunt, each a full prompt string.`, { images, modelTier: 'complex' })
+      list = CKEYS.map(([k, t, s]) => [t, s, String(out[k] || '').trim()]).filter(x => x[2])
+      if (list.length < 9) { list = null; note = 'The AI answer was incomplete, so these are the standard prompts.' }
+    } catch (e) { note = e.code === 'not_granted' ? 'AI help is off for this page, so these are the standard prompts.' : e.code === 'rate_limited' ? 'Too many AI requests right now, so these are the standard prompts.' : 'The AI couldn’t write them (' + (e.message || e.code) + '), so these are the standard prompts.' }
+  } else note = 'Open this page signed in to claude.ai for AI-written prompts. These are the standard prompts.'
+  if (!list) list = cstandard()
+  C.gen = { at: new Date().toISOString(), list }; renderPrompts($('c-prompts'), list); $('c-tip').hidden = false
+  setStatus('c-status', note || `Prompts ready for ${C.name}. Save the character to keep them.`, note ? '' : 'ok')
+  b.disabled = false; b.textContent = 'Write my prompts'; if (innerWidth < 880) $('c-prompts').scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+$('c-gen').onclick = cgenerate
+function crefsUI(){
+  const R = $('c-refs'); R.innerHTML = ''
+  C.refs.forEach((x, i) => { const c = document.createElement('div'); c.className = 'ref'
+    c.innerHTML = `<img alt="Reference ${i + 1}"><button class="x" type="button" aria-label="Remove reference ${i + 1}">✕</button><input type="text" maxlength="80" id="c-refnote-${i}" placeholder="Pic note: take the jacket…">`
+    c.querySelector('img').src = x.preview || x.url || ('/_blob/' + x.id); const n = c.querySelector('input'); n.value = x.note || ''
+    n.oninput = () => { x.note = n.value }; c.querySelector('.x').onclick = () => { C.refs.splice(i, 1); crefsUI(); cprev() }; R.appendChild(c) })
+  $('c-fill').hidden = !(canImg && C.refs.length); document.querySelector('label[for=c-ref]').hidden = C.refs.length >= 3
+}
+$('c-ref').onchange = e => { const fs = [...e.target.files].filter(f => f.type.startsWith('image/')); e.target.value = ''
+  for (const f of fs) { if (C.refs.length >= 3) break; if (f.size > 15e6) { setStatus('c-status', 'That image is too big. Use one under 15 MB.', 'err'); continue } C.refs.push({ blob: f, preview: URL.createObjectURL(f), note: '' }) } crefsUI(); cprev() }
+$('c-fill').onclick = async () => {
+  const b = $('c-fill'); b.disabled = true; b.textContent = 'Looking at your pics…'
+  try {
+    const images = (await Promise.all(C.refs.map(refBlob))).filter(Boolean); if (!images.length) throw { message: 'Could not read the pics.' }
+    const notes = C.refs.map((x, i) => `Image ${i + 1}: ${x.note?.trim() || 'use whatever fits'}`).join('\n') + (C.refhow.trim() ? '\nOverall instructions: ' + C.refhow.trim() : '')
+    const out = await sample.json(`You help design an ORIGINAL cartoon creature character (an anthropomorphic ${C.what || C.kind}) for a card battle game with hood energy. Study the attached images. What to take from each:\n${notes}\nDescribe only visual design to apply to the creature: fur/material, head/hair/hat, outfit, signature item, two colors. Never identify or name any person; no brand names or logos. Short vivid values.\nReturn JSON only: {"skin":"","head":"","outfit":"","item":"","c1":"#rrggbb","c2":"#rrggbb"}`, { images, modelTier: 'default' })
+    ;['skin', 'head', 'outfit', 'item'].forEach(k => { if (typeof out[k] === 'string' && out[k].trim()) C[k] = out[k].trim().slice(0, k === 'outfit' ? 140 : 80) })
+    ;['c1', 'c2'].forEach(k => { if (/^#[0-9a-f]{6}$/i.test(out[k] || '')) C[k] = out[k] })
+    cfill(); cprev(); setStatus('c-status', 'Look filled in from your pics. Change anything you want.', 'ok')
+  } catch (e) { setStatus('c-status', e.code === 'not_granted' ? 'AI help was not allowed, so fill the look in yourself.' : 'Could not read the pics: ' + (e.message || e.code), 'err') }
+  finally { b.disabled = false; b.textContent = 'Fill the look from my pics' }
+}
+async function uploadRefs(list, sid){
+  if (!list.some(x => x.blob)) return true
+  if (!assets) { setStatus(sid, 'Pictures only save when this page is open signed in to claude.ai. Saving without them.', 'err'); return true }
+  setStatus(sid, 'Uploading pictures…')
+  for (const x of list) if (x.blob) { try { const u = await assets.upload(x.blob); x.id = u.id; x.url = u.url; delete x.blob } catch (e) { setStatus(sid, 'Could not upload a picture: ' + (e.message || e.code), 'err'); return false } }
+  return true
+}
+$('c-save').onclick = async () => {
+  if (!C.name.trim()) return setStatus('c-status', 'Give your character a name first.', 'err')
+  const id = cEdit || slug(C.name) + '-' + Math.random().toString(36).slice(2, 6)
+  if (!(await uploadRefs(C.refs, 'c-status'))) return
+  const data = { ...C, refs: C.refs.filter(x => x.id).map(x => ({ id: x.id, url: x.url || '', note: x.note || '' })), gen: C.gen ? { at: C.gen.at, list: C.gen.list.map(x => ({ t: x[0], sub: x[1], p: x[2] })) } : null, updatedAt: new Date().toISOString() }
+  if (!db) { localSave('ccrew', id, data); cEdit = id; loadLocal(); return setStatus('c-status', 'Saved on this device only. Open this page signed in to claude.ai so Claude can read it.', 'ok') }
+  $('c-save').disabled = true
+  try { await db.doc('characters/' + id).set(data); cEdit = id; setStatus('c-status', `${C.name} saved.`, 'ok') } catch (e) { setStatus('c-status', 'Could not save: ' + (e.message || e.code), 'err') } finally { $('c-save').disabled = false }
+}
+$('c-new').onclick = () => { C = cblank(); cEdit = null; cfill(); crefsUI(); $('c-prompts').innerHTML = '<div class="ph">Fill in your character, then tap <b>Write my prompts</b>.</div>'; $('c-tip').hidden = true; chips(); cprev(); setStatus('c-status', '') }
+function crewUI(list, note){
+  crew = list; const R = $('c-roster')
+  if (!list.length) { R.innerHTML = '<div class="empty">No characters yet. Build one and tap Save character.</div>'; $('c-rstatus').textContent = note || ''; charOptions(); return }
+  R.innerHTML = ''; $('c-rstatus').textContent = `${list.length} character${list.length > 1 ? 's' : ''}` + (note ? ' · ' + note : '')
+  list.forEach(({ id, d }) => { const c = document.createElement('div'); c.className = 'rc'; c.style.setProperty('--c', d.c1 || '#19e0f0')
+    const r = (d.refs || [])[0]
+    c.innerHTML = `${r ? `<img alt="" src="${esc(r.url || '/_blob/' + r.id)}">` : ''}<b>${esc(d.name)}</b><small>${esc((d.what || d.kind) + ' · ' + d.role)}${d.gen ? ' · prompts ready' : ''}</small><div class="actions"><button class="btn small ghost" data-a="edit">Edit</button><button class="btn small ghost" data-a="del">Delete</button></div>`
+    c.querySelector('[data-a=edit]').onclick = () => { C = { ...cblank(), ...d, refs: (d.refs || []).map(x => ({ ...x, preview: x.url || '/_blob/' + x.id })), gen: d.gen?.list ? { at: d.gen.at, list: d.gen.list.map(x => [x.t, x.sub, x.p]) } : null }; cEdit = id; cfill(); crefsUI(); if (C.gen) { renderPrompts($('c-prompts'), C.gen.list); $('c-tip').hidden = false } else { $('c-prompts').innerHTML = '<div class="ph">Tap <b>Write my prompts</b>.</div>'; $('c-tip').hidden = true } chips(); cprev(); setStatus('c-status', `Editing ${d.name}.`); scrollTo({ top: 0, behavior: 'smooth' }) }
+    c.querySelector('[data-a=del]').onclick = () => confirmDel(c, async () => { if (db) { try { await db.doc('characters/' + id).delete() } catch (e) { setStatus('c-status', 'Could not delete: ' + (e.message || e.code), 'err') } } else { localDel('ccrew', id); loadLocal() } if (cEdit === id) cEdit = null }, () => crewUI(crew))
+    R.appendChild(c) })
+  charOptions()
+}
+
+// ===================== CARDS =====================
+const kblank = () => ({ ktype: 'Character', char: '', with: '', name: '', rarity: 'Common', cost: 3, atk: 5, hp: 12, kw: 'None', ab: '', look: '', art: null, gen: null })
+let K = kblank(), kEdit = null, deck = []
+const RCOL = { Common: 'var(--common)', Rare: 'var(--rare)', Epic: 'var(--epic)', Legendary: 'var(--legend)' }
+const hasStats = () => K.ktype === 'Character' || K.ktype === 'Combo'
+function charOptions(){
+  const sel = $('k-char'); const cur = K.char
+  sel.innerHTML = crew.length ? crew.map(({ id, d }) => `<option value="${esc(id)}">${esc(d.name)}</option>`).join('') : '<option value="">Save a character first</option>'
+  if (crew.some(x => x.id === cur)) sel.value = cur; else { K.char = crew[0]?.id || ''; sel.value = K.char }
+  $('k-charnote').textContent = crew.length ? '' : 'Build and save a character on the Characters tab, then come back.'
+  const items = deck.filter(x => x.d.ktype === 'Item'), w = $('k-with')
+  w.innerHTML = items.length ? items.map(({ id, d }) => `<option value="${esc(id)}">${esc(d.name)}</option>`).join('') : '<option value="">Save an item card first</option>'
+  if (items.some(x => x.id === K.with)) w.value = K.with; else { K.with = items[0]?.id || ''; w.value = K.with }
+}
+const charOf = id => crew.find(x => x.id === id)?.d
+const itemOf = id => deck.find(x => x.id === id)?.d
+function kfill(){ $('k-name').value = K.name; $('k-cost').value = K.cost; $('k-atk').value = K.atk; $('k-hp').value = K.hp; $('k-ab').value = K.ab; $('k-look').value = K.look; charOptions() }
+;['name', 'ab', 'look'].forEach(k => $('k-' + k).addEventListener('input', e => { K[k] = e.target.value; cardUI() }))
+;['cost', 'atk', 'hp'].forEach(k => $('k-' + k).addEventListener('input', e => { K[k] = Math.max(0, parseInt(e.target.value) || 0); cardUI() }))
+$('k-char').onchange = e => { K.char = e.target.value; cardUI() }; $('k-with').onchange = e => { K.with = e.target.value; cardUI() }
+function power(){
+  // Budget: each point of cost buys about 5 stat points (attack counts 1.5x), plus 4 free. Rarer cards may run a little hot.
+  const v = K.atk * 1.5 + K.hp, budget = K.cost * 5 + 4 + { Common: 0, Rare: 2, Epic: 4, Legendary: 7 }[K.rarity] + (K.ktype === 'Combo' ? 6 : 0) - (K.kw !== 'None' || K.ab.trim() ? 3 : 0)
+  const r = v / budget
+  return r < .82 ? ['WEAK', 'Stats are low for the cost. Add a point or two, or drop the cost.', 'var(--warn)', r] : r > 1.18 ? ['TOO STRONG', 'This will feel unfair. Raise the cost or trim attack or health.', 'var(--bad)', r] : ['FAIR', 'Balanced for its cost and rarity.', 'var(--ok)', r]
+}
+function cardUI(){
+  const ch = charOf(K.char), it = itemOf(K.with)
+  $('k-charsec').hidden = !(K.ktype === 'Character' || K.ktype === 'Combo'); $('k-combosec').hidden = K.ktype !== 'Combo'
+  $('k-atksec').hidden = $('k-hpsec').hidden = !hasStats()
+  $('k-typenote').textContent = { Character: 'A fighter on the board. Has attack and health.', Item: 'Gear or a boost a character can use. Matching an item to the right character makes a combo.', Spot: 'A Baltimore place that changes the whole lane or board.', Combo: 'The powered-up card a character turns into when paired with an item.' }[K.ktype]
+  const nm = K.name.trim() || (K.ktype === 'Combo' && ch && it ? `${ch.name} + ${it.name}` : ch && K.ktype === 'Character' ? ch.name : 'Card name')
+  const kwText = K.kw !== 'None' ? `<b>${K.kw}:</b> ${esc(KW[K.kw])} ` : ''
+  const art = K.art ? `<img alt="" src="${esc(K.art.preview || K.art.url || '/_blob/' + K.art.id)}">` : `<span class="ini">${esc(nm.slice(0, 1).toUpperCase())}</span>`
+  const c1 = ch?.c1 || '#20304f', c2 = ch?.c2 || '#0b0d17'
+  $('k-card').innerHTML = `<div class="card${K.ktype === 'Combo' ? ' combo' : ''}" style="--rc:${K.ktype === 'Combo' ? '#19e0f0' : RCOL[K.rarity]};--c1:${c1};--c2:${c2}">
+    <span class="rar">${K.ktype === 'Combo' ? 'COMBO' : K.rarity}</span><span class="cost">${K.cost}</span><div class="nm">${esc(nm)}</div>
+    <div class="art">${art}<span class="ty">${esc(K.ktype)}${ch && hasStats() ? ' · ' + esc(ch.role) : ''}</span></div>
+    <div class="bot"><div class="ab">${kwText}${esc(K.ab) || (kwText ? '' : '<span style="color:#888">Ability text goes here.</span>')}</div>${hasStats() ? `<div class="stats"><span class="st atk">${SW}${K.atk}</span><span class="st hp">${HT}${K.hp}</span></div>` : ''}</div></div>`
+  if (hasStats()) { const [l, t, col, r] = power(); $('k-power').hidden = false; $('k-power').innerHTML = `<b style="color:${col}">${l}</b><span class="meter"><i style="width:${Math.min(100, r * 70)}%;background:${col}"></i></span><span style="flex:2;min-width:140px">${t}</span>` } else $('k-power').hidden = true
+}
+function kstandard(){
+  const ch = charOf(K.char), it = itemOf(K.with), frame = 'Vertical 3:4 framing, the subject fills most of the frame, no card frame, no borders, no text, letters or numbers anywhere.'
+  const style = (ch?.art || ART).trim(), look = K.look.trim()
+  if (K.ktype === 'Character') return [['Card art', 'Attach their turnaround sheet', `${style}. Use the attached turnaround sheet for the exact character design: ${ch ? describeD(ch) : 'the character'}. Trading card art for the card "${K.name || ch?.name || ''}": ${look || 'the character in a dynamic action pose with attitude in a busy cartoon Baltimore setting that fits their role'}. ${K.ab ? 'The scene hints at the ability: ' + K.ab + '. ' : ''}${frame}`]]
+  if (K.ktype === 'Combo') return [['Combo art', 'Attach their turnaround sheet + the item card art', `${style}. Use the attached images: the character's turnaround sheet for the exact character design${ch ? ' (' + describeD(ch) + ')' : ''}, and the item card art for the item${it ? ' "' + it.name + '"' : ''}. Combo card art: the character powered up while using the item, the most epic and over-the-top moment, glowing energy and comic action effects. ${look ? 'Scene: ' + look + '. ' : ''}${frame}`]]
+  if (K.ktype === 'Item') return [['Item card art', 'One object, hero shot', `${style}. Trading card art of an item for a hood card battle game: "${K.name}". ${look || 'The object shown big and centered with a dramatic glow, like a legendary loot drop'}. A simple cartoon Baltimore background behind it, slightly blurred. ${frame}`]]
+  return [['Spot card art', 'A place, no characters', `${style}. Trading card art of a location for a hood card battle game: "${K.name}". ${look || 'A lively cartoon Baltimore spot (rowhouse block, corner store, crab shack, basketball court, harbor)'}, no characters in the scene, warm dramatic lighting, lots of fun little details. ${frame}`]]
+}
+function describeD(d){ const p = [`${d.name}${d.nick ? ', "' + d.nick + '"' : ''}: ${d.what || 'anthropomorphic ' + (d.kind || '').toLowerCase()}, a ${(d.role || '').toLowerCase()}`]; if (d.skin) p.push(d.skin); if (d.head) p.push(d.head); if (d.outfit) p.push('wearing ' + d.outfit); if (d.item) p.push('with ' + d.item); return p.join(', ') }
+$('k-gen').onclick = () => {
+  if (!K.name.trim() && !(K.ktype === 'Character' && charOf(K.char))) return setStatus('k-status', 'Give the card a name first.', 'err')
+  if ((K.ktype === 'Character' || K.ktype === 'Combo') && !charOf(K.char)) return setStatus('k-status', 'Pick a character first.', 'err')
+  const list = kstandard(); K.gen = { at: new Date().toISOString(), list }; renderPrompts($('k-prompts'), list); setStatus('k-status', 'Prompt ready. When the art comes back, add it with “Add card art”.', 'ok')
+}
+$('k-artfile').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (!f || !f.type.startsWith('image/')) return; if (f.size > 15e6) return setStatus('k-status', 'That image is too big. Use one under 15 MB.', 'err'); K.art = { blob: f, preview: URL.createObjectURL(f) }; $('k-artclear').hidden = false; cardUI() }
+$('k-artclear').onclick = () => { K.art = null; $('k-artclear').hidden = true; cardUI() }
+$('k-save').onclick = async () => {
+  const ch = charOf(K.char); const nm = K.name.trim() || (K.ktype === 'Character' && ch ? ch.name : '')
+  if (!nm) return setStatus('k-status', 'Give the card a name first.', 'err')
+  if ((K.ktype === 'Character' || K.ktype === 'Combo') && !ch) return setStatus('k-status', 'Pick a character first.', 'err')
+  const id = kEdit || slug(nm) + '-' + Math.random().toString(36).slice(2, 6)
+  if (K.art && !(await uploadRefs([K.art], 'k-status'))) return
+  const data = { ...K, name: nm, art: K.art?.id ? { id: K.art.id, url: K.art.url || '' } : null, power: hasStats() ? power()[0] : null, gen: K.gen ? { at: K.gen.at, list: K.gen.list.map(x => ({ t: x[0], sub: x[1], p: x[2] })) } : null, updatedAt: new Date().toISOString() }
+  if (!db) { localSave('cdeck', id, data); kEdit = id; loadLocal(); return setStatus('k-status', 'Saved on this device only. Open this page signed in to claude.ai so Claude can read it.', 'ok') }
+  $('k-save').disabled = true
+  try { await db.doc('cards/' + id).set(data); kEdit = id; setStatus('k-status', `${nm} saved.`, 'ok') } catch (e) { setStatus('k-status', 'Could not save: ' + (e.message || e.code), 'err') } finally { $('k-save').disabled = false }
+}
+$('k-new').onclick = () => { K = kblank(); kEdit = null; kfill(); $('k-artclear').hidden = true; $('k-prompts').innerHTML = '<div class="ph">Fill in the card, then tap <b>Write the art prompt</b>.</div>'; chips(); cardUI(); setStatus('k-status', '') }
+function deckUI(list, note){
+  deck = list; const R = $('k-roster')
+  if (!list.length) { R.innerHTML = '<div class="empty">No cards yet. Build one and tap Save card.</div>'; $('k-rstatus').textContent = note || ''; charOptions(); return }
+  R.innerHTML = ''; const byType = t => list.filter(x => x.d.ktype === t).length
+  $('k-rstatus').textContent = `${list.length} card${list.length > 1 ? 's' : ''} · ${byType('Character')} characters · ${byType('Item')} items · ${byType('Spot')} spots · ${byType('Combo')} combos` + (note ? ' · ' + note : '')
+  list.forEach(({ id, d }) => { const c = document.createElement('div'); c.className = 'rc'; c.style.setProperty('--c', d.ktype === 'Combo' ? '#19e0f0' : RCOL[d.rarity] || '#9aa6b4')
+    c.innerHTML = `${d.art ? `<img alt="" src="${esc(d.art.url || '/_blob/' + d.art.id)}">` : ''}<b>${esc(d.name)}</b><small>${esc(d.ktype)} · ${esc(d.ktype === 'Combo' ? 'Combo' : d.rarity)} · cost ${d.cost}${d.atk != null && (d.ktype === 'Character' || d.ktype === 'Combo') ? ` · ${d.atk}/${d.hp}` : ''}${d.power ? ' · ' + d.power.toLowerCase() : ''}</small><div class="actions"><button class="btn small ghost" data-a="edit">Edit</button><button class="btn small ghost" data-a="del">Delete</button></div>`
+    c.querySelector('[data-a=edit]').onclick = () => { K = { ...kblank(), ...d, art: d.art ? { ...d.art, preview: d.art.url || '/_blob/' + d.art.id } : null, gen: d.gen?.list ? { at: d.gen.at, list: d.gen.list.map(x => [x.t, x.sub, x.p]) } : null }; kEdit = id; kfill(); $('k-artclear').hidden = !K.art; K.gen ? renderPrompts($('k-prompts'), K.gen.list) : ($('k-prompts').innerHTML = '<div class="ph">Tap <b>Write the art prompt</b>.</div>'); chips(); cardUI(); setStatus('k-status', `Editing ${d.name}.`); scrollTo({ top: 0, behavior: 'smooth' }) }
+    c.querySelector('[data-a=del]').onclick = () => confirmDel(c, async () => { if (db) { try { await db.doc('cards/' + id).delete() } catch (e) { setStatus('k-status', 'Could not delete: ' + (e.message || e.code), 'err') } } else { localDel('cdeck', id); loadLocal() } if (kEdit === id) kEdit = null }, () => deckUI(deck))
+    R.appendChild(c) })
+  charOptions(); cardUI()
+}
+
+// ===================== shared =====================
+function confirmDel(card, yes, no){ const act = card.querySelector('.actions'); act.innerHTML = `<span class="confirm">Delete? <button class="btn small" data-y>Yes</button><button class="btn small ghost" data-n>No</button></span>`; act.querySelector('[data-n]').onclick = no; act.querySelector('[data-y]').onclick = yes }
+function localGet(k){ try { return JSON.parse(localStorage.getItem(k) || '{}') || {} } catch { return {} } }
+function localSave(k, id, d){ try { const a = localGet(k); a[id] = d; localStorage.setItem(k, JSON.stringify(a)) } catch {} }
+function localDel(k, id){ try { const a = localGet(k); delete a[id]; localStorage.setItem(k, JSON.stringify(a)) } catch {} }
+function loadLocal(){ crewUI(Object.entries(localGet('ccrew')).map(([id, d]) => ({ id, d })), 'saved on this device'); deckUI(Object.entries(localGet('cdeck')).map(([id, d]) => ({ id, d })), 'saved on this device') }
+$('c-art').value = ART; chips(); cfill(); crefsUI(); cprev(); kfill(); cardUI(); loadLocal()
+;(async () => {
+  try { assets = await window.claude?.use?.('assets') } catch { assets = null }
+  try { sample = await window.claude?.use?.('sample'); const lim = sample ? await sample.limits().catch(() => null) : null; canImg = !!lim?.images } catch { sample = null }
+  crefsUI()
+  try { db = await window.claude?.use?.('db') } catch { db = null }
+  if (!db) return
+  $('c-rstatus').textContent = $('k-rstatus').textContent = 'Loading…'
+  const t = setTimeout(() => { $('c-rstatus').textContent = $('k-rstatus').textContent = 'Taking a while to load.' }, 10000)
+  db.collection('characters').orderBy('updatedAt', 'desc').onSnapshot(s => { clearTimeout(t); crewUI(s.docs.map(x => ({ id: x.id, d: x.data() }))) }, e => { clearTimeout(t); $('c-rstatus').textContent = 'Could not load: ' + (e.message || e.code) })
+  db.collection('cards').orderBy('updatedAt', 'desc').onSnapshot(s => { deckUI(s.docs.map(x => ({ id: x.id, d: x.data() }))) }, e => { $('k-rstatus').textContent = 'Could not load: ' + (e.message || e.code) })
+})()
+</script>
